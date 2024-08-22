@@ -1,0 +1,14 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "NovelMaker",
+  "outputfilename": "NovelMaker",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "hughie12",
+    "email": "11827824+hughie12@user.noreply.gitee.com"
+  },
+  "appargs": "daw"
+}
