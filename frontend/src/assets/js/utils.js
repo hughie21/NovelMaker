@@ -2,23 +2,29 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-08-16
+@LastEditTime: 2024-09-20
 @Description: This is the public variables and methods for the whole project.
 */
 
 import { reactive, ref, shallowRef } from "vue";
-import {Fr, DirectLoading} from "../../../wailsjs/go/main/App.js"
+import {DirectLoading} from "../../../wailsjs/go/main/App.js"
+import lang from './lang.js'
 import message from './i18n.js'
 
 // editor
 const editorRef = shallowRef();
 const valueHtml = ref('');
+const headerVal = ref(0);
+const fontVal = ref("Arial");
+const fonts = ref([])
+const imageInfo = reactive({
+    zoom: 100,
+    postition: "left",
+    elem: ""
+})
 
 // i18n
-const language_list = ref([]);
-Fr('./frontend/src/assets/language/lang.json').then((res)=>{
-    language_list.value = JSON.parse(res);
-})
+const language_list = ref(lang);
 
 // setting
 var storgeLang = localStorage.getItem("lang");
@@ -30,6 +36,7 @@ const visio = reactive({
     bookInfoVisible: false,
     settingVisible: false,
     mediaVisible: false,
+    tableInsertVisible: false,
 })
 const cover = reactive({
     isExist: false,
@@ -57,12 +64,20 @@ const bookInfo = reactive({
 
 const change = ref(false);
 
-const currentSave = ""
-
+const currentSave = ref("");
 
 /*
 public methods
 */
+
+function rgbaToHex(rgba) {
+    const [r, g, b, a] = rgba.match(/\d+(\.\d+)?/g).map(Number);
+    const hexR = r.toString(16).padStart(2, '0');
+    const hexG = g.toString(16).padStart(2, '0');
+    const hexB = b.toString(16).padStart(2, '0');
+    const hexA = Math.round(a * 255).toString(16).padStart(2, '0');
+    return `#${hexR}${hexG}${hexB}${hexA}`;
+}
 
 const arrayRemove = (array, id) => {
     for(let i in array) {
@@ -71,6 +86,13 @@ const arrayRemove = (array, id) => {
             break;
         }
     }
+}
+
+const arrayEquel = (arr1, arr2) => {
+    if(arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index])){
+        return true;
+    }
+    return false;
 }
 
 const resetState = () => {
@@ -160,7 +182,7 @@ class TocGenerator {
             temp.push({
                 weight: this.weight[item.type],
                 type: item.type,
-                text: item.children[0].text
+                text: item.text
             });
         })
         this.headers = temp;
@@ -261,7 +283,13 @@ export {
     arrayRemove,
     editorRef,
     valueHtml,
-    resetState
+    headerVal,
+    resetState,
+    imageInfo,
+    fontVal,
+    fonts,
+    rgbaToHex,
+    arrayEquel
 }
 
 export default {

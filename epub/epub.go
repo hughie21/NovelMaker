@@ -16,8 +16,31 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
+	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/logger"
 )
+
+var logFileName string
+
+func LogOutPut(msg string, funcName string) {
+	if logFileName == "" {
+		todaystr := time.Now().Format("2006-01-02")
+		todayint, _ := time.ParseInLocation("2006-01-02", todaystr, time.Local)
+		logFileName = strconv.FormatInt(todayint.Unix(), 10) + ".log"
+	}
+	fileLogger := logger.NewFileLogger(filepath.Join("./log", logFileName))
+	fileLogger.Error(fmt.Sprintf("%s -> %s", funcName, msg))
+}
+
+func runFuncName() string {
+	pc := make([]uintptr, 1)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	return f.Name()
+}
 
 /*
 *
@@ -327,7 +350,10 @@ func toFile(FoldName string, Files *EpubFile) {
 	WirteToFile(Files.OPT, FoldName+"/OEBPS/content.opf")
 	WirteToFile(Files.NCX, FoldName+"/OEBPS/toc.ncx")
 	WirteToFile(Files.NAV, FoldName+"/OEBPS/nav.xhtml")
-	fs, _ := os.Open("style.css")
+	fs, err := os.Open("./style.css")
+	if err != nil {
+		LogOutPut(err.Error(), runFuncName())
+	}
 	of, _ := os.Create(FoldName + "/OEBPS/Styles/style.css")
 	io.Copy(of, fs)
 	// for _, files := range Files.Texts {
@@ -337,7 +363,7 @@ func toFile(FoldName string, Files *EpubFile) {
 	for _, images := range Files.Images {
 		err := os.WriteFile(FoldName+"/OEBPS/Images/"+images.Name, images.Data, 0644)
 		if err != nil {
-			fmt.Println(err.Error())
+			LogOutPut(err.Error(), runFuncName())
 		}
 	}
 }
@@ -351,14 +377,14 @@ func WriteEpub(tempDir string, destFilePath string) error {
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			panic(err)
+			LogOutPut(err.Error(), runFuncName())
 		}
 	}()
 
 	z := zip.NewWriter(f)
 	defer func() {
 		if err := z.Close(); err != nil {
-			panic(err)
+			LogOutPut(err.Error(), runFuncName())
 		}
 	}()
 
@@ -374,7 +400,7 @@ func WriteEpub(tempDir string, destFilePath string) error {
 		relativePath = filepath.ToSlash(relativePath)
 		if err != nil {
 			// tempDir and path are both internal, so we shouldn't get here
-			panic(fmt.Sprintf("Error closing EPUB file: %s", err))
+			LogOutPut(err.Error(), runFuncName())
 		}
 
 		// Only include regular files, not directories
@@ -397,22 +423,22 @@ func WriteEpub(tempDir string, destFilePath string) error {
 			w, err = z.Create(relativePath)
 		}
 		if err != nil {
-			panic(fmt.Sprintf("Error creating zip writer: %s", err))
+			LogOutPut(err.Error(), runFuncName())
 		}
 
 		r, err := os.Open(path)
 		if err != nil {
-			panic(fmt.Sprintf("Error opening file being added to EPUB: %s", err))
+			LogOutPut(err.Error(), runFuncName())
 		}
 		defer func() {
 			if err := r.Close(); err != nil {
-				panic(err)
+				LogOutPut(err.Error(), runFuncName())
 			}
 		}()
 
 		_, err = io.Copy(w, r)
 		if err != nil {
-			panic(fmt.Sprintf("Error copying contents of file being added EPUB: %s", err))
+			LogOutPut(err.Error(), runFuncName())
 		}
 
 		return nil
@@ -422,18 +448,18 @@ func WriteEpub(tempDir string, destFilePath string) error {
 	mimetypeFilePath := filepath.Join(tempDir, "mimetype")
 	mimetypeInfo, err := os.Lstat(mimetypeFilePath)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to get FileInfo for mimetype file: %s", err))
+		LogOutPut(err.Error(), runFuncName())
 	}
 	err = addFileToZip(mimetypeFilePath, mimetypeInfo, nil)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to add mimetype file to EPUB: %s", err))
+		LogOutPut(err.Error(), runFuncName())
 	}
 
 	skipMimetypeFile = true
 
 	err = filepath.Walk(tempDir, addFileToZip)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to add file to EPUB: %s", err))
+		LogOutPut(err.Error(), runFuncName())
 	}
 
 	return nil

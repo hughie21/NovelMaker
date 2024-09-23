@@ -11,6 +11,7 @@ export default{
             new: "新增",
             open: "打开",
             save: "保存",
+            saveAs: "另存为",
             export: "导出",
             fileInfo: "书籍信息",
             close: "关闭"
@@ -18,16 +19,38 @@ export default{
         edit: {
             setting: "设置",
             paste: "粘贴",
-            media: "插入图片"
+            media: "插入图片",
+            row: "列",
+            column: "行",
+            insertTable: "插入表格",
         },
         help: {
             help: "帮助"
+        },
+        tooltip: {
+            copy: "复制",
+            cut: "剪切",
+            bold: "粗体",
+            italic: "斜体",
+            strike: "删除线",
+            clean: "清除标记",
+            color: "字体颜色",
+            background: "背景颜色",
+            table: "表格",
+            code: "代码块",
+            orderlist: "有序列表",
+            unorderlist: "无序列表",
         }
     },
-    tree: {
-        title: "[ 书名 ]",
-        inputFilter: "筛选关键词",
-        newChapter: "新章节",
+    table: {
+        header: "切换表头",
+        merge: "合并单元格",
+        split: "取消合并",
+        insertRow: "插入行",
+        insertColumn: "插入列",
+        deleteRow: "删除行",
+        deleteColumn: "删除列",
+        deleteTable: "删除表格",
     },
     dialog: {
         confirm: "确认",
@@ -77,6 +100,7 @@ export default{
         saveWarning: "您有未保存的编辑，是否保存？",
         saveSuccess: "保存成功",
         saveError: "保存失败",
+        openError: "无法打开指定文件",
         exportInfoTitle: "注意",
         exportInfo: "导出文件时，请勿关闭该软件或者计算机",
         exportSuccess: "导出成功",

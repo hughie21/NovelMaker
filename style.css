@@ -1,0 +1,112 @@
+/*
+this is the default style for the style content, which will add to the epub file while exporting
+*/
+
+body h1 {
+  font-size: 2.2rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body h2 {
+  font-size: 2rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body h3 {
+  font-size: 1.8rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body h4 {
+  font-size: 1.6rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body h5 {
+  font-size: 1.4rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body h6 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 1rem;
+}
+
+body ul,ol {
+  padding: 0 1rem;
+  margin: 1.25rem 1rem 1.25rem 0.4rem;
+}
+
+body ul,ol li p {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+body p {
+  font-size: 1rem;
+  color: #000000;
+}
+
+body span {
+  color: #000000;
+}
+
+body img {
+  display: block;
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+}
+
+body pre {
+  background: #4c4c4d;
+  border-radius: 0.5rem;
+  color: #d1cdcd;
+  font-family: 'JetBrainsMono', monospace;
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+}
+
+body pre code {
+  background: none;
+  color: inherit;
+  font-size: 0.8rem;
+  padding: 0;
+}
+
+body .image-container {
+  margin: 1.5rem 0;
+  position: relative;
+  height: auto;
+  width: 100%;
+  display: flex;
+}
+
+body table {
+  border-collapse: collapse;
+  margin: 0;
+  overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+}
+body td {
+    border: 1px solid rgb(150, 149, 149);
+    box-sizing: border-box;
+    min-width: 1em;
+    padding: 6px 8px;
+    position: relative;
+    vertical-align: top;
+}
+
+th {
+  border: 1px solid rgba(150, 149, 149);
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 6px 8px;
+  position: relative;
+  vertical-align: top;
+  background-color: rgba(117, 120, 119, 0.436);
+  font-weight: bold;
+  text-align: left;
+}

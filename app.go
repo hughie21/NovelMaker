@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-08-16
+@LastEditTime: 2024-09-16
 @Description: This is the Go function that frontend can call for.
 */
 
@@ -86,6 +86,15 @@ func (a *App) Fr(path string) string {
 	return string(content)
 }
 
+func (a *App) Base64Encode(str string) string {
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
+func (a *App) Base64Decode(str string) string {
+	decodeBytes, _ := base64.StdEncoding.DecodeString(str)
+	return string(decodeBytes)
+}
+
 // when user open the epmb file directly, this function will be called
 func (a *App) DirectLoading() Message {
 	var msg Message
@@ -110,20 +119,35 @@ func (a *App) DirectLoading() Message {
 }
 
 // corresponding to the "Open" button on the frontend
-func (a *App) FileOpen() string {
+func (a *App) FileOpen() Message {
+	var Message Message
 	res := FileOpenDialog(a, "Empb File", "*.epmb")
 	dataStruct, err := epubMaker.Load(res)
+	if res == "" {
+		Message.Code = -1
+		Message.Msg = "cancel"
+		return Message
+	}
 	if err != nil {
 		LogOutPut(err.Error(), runFuncName())
-		return err.Error()
+		Message.Code = 1
+		Message.Msg = err.Error()
+		return Message
 	}
 	jsonData := epubMaker.Dump(&dataStruct)
-	return jsonData
+	Message.Code = 0
+	Message.Msg = res
+	Message.Data = jsonData
+	return Message
 }
 
 // corresponding to the "Save" button on the frontend
-func (a *App) FileSave(name string, rawJson string) Message {
-	res := FileSaveDialog(a, name, "*.epmb")
+func (a *App) FileSave(name string, rawJson string, skip bool) Message {
+	res := name
+	if !skip {
+		res = FileSaveDialog(a, name, "*.epmb")
+	}
+
 	var msg Message
 	if res == "" {
 		msg.Code = -1
@@ -132,7 +156,6 @@ func (a *App) FileSave(name string, rawJson string) Message {
 	}
 	var JsonStruct epubMaker.JsonData
 	epubMaker.LoadJson([]byte(rawJson), &JsonStruct)
-	fmt.Println(epubMaker.Dump(&JsonStruct))
 	err := epubMaker.SaveToFile(&JsonStruct, res)
 	if err != nil {
 		msg.Code = 1
@@ -142,6 +165,7 @@ func (a *App) FileSave(name string, rawJson string) Message {
 	}
 	msg.Code = 0
 	msg.Msg = "success"
+	msg.Data = res
 	return msg
 }
 
@@ -246,13 +270,13 @@ func (a *App) Publish(name string, rawJson string) Message {
 	tmpPath := epubMaker.FormXML(JsonStruct)
 	e := epubMaker.WriteEpub(tmpPath, path)
 	if e != nil {
-		os.Remove(tmpPath)
+		os.RemoveAll(tmpPath)
 		msg.Code = 1
 		msg.Msg = e.Error()
 		LogOutPut(e.Error(), runFuncName())
 		return msg
 	}
-	os.Remove(tmpPath)
+	os.RemoveAll(tmpPath)
 	msg.Code = 0
 	msg.Msg = "success"
 	return msg

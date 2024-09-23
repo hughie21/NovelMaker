@@ -61,7 +61,7 @@ func Menu(app *App) *menu.Menu {
 				Type:        "Text",
 				Accelerator: keys.Combo("s", ShiftKey, CmdOrCtrlKey),
 				Click: func(cd *menu.CallbackData) {
-					runtime.WindowExecJS(app.ctx, "document.getElementById('btn-export').click();")
+					runtime.WindowExecJS(app.ctx, "document.getElementById('btn-save-as').click();")
 				},
 			},
 			&menu.MenuItem{

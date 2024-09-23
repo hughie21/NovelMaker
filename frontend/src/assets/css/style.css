@@ -22,6 +22,10 @@ body {
     overflow-x: hidden;
 }
 
+button {
+    cursor: pointer;
+}
+
 @font-face {
     font-family: "Nunito";
     font-style: normal;

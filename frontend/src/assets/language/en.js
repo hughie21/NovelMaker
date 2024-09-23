@@ -11,22 +11,45 @@ export default{
             new: "New",
             open: "Open",
             save: "Save",
+            saveAs: "Save As",
             export: "Export",
             fileInfo: "Book info"
         },
         edit: {
             setting: "Setting",
             paste: "Paste",
-            media: "insert picture"
+            media: "insert picture",
+            row: "Row",
+            column: "Column",
+            insertTable: "Insert Table",
         },
         help: {
             help: "Help"
+        },
+        tooltip: {
+            copy: "Copy",
+            cut: "Cut",
+            bold: "Bold",
+            italic: "Italic",
+            strike: "Strikethrough",
+            clean: "Clear Mark",
+            color: "Font Color",
+            background: "Background Color",
+            table: "Insert Table",
+            code: "Insert Code",
+            orderlist: "Order List",
+            unorderlist: "Unorder List",
         }
     },
-    tree: {
-        title: "[ Title ]",
-        inputFilter: "Filter keywords",
-        newChapter: "New chapter",
+    table: {
+        header: "Toggle Header",
+        merge: "Merge Cell",
+        split: "Split Cell",
+        insertRow: "Insert Row",
+        insertColumn: "Insert Column",
+        deleteRow: "Delete Row",
+        deleteColumn: "Delete Column",
+        deleteTable: "Delete Table",
     },
     dialog: {
         confirm: "Confirm",
@@ -74,6 +97,7 @@ export default{
         notSave: "Do not save",
         info: "Info",
         saveWarning: "The edited file have not been saved, do you want to save it?",
+        openError: "Failed to open the file",
         saveSuccess: "Save success",
         saveError: "Save error",
         exportInfoTitle: "Notice",
