@@ -15,6 +15,7 @@ import { useI18n } from 'vue-i18n';
 import { languages as langs } from '../assets/js/i18n';
 import { OpenImage, ImageUpload, GetStaticResources, FileDelete } from '../../wailsjs/go/main/App.js'
 import { Delete, Plus, ZoomIn } from '@element-plus/icons-vue'
+// import * as runtime from '../../wailsjs/runtime/runtime.js'
 
 const { t, locale } = useI18n();
 const bookinfo = inject("bookinfo");
@@ -406,6 +407,37 @@ const handleImgSize = (val) => {
             </div>
         </template>
     </el-dialog>
+
+    <!-- help dialog -->
+    <el-dialog
+    v-model="visio.helpVisible"
+    :title="t('dialog.help.title')"
+    width="280px"
+    >
+    <div style="display: flex;justify-content: center;align-items: center;">
+        <el-form style="width: 80%;">
+            <el-form-item :label="t('dialog.help.version') + ':'">
+                1.1.20
+            </el-form-item>
+            <el-form-item :label="t('dialog.help.date') + ':'">
+                2024.9.25
+            </el-form-item>
+            <el-form-item :label="t('dialog.help.copyright') + ':'">
+                2024 Hughie
+            </el-form-item>
+            <el-form-item label="Wails:">
+                v2.8.1
+            </el-form-item>
+            <el-form-item label="Golang:">
+                v1.20.3
+            </el-form-item>
+            <el-form-item label="Nodejs:">
+                v16.15.1
+            </el-form-item>
+        </el-form>
+    </div>
+    </el-dialog>
+
     <!-- bubble menu -->
      <!-- image -->
     <div id="bubbleMenu" style="display: none;">
@@ -702,4 +734,5 @@ text-align: center !important;
 .media-display .el-image:last-child {
     margin-bottom: 0;
 }
+
 </style>

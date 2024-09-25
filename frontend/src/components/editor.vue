@@ -3,14 +3,14 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-09-23
+@LastEditTime: 2024-09-25
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted } from 'vue';
 import * as utils from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { CustomImage, CustomHeading, TextBackground } from '../assets/js/extension';
+import { CustomImage, CustomHeading, TextBackground, TextFontSize } from '../assets/js/extension';
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import TextStyle from '@tiptap/extension-text-style'
 import FontFamily from '@tiptap/extension-font-family'
@@ -23,7 +23,7 @@ import '../assets/css/editor.css';
 
 const bubbleMenu = document.getElementById("bubbleMenu").children[0];
 const tableMenu = document.getElementById("tableMenu").children[0];
-
+ 
 function throttle(func, wait) {
     let timeout;
     return function(...args) {
@@ -60,6 +60,9 @@ const editor = new Editor({
         FontFamily.configure({
             types: ['textStyle'],
         }),
+        TextFontSize.configure({
+            types: ['textStyle'],
+        }),
         Color.configure({
             types: ["textStyle"],
         }),
@@ -75,8 +78,7 @@ const editor = new Editor({
         TableHeader,
         TableCell,
     ],
-    onUpdate: throttle(({ editor } ) => {
-        const startTime = new Date().getTime();
+    onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         const headerContainer = document.getElementById('header-container');
         // const headers = $doc.querySelectorAll('custom-heading'); // Abondoned: When the amount of data is large, the time consumption is too long
         const editorContainer = document.getElementById('editor');
@@ -89,10 +91,8 @@ const editor = new Editor({
         }).join('');
         bookinfo.content = editor.getJSON();
         utils.change.value = true;
-        const endTime = new Date().getTime();
-        console.trace("time runing: ", endTime - startTime, " ms");
     }, 100),
-    onSelectionUpdate: ({ editor }) => {
+    onSelectionUpdate: ({ editor }) => { // Synchronising editor content properties to tab option values
         for(var i = 1; i < 7; i++){
             if(editor.isActive('custom-heading', { level: i})){
                 utils.headerVal.value = i;
@@ -101,12 +101,18 @@ const editor = new Editor({
         }
         if(editor.isActive('paragraph')){
             utils.headerVal.value = 0;
+            utils.fontVal.value = "Arial";
+            utils.fontSizeVal.value = "16px";
         }
         utils.fonts.value.forEach((v)=>{
             if(editor.getAttributes("textStyle").fontFamily == v.value) {
                 utils.fontVal.value = v.value;
             }
-        }) 
+        })
+        const fontSize = editor.getAttributes("font-size").fontSize;
+        if(fontSize){
+            utils.fontSizeVal.value = fontSize;
+        }
         return;
     }
 })
@@ -117,7 +123,7 @@ const bookinfo = utils.bookInfo;
 const editorRef = utils.editorRef;
 editorRef.value = editor;
 
-onMounted(()=>{
+onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt of it
     const headerContainer = document.getElementById('header-container');
     headerContainer.addEventListener('mousedown', event  => {
         if (event.target.tagName !== 'LI') return

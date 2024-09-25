@@ -86,6 +86,12 @@ export default{
             deleteFail: "Delete failed",
             uploadSuccess: "Upload success",
             uploadFail: "Upload failed",
+        },
+        help: {
+            title: "Help",
+            version: "Version",
+            date: "Date",
+            copyright: "Copyright",
         }
     },
     message: {

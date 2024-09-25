@@ -87,6 +87,12 @@ export default{
             deleteFail: "删除失败",
             uploadSuccess: "上传成功",
             uploadFail: "上传失败",
+        },
+        help: {
+            title: "帮助",
+            version: "版本",
+            date: "日期",
+            copyright: "版权",
         }
     },
     message: {

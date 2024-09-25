@@ -1,8 +1,56 @@
+/*
+@Author: Hughie
+@CreateTime: 2024-9-21
+@LastEditors: Hughie
+@LastEditTime: 2024-09-25
+@Description: This is the extension for the tiptap.
+*/
+
 import { nodeInputRule, textblockTypeInputRule } from "@tiptap/vue-3"
 import Image from "@tiptap/extension-image";
 import Heading from "@tiptap/extension-heading"
 import { imageInfo } from "./utils";
 import TextStyle from '@tiptap/extension-text-style'
+
+const TextFontSize = TextStyle.extend({
+    priority: 1000,
+    name: 'font-size',
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            fontSize: {
+                default: "14px", // default value
+            },
+        }
+    },
+    addOptions() {
+        return {
+            ...this.parent?.()
+        }
+    },
+    renderHTML({ HTMLAttributes }) {
+        return ['span', { style: `font-size: ${HTMLAttributes.fontSize};` }, 0];
+    },
+    parseHTML() {
+        return [{
+            tag: 'span',
+            getAttrs: node => {
+                const fontSize = node.style.fontSize;
+                return { fontSize };
+            },
+        }]
+    },
+    addCommands() {
+        return {
+            setFontSize: size => ({ commands }) => {
+                return commands.setMark(this.name, { fontSize: size });
+            },
+            unsetTextBackColor: () => ({ commands }) => {
+                return commands.unsetMark(this.name)
+            }
+        }
+    }
+})
 
 const TextBackground = TextStyle.extend({
     priority: 1000,
@@ -255,6 +303,7 @@ const CustomImage = Image.extend({
 export {
     CustomImage,
     CustomHeading,
+    TextFontSize,
     TextBackground,
 }
 

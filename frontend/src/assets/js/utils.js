@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-09-20
+@LastEditTime: 2024-09-25
 @Description: This is the public variables and methods for the whole project.
 */
 
@@ -17,6 +17,7 @@ const valueHtml = ref('');
 const headerVal = ref(0);
 const fontVal = ref("Arial");
 const fonts = ref([])
+const fontSizeVal = ref("16px")
 const imageInfo = reactive({
     zoom: 100,
     postition: "left",
@@ -37,6 +38,7 @@ const visio = reactive({
     settingVisible: false,
     mediaVisible: false,
     tableInsertVisible: false,
+    helpVisible: false,
 })
 const cover = reactive({
     isExist: false,
@@ -112,7 +114,7 @@ const resetState = () => {
     bookInfo.resources = [];
     bookInfo.toc = [];
     const editor = editorRef.value;
-    editor.clear();
+    editor.chain().clearContent().run();
     change.value = false;
 }
 
@@ -289,7 +291,8 @@ export {
     fontVal,
     fonts,
     rgbaToHex,
-    arrayEquel
+    arrayEquel,
+    fontSizeVal
 }
 
 export default {
