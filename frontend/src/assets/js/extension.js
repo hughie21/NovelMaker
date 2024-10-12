@@ -92,6 +92,41 @@ const TextBackground = TextStyle.extend({
     }
 })
 
+const SearchSelBackground = TextStyle.extend({
+    priority: 1000,
+    name: 'seach-select-background',
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            backgroundColor: {
+                default: "rgba(164, 61, 61, 0.6)",
+            },
+            color: {
+                default: "#ffffff"
+            }
+        }
+    },
+    addOptions() {
+        return {
+            ...this.parent?.()
+        }
+    },
+    renderHTML({ HTMLAttributes }) {
+        return ['span', { style: `background-color: ${HTMLAttributes.backgroundColor};color: ${HTMLAttributes.color}` }, 0];
+    },
+    addCommands() {
+        return {
+            setSearchSelection: (range) => ({ chain }) => {
+                chain().setTextSelection(range).setMark(this.name).run();
+                return;
+            },
+            unsetSearchSelection: () => ({ commands }) => {
+                return commands.unsetMark(this.name)
+            }
+        }
+    }
+})
+
 const CustomHeading = Heading.extend({
     priority: 1000,
     name: 'custom-heading',
@@ -305,6 +340,7 @@ export {
     CustomHeading,
     TextFontSize,
     TextBackground,
+    SearchSelBackground
 }
 
 export default {

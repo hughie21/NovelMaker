@@ -68,6 +68,25 @@ func Menu(app *App) *menu.Menu {
 				Type: "Separator",
 			},
 			&menu.MenuItem{
+				Label:       "Look up",
+				Type:        "Text",
+				Accelerator: keys.CmdOrCtrl("f"),
+				Click: func(cd *menu.CallbackData) {
+					runtime.WindowExecJS(app.ctx, "document.getElementById('btn-lookup').click();")
+				},
+			},
+			&menu.MenuItem{
+				Label:       "Replace",
+				Type:        "Text",
+				Accelerator: keys.CmdOrCtrl("h"),
+				Click: func(cd *menu.CallbackData) {
+					runtime.WindowExecJS(app.ctx, "document.getElementById('btn-replace').click();")
+				},
+			},
+			&menu.MenuItem{
+				Type: "Separator",
+			},
+			&menu.MenuItem{
 				Label:       "Exit",
 				Type:        "Text",
 				Accelerator: keys.CmdOrCtrl("Q"),

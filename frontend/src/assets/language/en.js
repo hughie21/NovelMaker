@@ -13,7 +13,8 @@ export default{
             save: "Save",
             saveAs: "Save As",
             export: "Export",
-            fileInfo: "Book info"
+            fileInfo: "Book info",
+            lookUp: "Look up",
         },
         edit: {
             setting: "Setting",
@@ -54,6 +55,18 @@ export default{
     dialog: {
         confirm: "Confirm",
         cancel: "Cancel",
+        search: {
+            lookUp: "Look up",
+            replace: "Replace",
+            defaultResult: "No result found",
+            caseSensitive: "Case sensitive",
+            wholeWord: "Whole word",
+            nextResult: "Next",
+            previousResult: "Previous",
+            close: "Close",
+            replaceAll: "Replace All",
+            replace: "Replace"
+        },
         setting: {
             title : "Setting",
             language: "Language",

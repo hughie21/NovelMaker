@@ -14,7 +14,8 @@ export default{
             saveAs: "另存为",
             export: "导出",
             fileInfo: "书籍信息",
-            close: "关闭"
+            close: "关闭",
+            lookUp: "查找",
         },
         edit: {
             setting: "设置",
@@ -55,6 +56,18 @@ export default{
     dialog: {
         confirm: "确认",
         cancel: "取消",
+        search: {
+            lookUp: "查找",
+            replace: "替换",
+            defaultResult: "无结果",
+            caseSensitive: "区分大小写",
+            wholeWord: "全字匹配",
+            nextResult: "下一个",
+            previousResult: "上一个",
+            close: "关闭",
+            replaceAll: "替换全部",
+            replace: "替换"
+        },
         setting: {
             title : "设置",
             language: "语言",

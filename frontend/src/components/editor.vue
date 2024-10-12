@@ -3,14 +3,15 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-09-25
+@LastEditTime: 2024-10-2
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted } from 'vue';
 import * as utils from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { CustomImage, CustomHeading, TextBackground, TextFontSize } from '../assets/js/extension';
+import { showMask } from "../assets/js/lookup";
+import { CustomImage, CustomHeading, TextBackground, TextFontSize, SearchSelBackground } from '../assets/js/extension';
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import TextStyle from '@tiptap/extension-text-style'
 import FontFamily from '@tiptap/extension-font-family'
@@ -77,6 +78,9 @@ const editor = new Editor({
         TableRow,
         TableHeader,
         TableCell,
+        SearchSelBackground.configure({
+            types: ['textStyle'],
+        })
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         const headerContainer = document.getElementById('header-container');
@@ -146,6 +150,11 @@ onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt 
     <div class="editor-box">
         <ul id="header-container"></ul>
         <editor-content class="editor-content" id="editor" :editor="editorRef" />
+        
+        <!-- 
+        Create a mask that work as the effect of editor.setEditable
+        -->
+        <div class="mask" v-show="showMask"></div> 
     </div>
 </div>
 

@@ -276,7 +276,10 @@ func (a *App) Publish(name string, rawJson string) Message {
 		LogOutPut(e.Error(), runFuncName())
 		return msg
 	}
-	os.RemoveAll(tmpPath)
+	e = os.RemoveAll(tmpPath)
+	if e != nil {
+		LogOutPut(e.Error(), runFuncName())
+	}
 	msg.Code = 0
 	msg.Msg = "success"
 	return msg

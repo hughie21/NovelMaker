@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-09-25
+@LastEditTime: 2024-10-10
 @Description: This is the public variables and methods for the whole project.
 */
 
@@ -39,11 +39,14 @@ const visio = reactive({
     mediaVisible: false,
     tableInsertVisible: false,
     helpVisible: false,
+    searchBarVisible: false,
 })
 const cover = reactive({
     isExist: false,
     data: ''
 })
+
+
 
 // program state
 const bookInfo = reactive({
@@ -292,7 +295,7 @@ export {
     fonts,
     rgbaToHex,
     arrayEquel,
-    fontSizeVal
+    fontSizeVal,
 }
 
 export default {
