@@ -23,7 +23,8 @@ type marshal struct {
 }
 
 // modify the json marshal method
-// when dump the struct to json, it will turn the empty field into []
+// when dump the struct to json
+// it will turn the empty field into []
 // instead of null
 func Marshal(obj interface{}) string {
 	v := reflect.ValueOf(obj)

@@ -356,6 +356,7 @@ func toFile(FoldName string, Files *EpubFile) {
 	}
 	of, _ := os.Create(FoldName + "/OEBPS/Styles/style.css")
 	io.Copy(of, fs)
+	defer fs.Close()
 	// for _, files := range Files.Texts {
 	// 	WirteToFile(files.Data, FoldName+"/OEBPS/Text/"+files.Name)
 	// }

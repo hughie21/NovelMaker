@@ -121,7 +121,7 @@ func (a *App) DirectLoading() Message {
 // corresponding to the "Open" button on the frontend
 func (a *App) FileOpen() Message {
 	var Message Message
-	res := FileOpenDialog(a, "Empb File", "*.epmb")
+	res := FileOpenDialog(a, "Empb File", "*.no")
 	dataStruct, err := epubMaker.Load(res)
 	if res == "" {
 		Message.Code = -1
@@ -145,7 +145,7 @@ func (a *App) FileOpen() Message {
 func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 	res := name
 	if !skip {
-		res = FileSaveDialog(a, name, "*.epmb")
+		res = FileSaveDialog(a, name, "*.no")
 	}
 
 	var msg Message
@@ -215,6 +215,7 @@ func (a *App) ImageUpload() ImageFIle {
 		return img
 	}
 	imgData, _ := io.ReadAll(imgFp)
+	defer imgFp.Close()
 	h := md5.New()
 	h.Write(imgData)
 	id := hex.EncodeToString(h.Sum(nil))[8:24]
@@ -270,7 +271,7 @@ func (a *App) Publish(name string, rawJson string) Message {
 	tmpPath := epubMaker.FormXML(JsonStruct)
 	e := epubMaker.WriteEpub(tmpPath, path)
 	if e != nil {
-		os.RemoveAll(tmpPath)
+		e = os.RemoveAll(tmpPath)
 		msg.Code = 1
 		msg.Msg = e.Error()
 		LogOutPut(e.Error(), runFuncName())

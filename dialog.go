@@ -36,7 +36,7 @@ func FileSaveDialog(app *App, filename string, pattern string) string {
 		Title:           "Save File",
 		Filters: []runtime.FileFilter{
 			{
-				DisplayName: "Epmb Files",
+				DisplayName: "NovelMaker Files",
 				Pattern:     pattern,
 			},
 		},
