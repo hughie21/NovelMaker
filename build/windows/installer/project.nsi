@@ -88,8 +88,25 @@ Section
 
     !insertmacro wails.files
 
+    DeleteRegKey HKCR ".no"
+    DeleteRegKey HKCR "NovelMakerFile"
+
+    CreateDirectory "$INSTDIR\log"
+    CreateDirectory "$INSTDIR\resources"
+    CreateDirectory "$INSTDIR\style"
+    CreateDirectory "$INSTDIR\tmp"
+
+    File /oname=$INSTDIR\config.yaml ".\config.yaml"
+    File /oname=$INSTDIR\style\style.css ".\style.css"
+    
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+
+    WriteRegStr HKCR ".no" "" "NovelMakerFile"
+    WriteRegStr HKCR "NovelMakerFile" "" "NovelMaker File"
+    WriteRegStr HKCR "NovelMakerFile\shell" "" ""
+    WriteRegStr HKCR "NovelMakerFile\shell\open" "" ""
+    WriteRegStr HKCR "NovelMakerFile\shell\open\command" "" "$INSTDIR\${PRODUCT_EXECUTABLE} %1"
 
     !insertmacro wails.associateFiles
     !insertmacro wails.associateCustomProtocols
@@ -111,4 +128,7 @@ Section "uninstall"
     !insertmacro wails.unassociateCustomProtocols
 
     !insertmacro wails.deleteUninstaller
+
+    DeleteRegKey HKCR ".no"
+    DeleteRegKey HKCR "NovelMakerFile"
 SectionEnd

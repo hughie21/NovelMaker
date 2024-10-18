@@ -12,7 +12,7 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, Publish, GetImageData, Base64Encode, Base64Decode } from '../../wailsjs/go/main/App.js'
 import * as utils from '../assets/js/utils.js'
-import { lookupSession, searchKey, replaceKey, resultCount, showMask } from '../assets/js/lookup.js';
+import { lookupSession, searchKey, replaceKey, resultCount } from '../assets/js/lookup.js';
 
 const fontColors = ref('#000000')
 const backColors = ref('rgba(0, 0, 0, 0)')
@@ -433,40 +433,7 @@ const handleOpenLookup = () => {
 };
 
 const test = () => {
-    const E = utils.editorRef.value;
-    const search_term = "test";
-    const doc = E.state.doc;
-    // const { from, to } = state.selection;
-    const regex = new RegExp(`(${search_term})+`, 'g');
-    let selection = [];
-    let array1 = [];
-    
-    doc.forEach((node, pos) => {
-        if (node.type.name !== "image") {
-            while ((array1 = regex.exec(node.textContent)) !== null) {
-                var selectRange = {
-                    from: pos + array1.index + 1,
-                    to: pos + array1.index + 1 + array1[0].length
-                }
-                selection.push(selectRange);
-            }
-        }
-    });
-
-    // E.chain().deleteRange(selection[0]).insertContentAt(selection[0].from, "run", {
-    //     updateSelection: false,
-    // }).run();
-    // E.setEditable(false);
-    // E.chain().setTextSelection(selection[1].from).scrollIntoView().run();
-    // E.commands.setSearchSelection(selection[1])
-    const startElement = E.view.domAtPos(selection[1].from).node;
-    const startRect = startElement.getBoundingClientRect();
-    // console.log(startRect);
-    // document.getElementById('editor').scrollTo({
-    //     top: startRect.top - 100,
-    //     behavior: 'instant'
-    // });
-    startElement.scrollIntoView({ behavior: 'smooth' });
+    console.log(bookinfo)
 }
 </script>
 

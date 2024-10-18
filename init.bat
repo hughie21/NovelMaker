@@ -4,3 +4,4 @@
 mkdir -p resources
 mkdir -p tmp
 mkdir -p log
+mkdir -p style

@@ -3,6 +3,7 @@ node_modules
 frontend/dist
 test
 tmp
+!build/windows/installer/tmp
 resources
 log
 bugs.txt

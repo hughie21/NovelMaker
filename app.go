@@ -10,6 +10,7 @@ package main
 
 import (
 	epubMaker "NovelMaker/epub"
+	logging "NovelMaker/logging"
 	"context"
 	"crypto/md5"
 	"encoding/base64"
@@ -19,11 +20,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
-	"strconv"
+	"strings"
 	"time"
-
-	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // the message formula that communiacte with the frontend
@@ -39,28 +37,9 @@ type ImageFIle struct {
 	Id   string
 }
 
-var logFileName string
-
 // App struct
 type App struct {
 	ctx context.Context
-}
-
-func runFuncName() string {
-	pc := make([]uintptr, 1)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	return f.Name()
-}
-
-func LogOutPut(msg string, funcName string) {
-	if logFileName == "" {
-		todaystr := time.Now().Format("2006-01-02")
-		todayint, _ := time.ParseInLocation("2006-01-02", todaystr, time.Local)
-		logFileName = strconv.FormatInt(todayint.Unix(), 10) + ".log"
-	}
-	fileLogger := logger.NewFileLogger(filepath.Join("./log", logFileName))
-	fileLogger.Error(fmt.Sprintf("%s -> %s", funcName, msg))
 }
 
 // NewApp creates a new App application struct
@@ -71,14 +50,22 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
+	logger.Info("App started", logging.RunFuncName())
 	a.ctx = ctx
+}
+
+func (a *App) shutdown(ctx context.Context) {
+	logger.Info("App shutdown", logging.RunFuncName())
+	err := logger.LogOutPut(execPath)
+	panic(err)
 }
 
 // return the raw data of file
 func (a *App) Fr(path string) string {
 	fp, err := os.Open(path)
 	if err != nil {
-		LogOutPut(err.Error(), runFuncName())
+		// LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return err.Error()
 	}
 	defer fp.Close()
@@ -108,7 +95,7 @@ func (a *App) DirectLoading() Message {
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
 	jsonData := epubMaker.Dump(&dataStruct)
@@ -129,7 +116,7 @@ func (a *App) FileOpen() Message {
 		return Message
 	}
 	if err != nil {
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		Message.Code = 1
 		Message.Msg = err.Error()
 		return Message
@@ -160,7 +147,7 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
 	msg.Code = 0
@@ -174,7 +161,7 @@ func (a *App) GetStaticResources() string {
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Get("http://127.0.0.1:7288/")
 	if err != nil {
-		LogOutPut(err.Error(), runFuncName())
+		logger.Fatal(err.Error(), logging.RunFuncName())
 		return "{code: 1, msg: " + err.Error() + "}"
 	}
 	defer resp.Body.Close()
@@ -184,13 +171,13 @@ func (a *App) GetStaticResources() string {
 
 // corresponding to the "Delete" button on the "insert picture"
 func (a *App) FileDelete(name string) Message {
-	path := filepath.Join("./resources", name)
+	path := filepath.Join(execPath, "resources", name)
 	msg := new(Message)
 	err := os.Remove(path)
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return *msg
 	}
 	msg.Code = 0
@@ -202,16 +189,30 @@ func (a *App) FileDelete(name string) Message {
 // corresponding to the "Upload" button on the "insert picture"
 func (a *App) ImageUpload() ImageFIle {
 	var img ImageFIle
-	path := FileOpenDialog(a, "Image File", "*jpg;*png;*jpeg;*bmp")
+	var AllowExt = config.StaticResource.AllowExt
+	conSuffix := strings.Join(AllowExt, ";")
+	conSuffix = strings.ReplaceAll(conSuffix, ".", "*")
+	path := FileOpenDialog(a, "Image File", conSuffix)
 	if path == "" {
+		logger.Info("Cancel upload", logging.RunFuncName())
 		img.Code = -1
 		return img
 	}
 	_, name := filepath.Split(path)
+	suffix := filepath.Ext(name)
+	set := make(map[string]struct{})
+	for _, v := range AllowExt {
+		set[v] = struct{}{}
+	}
+	if _, ok := set[suffix]; !ok {
+		logger.Warning("The file type is not allowed", logging.RunFuncName())
+		img.Code = -1
+		return img
+	}
 	imgFp, err := os.Open(path)
 	if err != nil {
 		img.Code = 1
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return img
 	}
 	imgData, _ := io.ReadAll(imgFp)
@@ -220,10 +221,10 @@ func (a *App) ImageUpload() ImageFIle {
 	h.Write(imgData)
 	id := hex.EncodeToString(h.Sum(nil))[8:24]
 
-	fp, err := os.Create(filepath.Join("./resources", id+".jpg"))
+	fp, err := os.Create(filepath.Join(execPath, "resources", id+".jpg"))
 	if err != nil {
 		img.Code = 1
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return img
 	}
 	defer fp.Close()
@@ -247,7 +248,7 @@ func (a *App) OpenImage() Message {
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
 	defer img.Close()
@@ -274,12 +275,12 @@ func (a *App) Publish(name string, rawJson string) Message {
 		e = os.RemoveAll(tmpPath)
 		msg.Code = 1
 		msg.Msg = e.Error()
-		LogOutPut(e.Error(), runFuncName())
+		logger.Error(e.Error(), logging.RunFuncName())
 		return msg
 	}
 	e = os.RemoveAll(tmpPath)
 	if e != nil {
-		LogOutPut(e.Error(), runFuncName())
+		logger.Error(e.Error(), logging.RunFuncName())
 	}
 	msg.Code = 0
 	msg.Msg = "success"
@@ -294,7 +295,7 @@ func (a *App) GetImageData(filename string) Message {
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
-		LogOutPut(err.Error(), runFuncName())
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
 	defer fs.Close()

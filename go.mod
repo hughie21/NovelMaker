@@ -2,11 +2,18 @@ module NovelMaker
 
 go 1.20
 
-require github.com/wailsapp/wails/v2 v2.8.1
+require (
+	github.com/wailsapp/wails/v2 v2.8.1
+	gopkg.in/yaml.v2 v2.4.0
+)
 
 replace epubMaker v0.0.0 => ./epub
 
+replace logging v0.0.0 => ./logging
+
 replace manager v0.0.0 => ./manager
+
+replace sys v0.0.0 => ./sys
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect

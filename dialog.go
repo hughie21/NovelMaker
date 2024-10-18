@@ -2,12 +2,14 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-07-12
+@LastEditTime: 2024-10-12
 */
 
 package main
 
 import (
+	logging "NovelMaker/logging"
+
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -25,6 +27,7 @@ func FileOpenDialog(app *App, displayName string, pattern string) string {
 		TreatPackagesAsDirectories: true,
 	})
 	if err != nil {
+		logger.Fatal(err.Error(), logging.RunFuncName())
 		return err.Error()
 	}
 	return selected
@@ -42,6 +45,7 @@ func FileSaveDialog(app *App, filename string, pattern string) string {
 		},
 	})
 	if err != nil {
+		logger.Fatal(err.Error(), logging.RunFuncName())
 		return err.Error()
 	}
 	return saved

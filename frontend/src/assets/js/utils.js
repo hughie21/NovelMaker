@@ -2,12 +2,12 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-10-10
+@LastEditTime: 2024-10-15
 @Description: This is the public variables and methods for the whole project.
 */
 
 import { reactive, ref, shallowRef } from "vue";
-import {DirectLoading} from "../../../wailsjs/go/main/App.js"
+import {DirectLoading, Base64Decode} from "../../../wailsjs/go/main/App.js"
 import lang from './lang.js'
 import message from './i18n.js'
 
@@ -151,13 +151,18 @@ const checkIfOpenFileDirectly = async () => {
     if(rawData != null) {
         rawData.metadata.creator = rawData.metadata.creator.join(',');
         rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-        const editor = editorRef.value;
-        editor.setHtml(rawData.content);
+        rawData.content = await Base64Decode(rawData.content).then((res)=> {
+            return JSON.parse(res);
+        });
+        const E = editorRef.value;
+        E.chain().setContent(rawData.content, true).run();
+        E.chain().focus().insertContent().run();
         bookInfo.metadata = rawData.metadata;
         bookInfo.content = rawData.content;
         bookInfo.toc = rawData.toc;
         bookInfo.resources = rawData.resources;
         initCover();
+        change.value = false;
     }
     return
 }

@@ -7,7 +7,7 @@
 @Description: This is the dialog allow user to manage the media resources.
 */
 
-import { visio, imageInfo } from '../../assets/js/utils';
+import { visio, imageInfo, bookInfo } from '../../assets/js/utils';
 import { ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
 import $ from 'jquery'
@@ -47,7 +47,7 @@ const uploadImage = async () => {
        return res;
     })
     if(imageData.Code == 0) {
-        bookinfo.resources.push({
+        bookInfo.resources.push({
             id: imageData.Id + ".jpg",
             name: imageData.Id + ".jpg",
             type: "image/jpeg",
