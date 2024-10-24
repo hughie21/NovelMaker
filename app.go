@@ -11,6 +11,7 @@ package main
 import (
 	epubMaker "NovelMaker/epub"
 	logging "NovelMaker/logging"
+	sys "NovelMaker/sys"
 	"context"
 	"crypto/md5"
 	"encoding/base64"
@@ -57,7 +58,15 @@ func (a *App) startup(ctx context.Context) {
 func (a *App) shutdown(ctx context.Context) {
 	logger.Info("App shutdown", logging.RunFuncName())
 	err := logger.LogOutPut(execPath)
-	panic(err)
+	if err != nil {
+		sys.ShowMessage("Error when writing log: ", err.Error(), "error")
+		panic(err)
+	}
+	err = cm.SaveConfig()
+	if err != nil {
+		sys.ShowMessage("Error when writing config: ", err.Error(), "error")
+		panic(err)
+	}
 }
 
 // return the raw data of file
@@ -303,5 +312,59 @@ func (a *App) GetImageData(filename string) Message {
 	msg.Code = 0
 	msg.Msg = "success"
 	msg.Data = base64.StdEncoding.EncodeToString(imgData)
+	return msg
+}
+
+// get the configure
+func (a *App) GetConfig(sector string, key string) Message {
+	var msg Message
+	if sector == "" || key == "" {
+		msg.Code = -1
+		msg.Msg = "sector or key is empty"
+		return msg
+	}
+	value, err := cm.GetConfigByKey(sector, key)
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	msg.Code = 0
+	msg.Msg = "success"
+	msg.Data = value
+	return msg
+}
+
+func (a *App) SetConfig(sector string, key string, value string) Message {
+	var msg Message
+	if sector == "" || key == "" {
+		msg.Code = -1
+		msg.Msg = "sector or key is empty"
+		return msg
+	}
+	err := cm.SetConfig(sector, key, value)
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	msg.Code = 0
+	msg.Msg = "success"
+	return msg
+}
+
+func (a *App) SaveConfig() Message {
+	var msg Message
+	err := cm.SaveConfig()
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
+	}
+	msg.Code = 0
+	msg.Msg = "success"
 	return msg
 }

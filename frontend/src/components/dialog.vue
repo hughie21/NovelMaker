@@ -42,7 +42,7 @@ import Bubble from './dialog/bubble.vue';
     <Lookup></Lookup>
 </template>
 
-<style scoped>
+<style>
 .dialog {
     position: fixed;
     background-color: white;

@@ -7,7 +7,7 @@
 @Description: This is the dialog allow user to manage the media resources.
 */
 
-import { visio, imageInfo, bookInfo } from '../../assets/js/utils';
+import { visio, imageInfo, bookInfo, editorRef } from '../../assets/js/utils';
 import { ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus'
 import $ from 'jquery'
@@ -72,7 +72,7 @@ const handleInsert = () => {
     const url = elem.attr("src");
     const id = elem.attr("id");
     const imgNode = {src: url, alt: id, title: id, zoom: 100, pos: "left"};
-    const editor = utils.editorRef.value;
+    const editor = editorRef.value;
     editor.chain().focus().InsertImage(imgNode).createParagraphNear().run();
     imageInfo.elem = "";
     imageInfo.postition = "left";

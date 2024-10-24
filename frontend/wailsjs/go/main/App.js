@@ -30,6 +30,10 @@ export function Fr(arg1) {
   return window['go']['main']['App']['Fr'](arg1);
 }
 
+export function GetConfig(arg1, arg2) {
+  return window['go']['main']['App']['GetConfig'](arg1, arg2);
+}
+
 export function GetImageData(arg1) {
   return window['go']['main']['App']['GetImageData'](arg1);
 }
@@ -48,4 +52,12 @@ export function OpenImage() {
 
 export function Publish(arg1, arg2) {
   return window['go']['main']['App']['Publish'](arg1, arg2);
+}
+
+export function SaveConfig() {
+  return window['go']['main']['App']['SaveConfig']();
+}
+
+export function SetConfig(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SetConfig'](arg1, arg2, arg3);
 }

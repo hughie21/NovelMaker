@@ -8,5 +8,5 @@ func TestConfigManager_LoadConfig(t *testing.T) {
 	cf := NewConfigManager("D:/NovelMaker")
 	cf.LoadConfig()
 
-	cf.SetConfig("Appearance", "Theme", "light")
+	t.Log(cf.GetConfigByKey("Appearance", "Width"))
 }

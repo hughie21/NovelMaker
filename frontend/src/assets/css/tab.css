@@ -1,0 +1,98 @@
+.btn-group{
+    display: flex; 
+    flex-direction:column;
+    height:100%;
+    justify-content:center;
+    align-items: center;
+}
+
+.el-tabs--border-card>.el-tabs__content {
+    padding: 0 !important;
+}
+
+.btn {
+    border: none;
+    background-color: transparent;
+}
+
+.btn:hover{
+    cursor: pointer;
+}
+
+.icon{
+    height: 100%;
+    width: 100%;
+    fill: var(--icon-color);
+}
+
+.func_btn-big{
+    width: 32px;
+    height: 32px;
+    border: 1px solid #444444;
+    border-radius: 5px;
+}
+
+.func_btn-list{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 55px;
+    align-items: center;
+}
+
+.func_btn-container{
+    margin-left: 3px;
+}
+
+.list_row{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.division-border{
+    margin-left: 1.2em;
+    margin-right: 1.2em;
+    width: 1px;
+    border-right: 1px solid #9b9b9b;
+}
+
+.list_col{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.el-main{
+    padding: 0 !important;
+    height: 100% !important;
+}
+
+.el-container {
+    height: 100% !important;
+}
+
+.el-aside{
+    overflow-x: hidden !important;
+}
+
+.novel_tree{
+    overflow-y: auto;
+    scrollbar-width: 2px;
+    height: 100%;
+    width: 100%;
+    border-right: 1px solid #e6e6e6;
+    background-color: var(--el-bg-color);
+}
+
+.func_toolbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.func_toolbar a {
+    cursor: pointer;
+}

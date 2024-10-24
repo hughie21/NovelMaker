@@ -31,12 +31,14 @@ var Args string
 
 var config *Manager.Config
 
+var cm *Manager.ConfigManager
+
 var logger *logging.Log
 
 func main() {
 	// execPath, _ = os.Executable()
 	execPath = getCurrentAbPath()
-	cm := Manager.NewConfigManager(execPath)
+	cm = Manager.NewConfigManager(execPath)
 	err := cm.LoadConfig()
 	if err != nil {
 		logger.Fatal(err.Error(), logging.RunFuncName())
@@ -82,6 +84,7 @@ func main() {
 		Title:  "NovelMaker",
 		Width:  config.Appearance.Width,
 		Height: config.Appearance.Height,
+		// Frameless: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

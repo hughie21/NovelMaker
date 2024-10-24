@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"sync"
 
+	"NovelMaker/logging"
 	sys "NovelMaker/sys"
 
 	"gopkg.in/yaml.v2"
@@ -93,8 +94,53 @@ func (cm *ConfigManager) LoadConfig() error {
 	return nil
 }
 
+func (cm *ConfigManager) SaveConfig() error {
+	fp, err := os.Create(filepath.Join(cm.path, "config.yaml"))
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		return err
+	}
+
+	data, err := yaml.Marshal(cm.config)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		return err
+	}
+
+	_, err = fp.Write(data)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		return err
+	}
+
+	return nil
+}
+
 func (cm *ConfigManager) GetConfig() *Config {
 	return cm.config
+}
+
+func (cm *ConfigManager) GetConfigByKey(section string, key string) (string, error) {
+	v := reflect.ValueOf(cm.config).Elem().FieldByName(section)
+	if !v.IsValid() {
+		return "", errors.New("invalid sector")
+	}
+
+	field := v.FieldByName(key)
+	if !field.IsValid() {
+		return "", errors.New("invalid key")
+	}
+
+	switch field.Kind() {
+	case reflect.String:
+		return field.String(), nil
+	case reflect.Bool:
+		return strconv.FormatBool(field.Bool()), nil
+	case reflect.Int:
+		return strconv.Itoa(int(field.Int())), nil
+	default:
+		return "", errors.New("unsupported field type")
+	}
 }
 
 func (cm *ConfigManager) SetConfig(sector string, key string, value string) error {
