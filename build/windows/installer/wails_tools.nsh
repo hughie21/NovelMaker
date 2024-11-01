@@ -8,16 +8,16 @@
     !define INFO_PROJECTNAME "NovelMaker"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "NovelMaker"
+    !define INFO_COMPANYNAME "Novel Maker"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "NovelMaker"
+    !define INFO_PRODUCTNAME "Novel Maker"
 !endif
 !ifndef INFO_PRODUCTVERSION
-    !define INFO_PRODUCTVERSION "1.0.0"
+    !define INFO_PRODUCTVERSION "1.0.0.20241101_alpha"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "Copyright........."
+    !define INFO_COPYRIGHT "MIT"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"

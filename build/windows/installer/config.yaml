@@ -18,3 +18,5 @@ staticResource:
     - .bmp
 log:
   level: 4
+download:
+  timeout: 10
