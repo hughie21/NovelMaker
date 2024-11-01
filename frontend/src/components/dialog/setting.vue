@@ -7,7 +7,7 @@
 @Description: This is the dialog allow user to set up the config.
 */
 
-import { visio, editTheme, editLang } from '../../assets/js/utils';
+import { visio, editTheme, editLang } from '../../assets/js/globals';
 import { reactive, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElNotification } from 'element-plus'
@@ -17,6 +17,7 @@ import { languages as langs } from '../../assets/js/i18n';
 const { t, locale } = useI18n();
 let defaultLang = localStorage.getItem('lang');
 let defaultTheme =localStorage.getItem('theme');
+const changeFlag = ref(false);
 const generalSetting = reactive({
     language: defaultLang,
     theme: defaultTheme,
@@ -118,14 +119,14 @@ const handleSaveConfig = async () => {
     flag = await saveConfig("StaticResource", "Port", generalSetting.resPort.toString());
     flag = await saveConfig("Window", "GPUAccelerate", windowSetting.GPU === true ? "true" : "false");
     flag = await saveConfig("Linux", "GPUStrategy", linuxSetting.GPUPolicy);
-    if (flag) {
+    if (flag && changeFlag.value) {
         ElNotification({
             title: t('message.saveSuccess'),
             message: t('message.configSaveInfo'),
             duration: 2000,
         })
     }
-    
+    changeFlag.value = false;
     visio.settingVisible = false;
 }
 </script>
@@ -172,6 +173,7 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.windowSize')">
                     <el-select
+                    @change="changeFlag = true"
                     v-model="generalSetting.windowSize"
                     style="width: 240px"
                     >
@@ -195,7 +197,7 @@ const handleSaveConfig = async () => {
             :model="windowSetting"
             style="max-width: 400px">
                 <el-form-item :label="t('dialog.setting.windowGPU')">
-                    <el-switch v-model="windowSetting.GPU"></el-switch>
+                    <el-switch @change="changeFlag = true" v-model="windowSetting.GPU"></el-switch>
                 </el-form-item>
             </el-form>
         </el-collapse-item>
@@ -209,6 +211,7 @@ const handleSaveConfig = async () => {
                     <el-select
                     v-model="linuxSetting.GPUPolicy"
                     size="large"
+                    @change="changeFlag = true"
                     style="width: 240px"
                     >
                     <el-option

@@ -22,21 +22,17 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-//go:embed all:frontend/dist
-var assets embed.FS
-
-var execPath string
-
-var Args string
-
-var config *Manager.Config
-
-var cm *Manager.ConfigManager
-
-var logger *logging.Log
+var (
+	//go:embed all:frontend/dist
+	assets   embed.FS
+	execPath string
+	Args     string
+	config   *Manager.Config
+	cm       *Manager.ConfigManager
+	logger   *logging.Log
+)
 
 func main() {
-	// execPath, _ = os.Executable()
 	execPath = getCurrentAbPath()
 	cm = Manager.NewConfigManager(execPath)
 	err := cm.LoadConfig()
@@ -47,15 +43,18 @@ func main() {
 
 	go Manager.StaticSevice(":"+config.StaticResource.Port, execPath)
 
+	// Get the arguments from the command line
+	// This is used to open the .no file while
+	// the user directly open it
 	ArgsLength := len(os.Args)
 	if ArgsLength > 1 {
 		Args = os.Args[1]
 	} else {
 		Args = ""
 	}
-	// Create an instance of the app structureu
+	// Create an instance of the app structure
 	app := NewApp()
-	AppMenu := Menu(app)
+	// AppMenu := Menu(app)
 
 	windowSize := map[string]options.WindowStartState{
 		"normal":     options.Normal,
@@ -81,14 +80,14 @@ func main() {
 	logger = logging.NewLog(logLevel[config.Log.Level], true)
 	// Create application with options
 	err = wails.Run(&options.App{
-		Title:  "NovelMaker",
-		Width:  config.Appearance.Width,
-		Height: config.Appearance.Height,
-		// Frameless: true,
+		Title:     "NovelMaker",
+		Width:     config.Appearance.Width,
+		Height:    config.Appearance.Height,
+		Frameless: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		Menu:             AppMenu,
+		// Menu:             AppMenu,
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 1},
 		OnStartup:        app.startup,
 		OnShutdown:       app.shutdown,

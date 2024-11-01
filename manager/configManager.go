@@ -1,3 +1,11 @@
+/*
+@Author: Hughie
+@CreateTime: 2024-10-16
+@LastEditors: Hughie
+@LastEditTime: 2024-11-1
+@Description: Configurations reader and writer of the program
+*/
+
 package manager
 
 import (
@@ -20,6 +28,11 @@ type Config struct {
 	Linux          LinuxConfig          `yaml:"linux"`
 	StaticResource StaticResourceConfig `yaml:"staticResource"`
 	Log            LogConfig            `yaml:"log"`
+	Dowload        DownloadConfig       `yaml:"download"`
+}
+
+type DownloadConfig struct {
+	Timeout int `yaml:"timeout"`
 }
 
 type AppearanceConfig struct {

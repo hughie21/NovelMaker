@@ -10,7 +10,7 @@
 import { ref } from 'vue'
 import { lookupSession,searchKey, replaceKey, resultCount, currentPointer, searchOption} from "../../assets/js/lookup"
 import { useI18n } from 'vue-i18n';
-import { visio, editorRef } from '../../assets/js/utils';
+import { visio, editorRef } from '../../assets/js/globals.js';
 
 const { t } = useI18n();
 const switchRef = ref(false);

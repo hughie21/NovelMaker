@@ -6,14 +6,13 @@
 @Description: The main implementation of the look up and replace function
 */
 
-import { editorRef } from "./utils.js";
+import { editorRef } from "./globals.js";
 import { ref } from 'vue'
 
 const searchKey = ref('');
 const replaceKey = ref('');
 const resultCount = ref(0);
 const currentPointer = ref(0);
-const showMask = ref(false);
 const searchOption = ref({
     caseSensitive: false,
     wholeWord: false,
@@ -132,7 +131,6 @@ export {
     searchKey,
     replaceKey,
     searchOption,
-    showMask,
     resultCount,
     currentPointer
 }

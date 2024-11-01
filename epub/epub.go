@@ -13,7 +13,6 @@ import (
 	"archive/zip"
 	"encoding/base64"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -67,7 +66,7 @@ func LoadImage(jsonData *JsonData) {
 		if item.Type == "image/jpeg" || item.Type == "image/png" {
 			decodeData, e := base64.StdEncoding.DecodeString(item.Data)
 			if e != nil {
-				fmt.Println("Error decoding image:", e)
+				logger.Error(e.Error(), logging.RunFuncName())
 				continue
 			}
 			Files.Images = append(Files.Images, ImagesFile{Name: item.Name, Data: decodeData})
@@ -330,12 +329,26 @@ func WirteToFile(content []byte, FilePath string) {
 }
 
 func toFile(FoldName string, Files *EpubFile) {
-	os.Mkdir(FoldName, os.ModePerm)
-	os.MkdirAll(FoldName+"/META-INF", os.ModePerm)
-	os.MkdirAll(FoldName+"/OEBPS", os.ModePerm)
-	os.MkdirAll(FoldName+"/OEBPS/Text", os.ModePerm)
-	os.MkdirAll(FoldName+"/OEBPS/Styles", os.ModePerm)
-	os.MkdirAll(FoldName+"/OEBPS/Images", os.ModePerm)
+	logger.Info("Write to Fold: "+FoldName, logging.RunFuncName())
+	var err error
+	if err = os.Mkdir(FoldName, os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	if err = os.MkdirAll(FoldName+"/META-INF", os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	if err = os.MkdirAll(FoldName+"/OEBPS", os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	if err = os.MkdirAll(FoldName+"/OEBPS/Text", os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	if err = os.MkdirAll(FoldName+"/OEBPS/Styles", os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	if err = os.MkdirAll(FoldName+"/OEBPS/Images", os.ModePerm); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
 	container := `<?xml version="1.0" encoding="UTF-8"?>
 	<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
 		<rootfiles>
@@ -356,6 +369,7 @@ func toFile(FoldName string, Files *EpubFile) {
 	of, _ := os.Create(FoldName + "/OEBPS/Styles/style.css")
 	io.Copy(of, fs)
 	defer fs.Close()
+	defer of.Close()
 	// for _, files := range Files.Texts {
 	// 	WirteToFile(files.Data, FoldName+"/OEBPS/Text/"+files.Name)
 	// }
@@ -371,6 +385,7 @@ func toFile(FoldName string, Files *EpubFile) {
 // Generate an EPUB file from the temp fold
 // @Quoted from https://github.com/gonejack/html-to-epub/blob/main/go-epub/write.go
 func WriteEpub(tempDir string, destFilePath string) error {
+	logger.Info("Write to EPUB: "+destFilePath, logging.RunFuncName())
 	f, err := os.Create(destFilePath)
 	if err != nil {
 		return err

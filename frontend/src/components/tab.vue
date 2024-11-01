@@ -8,7 +8,7 @@
 */
 
 import { ref, onMounted, provide} from 'vue';
-import { fonts } from '../assets/js/utils';
+import { editorRef, fonts } from '../assets/js/globals';
 import fileTab from '../components/tab/file.vue'
 import editTab from '../components/tab/edit.vue'
 import helpTab from '../components/tab/help.vue'
@@ -68,7 +68,7 @@ const judgeHeight = () => {
     var tabHeight = document.querySelector('.tab-container').offsetHeight;
     var totalHeight = window.innerHeight;
     var elem = document.querySelector('#editor-container');
-    elem.setAttribute('style', 'height:' + (totalHeight - tabHeight - 6) + 'px');
+    elem.setAttribute('style', 'height:' + (totalHeight - tabHeight - 35) + 'px');
 }
 onMounted(() => {
     setTimeout(()=>{
@@ -84,6 +84,8 @@ const handleChange = () => {
 }
 
 const test = () => {
+    const E = editorRef.value;
+    console.log(E.getHTML());
 }
 </script>
 

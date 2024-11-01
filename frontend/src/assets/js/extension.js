@@ -9,7 +9,7 @@
 import { nodeInputRule, textblockTypeInputRule } from "@tiptap/vue-3"
 import Image from "@tiptap/extension-image";
 import Heading from "@tiptap/extension-heading"
-import { imageInfo } from "./utils";
+import { imageInfo } from "./globals";
 import TextStyle from '@tiptap/extension-text-style'
 
 const TextFontSize = TextStyle.extend({

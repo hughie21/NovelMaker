@@ -7,14 +7,16 @@ window:
   webviewUserData: ""
 linux:
   windowTransparent: false
-  GPUStrategy: "auto" 
+  GPUStrategy: always
 staticResource:
   port: "7288"
   allowExt:
-    - .jpg
-    - .jpeg
-    - .png
-    - .gif
-    - .bmp
+  - .jpg
+  - .jpeg
+  - .png
+  - .gif
+  - .bmp
 log:
   level: 4
+download:
+  timeout: 10

@@ -1,3 +1,11 @@
+/*
+@Author: Hughie
+@CreateTime: 2024-10-14
+@LastEditors: Hughie
+@LastEditTime: 2024-11-1
+@Description: Log module of the program
+*/
+
 package logging
 
 import (
@@ -42,10 +50,12 @@ type Log struct {
 }
 
 func RunFuncName() string {
-	pc := make([]uintptr, 1)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	return f.Name()
+	pc, file, line, ok := runtime.Caller(1)
+	if !ok {
+		return "unknown"
+	}
+	f := runtime.FuncForPC(pc)
+	return fmt.Sprintf("%s:%d | %s", file, line, f.Name())
 }
 
 func (message *LogMessage) toString() string {

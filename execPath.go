@@ -1,3 +1,11 @@
+/*
+@Author: Hughie
+@CreateTime: 2024-10-14
+@LastEditors: Hughie
+@LastEditTime: 2024-11-1
+@Description: This is the program that get the right execution path of the program when go build or run
+*/
+
 package main
 
 import (

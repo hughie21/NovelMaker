@@ -1,9 +1,16 @@
 <script setup>
+/* 
+@Author: Hughie
+@CreateTime: 2024-10-18
+@LastEditors: Hughie
+@LastEditTime: 2024-11-1
+*/
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, Publish, GetImageData, Base64Encode, Base64Decode } from '../../../wailsjs/go/main/App.js'
+import { FileOpen, FileSave, Publish, FileImport, GetImageData, Base64Encode, Base64Decode, LoadImage } from '../../../wailsjs/go/main/App.js'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, TocGenerator, initCover, change, visio, bookInfo, currentSave, resetState } from '../../assets/js/utils';
+import { editorRef, change, visio, bookInfo, currentSave, staticFiles } from '../../assets/js/globals.js';
+import { TocGenerator, initCover, resetState, getImageFiles } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
 
@@ -15,7 +22,26 @@ const disableBtn = reactive({
 const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 
-const exportFile = () => {
+const setImage = async (book) => {
+    const editor = editorRef.value;
+    const allImages = editor.$nodes("image");
+    const imageIDs = Array.from(new Set(allImages.map(e => e.attributes.alt)))
+    await Promise.all(imageIDs.map(async (v) => {
+        let data = await GetImageData(v);
+        if (data.Code == 1) {
+            ElMessage.error(t('message.exportError') + ": " + data.Msg);
+            return;
+        }
+        book.resources.push({
+            id: v,
+            name: v,
+            data: data.Data,
+            type: "image/jpeg"
+        });
+    }));
+}
+
+const exportFile = async () => {
     ElNotification({
         title: t('message.exportInfoTitle'),
         message: h('p', { style: 'color: teal' }, t('message.exportInfo')),
@@ -24,24 +50,8 @@ const exportFile = () => {
     let tempData = JSON.parse(JSON.stringify(bookInfo));
     const editor = editorRef.value;
     tempData.content = editor.getHTML();
-    const allImages = editor.$nodes("image");
-    const imageIDs = Array.from(new Set(allImages.map(e => e.attributes.alt)))
-    imageIDs.map(async (v)=>{
-        let data = await GetImageData(v).then((res)=> {
-            return res;
-        })
-        if(data.Code == 1){
-            ElMessage.error(t('message.exportError') + ": " + data.Msg)
-            return
-        }
-        tempData.resources.push({
-            id: v,
-            name: v,
-            data: data.Data,
-            type: "image/jpeg"
-        })
-        
-    })
+    await setImage(tempData);
+
     const headers = [] 
     editor.$nodes('custom-heading').forEach(h => {
         headers.push({
@@ -60,13 +70,15 @@ const exportFile = () => {
         e.id = "guide_signal_" + (i+1);
     })
     tempData.content = doc.body.innerHTML;
-    const regex = /<img(.*?)>/g;
+    const regex_image = /<img(.*?)>/g;
+    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
     tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
     tempData.content = tempData.content.replaceAll(" ", "");
-    tempData.content = tempData.content.replace(regex, (match, p1)=> {
-        return `<img${p1}/>`;
+    tempData.content = tempData.content.replace(regex_image, (match, p1)=> {
+        return `<img${p1.replace(regex_url, "../Images")}/>`;
     })
     tempData.content = tempData.content.replaceAll('"', "'");
+    console.log(tempData)
     let name = bookInfo.metadata.title;
     Publish(name, (()=>{
             return JSON.stringify(tempData)
@@ -96,10 +108,19 @@ const openFilePicker = async () => {
     let rawData = JSON.parse(res.Data);
     rawData.metadata.creator = rawData.metadata.creator.join(',');
     rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-    // rawData.content = rawData.content.replaceAll("'", '"');
     rawData.content = await Base64Decode(rawData.content).then((res)=> {
         return JSON.parse(res);
     });
+    // Load the images while opening the file
+    await Promise.all(rawData.resources.map(async (image) => {
+        return LoadImage(image.data).then(res => {
+            if(res.Code == 1) {
+                ElMessage.error(t('message.imageLoadError') + ": " + res.Msg);
+                return;
+            }
+        })
+    }));
+    await getImageFiles();
     const E = editorRef.value;
     bookInfo.metadata = rawData.metadata;
     bookInfo.content = rawData.content;
@@ -116,10 +137,12 @@ const saveFilePicker = async (saveAs) => {
     let tempData = JSON.parse(JSON.stringify(bookInfo));
     tempData.metadata.creator = tempData.metadata.creator.split(',');
     tempData.metadata.contributors = tempData.metadata.contributors.split(',');
+    console.log(tempData)
     let jsonString = JSON.stringify(tempData.content);
     tempData.content = await Base64Encode(jsonString);
     tempData.metadata.description = tempData.metadata.description.replaceAll("\n", "\\n");
     let name = bookInfo.metadata.title;
+    await setImage(tempData);
     if (currentSave.value !== "" && !saveAs) {
         FileSave(currentSave.value, JSON.stringify(tempData), true).then((res)=> {
             if(res.Code === 0) {
@@ -147,9 +170,25 @@ const saveFilePicker = async (saveAs) => {
     })
 }
 
+const importFilePicker = async () => {
+    var res = await FileImport().then((res) => {
+        return res
+    })
+    if(res.Code == 1){
+        ElMessage.error(t('message.openError'))
+        return;
+    }else if (res.Code == -1){
+        return;
+    }
+    const E = editorRef.value;
+    let content = res.Data;
+
+    E.commands.setContent(content, true);
+    ElMessage.success(t('message.importSuccess'));
+}
+
 const handleNew = ()=> {
     function innerCallBack(action){
-        console.log(action)
         if(action == 'confirm'){
             let name = bookInfo.metadata.title;
             FileSave(name, JSON.stringify(bookInfo.value)).then((res)=>{
@@ -231,7 +270,16 @@ const openFileInfo = ()=> {
                 </button>
                 <span>{{$t('toolBar.file.new')}}</span>
             </span>
-            <span style=" width:70px; " class="btn-group">
+            <div class="division-border"></div>
+            <span style=" width:50px; " class="btn-group">
+                <button class="el-button btn func_btn-big" @click="importFilePicker" id="btn-open">
+                    <i class="el-icon">
+                        <svg t="1717816393836" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8897" width="200" height="200"><path d="M921.6 450.133333c-6.4-8.533333-14.933333-12.8-25.6-12.8h-10.666667V341.333333c0-40.533333-34.133333-74.666667-74.666666-74.666666H514.133333c-4.266667 0-6.4-2.133333-8.533333-4.266667l-38.4-66.133333c-12.8-21.333333-38.4-36.266667-64-36.266667H170.666667c-40.533333 0-74.666667 34.133333-74.666667 74.666667v597.333333c0 6.4 2.133333 12.8 6.4 19.2 6.4 8.533333 14.933333 12.8 25.6 12.8h640c12.8 0 25.6-8.533333 29.866667-21.333333l128-362.666667c4.266667-10.666667 2.133333-21.333333-4.266667-29.866667zM170.666667 224h232.533333c4.266667 0 6.4 2.133333 8.533333 4.266667l38.4 66.133333c12.8 21.333333 38.4 36.266667 64 36.266667H810.666667c6.4 0 10.666667 4.266667 10.666666 10.666666v96H256c-12.8 0-25.6 8.533333-29.866667 21.333334l-66.133333 185.6V234.666667c0-6.4 4.266667-10.666667 10.666667-10.666667z m573.866666 576H172.8l104.533333-298.666667h571.733334l-104.533334 298.666667z" p-id="8898"></path></svg>
+                    </i>
+                </button>
+                <span>{{$t('toolBar.file.import')}}</span>
+            </span>
+            <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="openFilePicker" id="btn-open">
                     <i class="el-icon">
                         <svg t="1717816393836" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8897" width="200" height="200"><path d="M921.6 450.133333c-6.4-8.533333-14.933333-12.8-25.6-12.8h-10.666667V341.333333c0-40.533333-34.133333-74.666667-74.666666-74.666666H514.133333c-4.266667 0-6.4-2.133333-8.533333-4.266667l-38.4-66.133333c-12.8-21.333333-38.4-36.266667-64-36.266667H170.666667c-40.533333 0-74.666667 34.133333-74.666667 74.666667v597.333333c0 6.4 2.133333 12.8 6.4 19.2 6.4 8.533333 14.933333 12.8 25.6 12.8h640c12.8 0 25.6-8.533333 29.866667-21.333333l128-362.666667c4.266667-10.666667 2.133333-21.333333-4.266667-29.866667zM170.666667 224h232.533333c4.266667 0 6.4 2.133333 8.533333 4.266667l38.4 66.133333c12.8 21.333333 38.4 36.266667 64 36.266667H810.666667c6.4 0 10.666667 4.266667 10.666666 10.666666v96H256c-12.8 0-25.6 8.533333-29.866667 21.333334l-66.133333 185.6V234.666667c0-6.4 4.266667-10.666667 10.666667-10.666667z m573.866666 576H172.8l104.533333-298.666667h571.733334l-104.533334 298.666667z" p-id="8898"></path></svg>

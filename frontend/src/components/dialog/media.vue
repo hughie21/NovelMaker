@@ -7,16 +7,16 @@
 @Description: This is the dialog allow user to manage the media resources.
 */
 
-import { visio, imageInfo, bookInfo, editorRef } from '../../assets/js/utils';
+import {  getImageFiles } from '../../assets/js/utils';
+import { visio, imageInfo, editorRef, staticFiles } from '../../assets/js/globals.js';
 import { ref } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import $ from 'jquery'
-import { ImageUpload, GetStaticResources, FileDelete } from '../../../wailsjs/go/main/App.js'
+import { ImageUpload, FileDelete, ImageDownload } from '../../../wailsjs/go/main/App.js'
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 var lastClick = ref("");
-const staticFiles = ref([]);
 const handleSelected = (event) => {
     var elem = $(event.target);
     if(lastClick.value != "") {
@@ -28,18 +28,6 @@ const handleSelected = (event) => {
     lastClick.value.parent().css("border", "1px solid #409EFF");
 }
 
-const getImageFiles = async () => {
-    const _ = await GetStaticResources().then((res)=>{
-        var data = JSON.parse(res);
-        // console.log(data)
-        if(data.Code == 0) {
-            staticFiles.value = data.FileList;
-        }else {
-            console.log(data.msg);
-        }
-        return true;
-    })
-}
 getImageFiles();
 
 const uploadImage = async () => {
@@ -47,12 +35,6 @@ const uploadImage = async () => {
        return res;
     })
     if(imageData.Code == 0) {
-        bookInfo.resources.push({
-            id: imageData.Id + ".jpg",
-            name: imageData.Id + ".jpg",
-            type: "image/jpeg",
-            data: ""
-        });
         getImageFiles();
         ElMessage({
             message: t("dialog.media.uploadSuccess"),
@@ -66,22 +48,63 @@ const uploadImage = async () => {
     }
 }
 
+const downloadImage = () => {
+    ElMessageBox.prompt(t('dialog.media.downloadImagePromt'), t('dialog.media.downloadImageTitle'), {
+        confirmButtonText: t('message.confirm'),
+        cancelButtonText: t('message.cancel'),
+        inputPattern: /(?<!@)\b((http(s)?:\/\/)?((\d+)\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?(.jpg|.png|.jpeg|.bmp|.gif|.webp)\b/,
+        inputErrorMessage: t('message.invalidLink')
+    }).then(async ({ value }) => {
+        ElNotification({
+            title: t('message.downloadTitle'),
+            message: t('message.downloadNotice'),
+            type: 'info'
+        })
+        await ImageDownload(value).then(res => {
+            if(res.Code == 0) {
+                getImageFiles();
+                ElMessage({
+                    message: t("message.downloadSuccess"),
+                    type: "success"
+                });
+            }else if(res.Code == 1) {
+                ElMessage({
+                    message: t("message.downloadError") + res.Msg,
+                    type: "error"
+                });
+            }
+        })
+    })
+}
+
 
 const handleInsert = () => {
     var elem = lastClick.value;
     const url = elem.attr("src");
     const id = elem.attr("id");
-    const imgNode = {src: url, alt: id, title: id, zoom: 100, pos: "left"};
+    const imgNode = {src: url, alt: id, title: id, zoom: 50, pos: "left"};
     const editor = editorRef.value;
     editor.chain().focus().InsertImage(imgNode).createParagraphNear().run();
     imageInfo.elem = "";
     imageInfo.postition = "left";
-    imageInfo.zoom = 100;
+    imageInfo.zoom = 50;
+
+    // I consider that we shouldn't to push the image right now
+    // As we are not sure whether the user will delete the image or not
+    //
+    // So, I will push the image when the user save or export the book
+    // to avoid the frequently operation to the data
+
+    /* bookInfo.resources.push({
+        ... 
+    })*/
+
     visio.mediaVisible = false;
 }
 
 const handleDelImg = () => {
     var elem = lastClick.value;
+    const E = editorRef.value;
     if(elem == ""){
         return;
     }
@@ -99,6 +122,19 @@ const handleDelImg = () => {
                     type: 'success'
                 });
                 visio.mediaVisible = false;
+                const state = E.state;
+                const doc = state.doc;
+                const positionsToDelete = [];
+                doc.descendants((node, pos) => {
+                    if (node.type.name == "image" && node.attrs.alt == name) {
+                        // record the positions to delete, if we delete them now, it will 
+                        // change the structure of the document and the next position will be wrong
+                        positionsToDelete.push({ from: pos, to: pos + node.nodeSize });
+                    }
+                });
+                positionsToDelete.reverse().forEach(({ from, to }) => {
+                    E.chain().focus().deleteRange({ from, to }).run();
+                });
             }else{
                 ElMessage({
                     message: t("dialog.media.deleteFail"),
@@ -119,6 +155,7 @@ const handleDelImg = () => {
     <div class="media_container"> 
         <div class="media-toolbar">
             <el-button type="primary" plain @click="uploadImage">{{$t("dialog.media.upload")}}</el-button>
+            <el-button type="primary" plain @click="downloadImage">{{$t("dialog.media.link")}}</el-button>
             <el-button type="danger" plain @click="handleDelImg">{{$t("dialog.media.delete")}}</el-button>
         </div>
         <div class="media-display">

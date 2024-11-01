@@ -8,7 +8,7 @@
 */
 
 import { useI18n } from 'vue-i18n';
-import { editorRef, imageInfo } from '../../assets/js/utils';
+import { editorRef, imageInfo } from '../../assets/js/globals.js';
 
 const { t } = useI18n();
 const editor = editorRef;

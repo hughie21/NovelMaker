@@ -18,6 +18,10 @@ export function FileDelete(arg1) {
   return window['go']['main']['App']['FileDelete'](arg1);
 }
 
+export function FileImport() {
+  return window['go']['main']['App']['FileImport']();
+}
+
 export function FileOpen() {
   return window['go']['main']['App']['FileOpen']();
 }
@@ -42,8 +46,16 @@ export function GetStaticResources() {
   return window['go']['main']['App']['GetStaticResources']();
 }
 
+export function ImageDownload(arg1) {
+  return window['go']['main']['App']['ImageDownload'](arg1);
+}
+
 export function ImageUpload() {
   return window['go']['main']['App']['ImageUpload']();
+}
+
+export function LoadImage(arg1) {
+  return window['go']['main']['App']['LoadImage'](arg1);
 }
 
 export function OpenImage() {
@@ -52,10 +64,6 @@ export function OpenImage() {
 
 export function Publish(arg1, arg2) {
   return window['go']['main']['App']['Publish'](arg1, arg2);
-}
-
-export function SaveConfig() {
-  return window['go']['main']['App']['SaveConfig']();
 }
 
 export function SetConfig(arg1, arg2, arg3) {

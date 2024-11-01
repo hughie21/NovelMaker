@@ -8,6 +8,7 @@
 
 import {createApp} from 'vue'
 import App from '../../App.vue'
+import Header from "../../Header.vue"
 import '../css/style.css';
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -27,4 +28,6 @@ if(!localStorage.getItem('lock')){
 checkIfOpenFileDirectly();
 
 const app = createApp(App);
+const header = createApp(Header)
 app.use(ElementPlus).use(i18n).mount('#app');
+header.use(ElementPlus).use(i18n).mount('#header')

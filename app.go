@@ -11,7 +11,13 @@ package main
 import (
 	epubMaker "NovelMaker/epub"
 	logging "NovelMaker/logging"
+	Manager "NovelMaker/manager"
 	sys "NovelMaker/sys"
+
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+
+	"bytes"
 	"context"
 	"crypto/md5"
 	"encoding/base64"
@@ -137,6 +143,36 @@ func (a *App) FileOpen() Message {
 	return Message
 }
 
+func (a *App) FileImport() Message {
+	var Message Message
+	res := FileOpenDialog(a, "Text File", "*.md;*.txt")
+	if res == "" {
+		Message.Code = -1
+		Message.Msg = "cancel"
+		return Message
+	}
+	fp, err := os.Open(res)
+	if err != nil {
+		Message.Code = 1
+		Message.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return Message
+	}
+	defer fp.Close()
+	content, _ := io.ReadAll(fp)
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+	)
+	var buf bytes.Buffer
+	if err := md.Convert(content, &buf); err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+	}
+	Message.Code = 0
+	Message.Msg = "success"
+	Message.Data = buf.String()
+	return Message
+}
+
 // corresponding to the "Save" button on the frontend
 func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 	res := name
@@ -166,16 +202,22 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 }
 
 // get the static resources list of the loacl server
-func (a *App) GetStaticResources() string {
+func (a *App) GetStaticResources() Message {
+	var msg Message
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Get("http://127.0.0.1:7288/")
 	if err != nil {
 		logger.Fatal(err.Error(), logging.RunFuncName())
-		return "{code: 1, msg: " + err.Error() + "}"
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-	return string(body)
+	msg.Code = 0
+	msg.Msg = "success"
+	msg.Data = string(body)
+	return msg
 }
 
 // corresponding to the "Delete" button on the "insert picture"
@@ -244,6 +286,38 @@ func (a *App) ImageUpload() ImageFIle {
 	return img
 }
 
+func (a *App) LoadImage(data string) Message {
+	var msg Message
+	imgData, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	h := md5.New()
+	h.Write(imgData)
+	id := hex.EncodeToString(h.Sum(nil))[8:24]
+	imagePath := filepath.Join(execPath, "resources", id+".jpg")
+	if _, err := os.Stat(imagePath); err == nil {
+		msg.Code = -1
+		msg.Msg = "resources folder already exists"
+		return msg
+	}
+	fp, err := os.Create(imagePath)
+	if err != nil {
+		msg.Code = 1
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	defer fp.Close()
+	fp.Write(imgData)
+	msg.Code = 0
+	msg.Msg = "success"
+	msg.Data = id
+	return msg
+}
+
 // corresponding to the "Cover Upload" on the "Book info"
 func (a *App) OpenImage() Message {
 	var msg Message
@@ -278,6 +352,7 @@ func (a *App) Publish(name string, rawJson string) Message {
 		return msg
 	}
 	epubMaker.LoadJson([]byte(rawJson), &JsonStruct)
+	logger.Info("Start to export to EPUB", logging.RunFuncName())
 	tmpPath := epubMaker.FormXML(JsonStruct)
 	e := epubMaker.WriteEpub(tmpPath, path)
 	if e != nil {
@@ -355,13 +430,14 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 	return msg
 }
 
-func (a *App) SaveConfig() Message {
+func (a *App) ImageDownload(url string) Message {
 	var msg Message
-	err := cm.SaveConfig()
+	downloader := Manager.NewImageDownloader(filepath.Join(execPath, "resources"), config.Dowload.Timeout)
+	err := Manager.ProcessDownload(downloader, url)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
 		msg.Code = 1
 		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
 	msg.Code = 0

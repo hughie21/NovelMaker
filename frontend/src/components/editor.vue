@@ -3,14 +3,13 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-10-2
+@LastEditTime: 2024-11-1
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted } from 'vue';
-import * as utils from '../assets/js/utils';
+import * as constant from '../assets/js/globals';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { showMask } from "../assets/js/lookup";
 import { CustomImage, CustomHeading, TextBackground, TextFontSize, SearchSelBackground } from '../assets/js/extension';
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import TextStyle from '@tiptap/extension-text-style'
@@ -94,37 +93,37 @@ const editor = new Editor({
             return `<li data-id="${id}" type="${type}">${text}</li>`;
         }).join('');
         bookinfo.content = editor.getJSON();
-        utils.change.value = true;
+        constant.change.value = true;
     }, 100),
     onSelectionUpdate: ({ editor }) => { // Synchronising editor content properties to tab option values
         for(var i = 1; i < 7; i++){
             if(editor.isActive('custom-heading', { level: i})){
-                utils.headerVal.value = i;
+                constant.headerVal.value = i;
                 return;
             }
         }
         if(editor.isActive('paragraph')){
-            utils.headerVal.value = 0;
-            utils.fontVal.value = "Arial";
-            utils.fontSizeVal.value = "16px";
+            constant.headerVal.value = 0;
+            constant.fontVal.value = "Arial";
+            constant.fontSizeVal.value = "16px";
         }
-        utils.fonts.value.forEach((v)=>{
+        constant.fonts.value.forEach((v)=>{
             if(editor.getAttributes("textStyle").fontFamily == v.value) {
-                utils.fontVal.value = v.value;
+                constant.fontVal.value = v.value;
             }
         })
         const fontSize = editor.getAttributes("font-size").fontSize;
         if(fontSize){
-            utils.fontSizeVal.value = fontSize;
+            constant.fontSizeVal.value = fontSize;
         }
         return;
     }
 })
 
-const theme = utils.editTheme;
-const bookinfo = utils.bookInfo;
+const theme = constant.editTheme;
+const bookinfo = constant.bookInfo;
 
-const editorRef = utils.editorRef;
+const editorRef = constant.editorRef;
 editorRef.value = editor;
 
 onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt of it
@@ -150,11 +149,6 @@ onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt 
     <div class="editor-box">
         <ul id="header-container"></ul>
         <editor-content class="editor-content" id="editor" :editor="editorRef" />
-        
-        <!-- 
-        Create a mask that work as the effect of editor.setEditable
-        -->
-        <div class="mask" v-show="showMask"></div> 
     </div>
 </div>
 

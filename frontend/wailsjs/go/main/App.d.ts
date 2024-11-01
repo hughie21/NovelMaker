@@ -10,6 +10,8 @@ export function DirectLoading():Promise<main.Message>;
 
 export function FileDelete(arg1:string):Promise<main.Message>;
 
+export function FileImport():Promise<main.Message>;
+
 export function FileOpen():Promise<main.Message>;
 
 export function FileSave(arg1:string,arg2:string,arg3:boolean):Promise<main.Message>;
@@ -20,14 +22,16 @@ export function GetConfig(arg1:string,arg2:string):Promise<main.Message>;
 
 export function GetImageData(arg1:string):Promise<main.Message>;
 
-export function GetStaticResources():Promise<string>;
+export function GetStaticResources():Promise<main.Message>;
+
+export function ImageDownload(arg1:string):Promise<main.Message>;
 
 export function ImageUpload():Promise<main.ImageFIle>;
+
+export function LoadImage(arg1:string):Promise<main.Message>;
 
 export function OpenImage():Promise<main.Message>;
 
 export function Publish(arg1:string,arg2:string):Promise<main.Message>;
-
-export function SaveConfig():Promise<main.Message>;
 
 export function SetConfig(arg1:string,arg2:string,arg3:string):Promise<main.Message>;

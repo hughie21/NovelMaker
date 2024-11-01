@@ -6,7 +6,8 @@
 @LastEditTime: 2024-10-15
 @Description: This the diaglog that allow user to editor the bookinfo.
 */
-import { visio, change, cover, arrayRemove, language_list as languages, initCover, bookInfo } from '../../assets/js/utils';
+import {  arrayRemove, initCover  } from '../../assets/js/utils';
+import { visio, change, cover, language_list as languages, bookInfo } from '../../assets/js/globals.js';
 import { ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Delete, Plus, ZoomIn } from '@element-plus/icons-vue'

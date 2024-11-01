@@ -7,7 +7,7 @@
 @Description: This is the dialog show the help information.
 */
 
-import { visio } from '../../assets/js/utils';
+import { visio } from '../../assets/js/globals.js';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

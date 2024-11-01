@@ -1,5 +1,11 @@
 <script setup>
-import { visio } from '../../assets/js/utils';
+/* 
+@Author: Hughie
+@CreateTime: 2024-10-18
+@LastEditors: Hughie
+@LastEditTime: 2024-11-1
+*/
+import { visio } from '../../assets/js/globals';
 import "../../assets/css/tab.css"
 </script>
 
