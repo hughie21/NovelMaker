@@ -15,6 +15,9 @@ const message = {
     "zh-CN": zh_cn
 };
 
+// This is used to set the language options
+// If you want to add the new lanuage
+// Do not forget to add the new language to this array
 const languages = [
     {
         value: "en",
