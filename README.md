@@ -1,6 +1,6 @@
 <div style="display:flex;justify-content:center;align-item:center;">
-    <div style="height:300px;width:300px">
-        <img src="./appicon.png" style="width:100%;height:100%">
+    <div>
+        <img src="./appicon.png" style="height:300px;width:300px">
     </div>
 </div>
 <div style="display:flex;justify-content:center;">
