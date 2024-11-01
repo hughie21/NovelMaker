@@ -10,5 +10,12 @@
     "name": "hughie12",
     "email": "11827824+hughie12@user.noreply.gitee.com"
   },
+  "info": {
+    "companyName": "Novel Maker",
+    "productName": "Novel Maker",
+    "productVersion": "1.0.0.20241101_alpha",
+    "copyright": "MIT",
+    "comments": "This is a text editor for EPUB files"
+  },
   "appargs": ""
 }
