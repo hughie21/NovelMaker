@@ -12,15 +12,40 @@ import "encoding/xml"
 
 /*
 *
+* container.xml
+*
+ */
+type Container struct {
+	XMLName   xml.Name  `xml:"container"`
+	Xmls      string    `xml:"xmlns,attr"`
+	Version   string    `xml:"version,attr"`
+	RootFiles RootFiles `xml:"rootfiles"`
+}
+
+type RootFiles struct {
+	XMLName  xml.Name   `xml:"rootfiles"`
+	RootFile []RootFile `xml:"rootfile"`
+}
+
+type RootFile struct {
+	XMLName   xml.Name `xml:"rootfile"`
+	FullPath  string   `xml:"full-path,attr"`
+	MediaType string   `xml:"media-type,attr"`
+}
+
+/*
+*
 * content.opt
 *
  */
 
 type MetaNode struct {
-	XMLName xml.Name `xml:"meta"`
-	Name    string   `xml:"name,attr,omitempty"`
-	Content string   `xml:"content,attr"`
-	Equiv   string   `xml:"http-equiv,attr,omitempty"`
+	XMLName  xml.Name `xml:"meta"`
+	Name     string   `xml:"name,attr,omitempty"`
+	Content  string   `xml:"content,attr,omitempty"`
+	Equiv    string   `xml:"http-equiv,attr,omitempty"`
+	Property string   `xml:"property,attr,omitempty"`
+	Value    string   `xml:",chardata"`
 }
 
 type DCCreator struct {
@@ -49,17 +74,15 @@ type Identifier struct {
 
 type MetadataNode struct {
 	XMLName      xml.Name        `xml:"metadata"`
-	Xmlns        string          `xml:"xmlns:dc,attr"`
-	Opt          string          `xml:"xmlns:opf,attr"`
 	Title        string          `xml:"dc:title"`
 	Creators     []DCCreator     `xml:"dc:creator"`
 	Identifier   Identifier      `xml:"dc:identifier"`
 	Language     string          `xml:"dc:language"`
-	Contributors []DCContributor `xml:"dc:contributor"`
-	Description  string          `xml:"dc:description"`
+	Contributors []DCContributor `xml:"dc:contributor,omitempty"`
+	Description  string          `xml:"dc:description,omitempty"`
 	Publisher    string          `xml:"dc:publisher"`
-	Subject      []DCSubject     `xml:"dc:subject"`
-	Date         string          `xml:"dc:date"`
+	Subject      []DCSubject     `xml:"dc:subject,omitempty"`
+	Date         string          `xml:"dc:date,omitempty"`
 	Metas        []MetaNode      `xml:"meta"`
 }
 
@@ -83,13 +106,14 @@ type SpineItemNode struct {
 
 type SpineNode struct {
 	XMLName xml.Name        `xml:"spine"`
-	Toc     string          `xml:"toc,attr"`
 	Items   []SpineItemNode `xml:"itemref"`
 }
 
 type PackageNode struct {
 	XMLName    xml.Name     `xml:"package"`
 	Xmlns      string       `xml:"xmlns,attr"`
+	DC         string       `xml:"xmlns:dc,attr,omitempty"`      // dc: http://purl.org/dc/elements/1.1/
+	DCTerm     string       `xml:"xmlns:dcterms,attr,omitempty"` // dcterms: http://purl.org/dc/terms/
 	Identifier string       `xml:"unique-identifier,attr"`
 	Version    string       `xml:"version,attr"`
 	Metadata   MetadataNode `xml:"metadata"`
@@ -103,40 +127,42 @@ type PackageNode struct {
 *
  */
 
-type HeadNode struct {
-	XMLName xml.Name   `xml:"head"`
-	Meta    []MetaNode `xml:"meta"`
-}
+// This is abondoned in Epub v3
 
-type TextNode struct {
-	Text string `xml:"text"`
-}
+// type HeadNode struct {
+// 	XMLName xml.Name   `xml:"head"`
+// 	Meta    []MetaNode `xml:"meta"`
+// }
 
-type Content struct {
-	Src string `xml:"src,attr"`
-}
+// type TextNode struct {
+// 	Text string `xml:"text"`
+// }
 
-type NavPoint struct {
-	Navlable  TextNode   `xml:"navLabel"`
-	Content   Content    `xml:"content"`
-	Id        string     `xml:"id,attr"`
-	PlayOrder int        `xml:"playOrder,attr"`
-	NavPoints []NavPoint `xml:"navPoint"`
-}
+// type Content struct {
+// 	Src string `xml:"src,attr"`
+// }
 
-type NavMap struct {
-	NavPoints []NavPoint `xml:"navPoint"`
-}
+// type NavPoint struct {
+// 	Navlable  TextNode   `xml:"navLabel"`
+// 	Content   Content    `xml:"content"`
+// 	Id        string     `xml:"id,attr"`
+// 	PlayOrder int        `xml:"playOrder,attr"`
+// 	NavPoints []NavPoint `xml:"navPoint"`
+// }
 
-type NcxNode struct {
-	XMLName xml.Name   `xml:"ncx"`
-	Xmlns   string     `xml:"xmlns,attr"`
-	Version string     `xml:"version,attr"`
-	Header  HeadNode   `xml:"head"`
-	Title   TextNode   `xml:"docTitle"`
-	Author  []TextNode `xml:"docAuthor"`
-	NavMap  NavMap     `xml:"navMap"`
-}
+// type NavMap struct {
+// 	NavPoints []NavPoint `xml:"navPoint"`
+// }
+
+// type NcxNode struct {
+// 	XMLName xml.Name   `xml:"ncx"`
+// 	Xmlns   string     `xml:"xmlns,attr"`
+// 	Version string     `xml:"version,attr"`
+// 	Header  HeadNode   `xml:"head"`
+// 	Title   TextNode   `xml:"docTitle"`
+// 	Author  []TextNode `xml:"docAuthor"`
+// 	NavMap  NavMap     `xml:"navMap"`
+// }
 
 /*
 *
@@ -155,27 +181,39 @@ type HtmlHead struct {
 	Link  []Link `xml:"link"`
 }
 
-type NaVA struct {
-	Text string `xml:",chardata"`
-	Href string `xml:"href,attr"`
+type NavA struct {
+	Text  string `xml:",chardata"`
+	Href  string `xml:"href,attr"`
+	Class string `xml:"class,attr,omitempty"`
 }
 
-type NavDiv struct {
-	XMLName  xml.Name `xml:"div"`
-	Class    string   `xml:"class,attr"`
-	Navlable NaVA     `xml:"a"`
-	Child    []NavDiv `xml:"div"`
+type NavLi struct {
+	XMLName xml.Name `xml:"li"`
+	A       NavA     `xml:"a"`
+	Ol      *NavOl   `xml:"ol,omitempty"`
+}
+
+type NavOl struct {
+	XMLName xml.Name `xml:"ol"`
+	Li      []NavLi  `xml:"li,omitempty"`
+}
+
+type Nav struct {
+	XMLName xml.Name `xml:"nav"`
+	Type    string   `xml:"epub:type,attr"`
+	Ol      NavOl    `xml:"ol"`
 }
 
 type NavBody struct {
 	XMLName xml.Name `xml:"body"`
-	Nav     []NavDiv `xml:"nav"`
+	Nav     Nav      `xml:"nav"`
 }
 
 type NavHTML struct {
 	XMLName xml.Name `xml:"html"`
-	Xmlns   string   `xml:"xmlns,attr"`
-	Header  HtmlHead `xml:"head"`
+	Xmlns   string   `xml:"xmlns,attr"`      // http://www.w3.org/1999/xhtml
+	XEpub   string   `xml:"xmlns:epub,attr"` // http://www.idpf.org/2007/ops
+	Head    HtmlHead `xml:"head"`
 	Body    NavBody  `xml:"body"`
 }
 

@@ -80,20 +80,19 @@ const getImageFiles = async () => {
 
 // loading the cover data to the frontend 
 const initCover = ()=>{
-    if(bookInfo.metadata.meta.length == 0){
+    if(bookInfo.metadata.cover.name == ""){
         cover.isExist = false;
         cover.data = "";
         return
     }
-    var coverId = bookInfo.metadata.meta[0].content;
-    var resources = bookInfo.resources
-    for(let i = 0; i < resources.length; i++){
-        if(resources[i].id == coverId){
-            cover.isExist = true;
-            cover.data = resources[i].data;
-            return;
-        }
-    }
+    bookInfo.resources.push({
+        id: "cover",
+        name: "cover.jpg",
+        type: "image/jpeg",
+        data: bookInfo.metadata.cover.data
+    })
+    cover.isExist = true;
+    cover.data = bookInfo.metadata.cover.data;
 }
 
 // Check if open the epmb suffix file directly and load the data

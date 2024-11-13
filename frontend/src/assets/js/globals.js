@@ -56,7 +56,10 @@ const bookInfo = reactive({
         publisher: "",
         subject: [],
         date: "",
-        meta: []
+        cover: {
+            name: "",
+            data: ""
+        }
     },
     content: "",
     resources: [],
@@ -69,6 +72,32 @@ const title = ref("Untitle");
 const currentSave = ref("");
 
 const staticFiles = ref([]);
+
+const fileSuffix = {
+    "jpg": "image/jpeg",
+    "png": "image/png",
+    "gif": "image/gif",
+    "svg": "image/svg",
+    "tiff": "image/tiff",
+    "bmp": "image/bmp",
+    "webp": "image/webp",
+    "ico": "image/x-icon",
+    "mp3": "audio/x-ms-mp3",
+    "ogg": "audio/ogg",
+    "wav": "audio/x-ms-wav",
+    "flac": "audio/x-ms-flac",
+    "aac": "audio/x-ms-aac",
+    "wma": "audio/x-ms-wma",
+    "wmv": "audio/x-ms-wmv",
+    "mp4": "audio/x-ms-mp4",
+    "aiff": "audio/x-ms-aiff",
+    "aif": "audio/x-ms-aif",
+    "aifc": "audio/x-ms-aifc",
+    "m4a": "audio/x-ms-m4a",
+    "m4b": "audio/x-ms-m4b",
+    "m4p": "audio/x-ms-m4p",
+    "m4r": "audio/x-ms-m4r"
+  }
 
 export {
     editorRef,
@@ -87,7 +116,8 @@ export {
     change,
     title,
     currentSave,
-    staticFiles
+    staticFiles,
+    fileSuffix
 }
 
 export default{}

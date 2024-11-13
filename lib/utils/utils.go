@@ -1,23 +1,76 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-8-2
-@LastEditors: Hughie
-@LastEditTime: 2024-08-7
-@Description: The definition of the json Format and the json marshal method
-*/
-
-package epub
+package utils
 
 import (
-	"bytes"
-	"encoding/gob"
-	"encoding/json"
 	"io"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 )
+
+func GetFileData(path string) []byte {
+	fs, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	defer fs.Close()
+
+	rawData, err := io.ReadAll(fs)
+	if err != nil {
+		panic(err)
+	}
+
+	return rawData
+}
+
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil || os.IsExist(err)
+}
+
+func Contains(arr []string, target string) bool {
+	str := strings.Join(arr, " ")
+	return strings.Contains(str, target)
+}
+
+var FileSuffix = map[string]string{
+	"image/jpeg":      ".jpg",
+	"image/png":       ".png",
+	"image/gif":       ".gif",
+	"image/svg":       ".svg",
+	"image/tiff":      ".tiff",
+	"image/bmp":       ".bmp",
+	"image/webp":      ".webp",
+	"image/x-icon":    ".ico",
+	"audio/mpeg":      ".mp3",
+	"audio/ogg":       ".ogg",
+	"audio/wav":       ".wav",
+	"audio/flac":      ".flac",
+	"audio/aac":       ".aac",
+	"audio/x-ms-wma":  ".wma",
+	"audio/x-ms-wmv":  ".wmv",
+	"audio/x-ms-wav":  ".wav",
+	"audio/x-ms-mp3":  ".mp3",
+	"audio/x-ms-mp4":  ".mp4",
+	"audio/x-ms-flac": ".flac",
+	"audio/x-ms-aac":  ".aac",
+	"audio/x-ms-aiff": ".aiff",
+	"audio/x-ms-aif":  ".aif",
+	"audio/x-ms-aifc": ".aifc",
+	"audio/x-ms-m4a":  ".m4a",
+	"audio/x-ms-m4b":  ".m4b",
+	"audio/x-ms-m4p":  ".m4p",
+	"audio/x-ms-m4r":  ".m4r",
+}
+
+func GetKeyByValue(value string) (string, bool) {
+	for k, v := range FileSuffix {
+		if v == value {
+			return k, true
+		}
+	}
+	return "", false
+}
 
 type marshal struct {
 }
@@ -104,76 +157,4 @@ func (this *marshal) parseMap(v reflect.Value, t reflect.Type) string {
 		i++
 	}
 	return "{" + strings.Join(str, ",") + "}"
-}
-
-type J_meta struct {
-	Name    string `json:"id"`
-	Content string `json:"content"`
-}
-
-type J_MetaData struct {
-	Title        string   `json:"title"`
-	Creator      []string `json:"creator"`
-	Identifier   string   `json:"identifier"`
-	Language     string   `json:"language"`
-	Contributers []string `json:"contributors"`
-	Description  string   `json:"description"`
-	Publisher    string   `json:"publisher"`
-	Subject      []string `json:"subject"`
-	Date         string   `json:"date"`
-	Meta         []J_meta `json:"meta"`
-}
-
-type J_nav struct {
-	Id    string  `json:"id"`
-	Label string  `json:"label"`
-	Href  string  `json:"href"`
-	Child []J_nav `json:"children"`
-}
-
-type Resource struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Data string `json:"data"`
-}
-
-type JsonData struct {
-	MetaData  J_MetaData `json:"metadata"`
-	Content   string     `json:"content"`
-	Resources []Resource `json:"resources"`
-	Nav       []J_nav    `json:"toc"`
-}
-
-func Dump(data *JsonData) string {
-	jsonData := Marshal(data)
-	return string(jsonData)
-}
-
-func SaveToFile(jsonData *JsonData, filePath string) error {
-	var SaveFile = func(path string, data []byte) error {
-		return os.WriteFile(path, data, 0644)
-	}
-	buf := bytes.Buffer{}
-	encoder := gob.NewEncoder(&buf)
-	err := encoder.Encode(jsonData)
-	SaveFile(filePath, buf.Bytes())
-	return err
-}
-
-func Load(filePath string) (JsonData, error) {
-	File, err := os.Open(filePath)
-	if err != nil {
-		return JsonData{}, err
-	}
-	defer File.Close()
-	rawData, _ := io.ReadAll(File)
-	decoder := gob.NewDecoder(bytes.NewReader(rawData))
-	var data JsonData
-	decoder.Decode(&data)
-	return data, nil
-}
-
-func LoadJson(RawData []byte, Mapping *JsonData) {
-	json.Unmarshal(RawData, Mapping)
 }

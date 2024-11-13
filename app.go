@@ -9,7 +9,7 @@
 package main
 
 import (
-	epubMaker "NovelMaker/epub"
+	epubMaker "NovelMaker/lib/epub"
 	logging "NovelMaker/logging"
 	Manager "NovelMaker/manager"
 	sys "NovelMaker/sys"
@@ -123,20 +123,36 @@ func (a *App) DirectLoading() Message {
 // corresponding to the "Open" button on the frontend
 func (a *App) FileOpen() Message {
 	var Message Message
-	res := FileOpenDialog(a, "Empb File", "*.no")
-	dataStruct, err := epubMaker.Load(res)
+	res := FileOpenDialog(a, "Epub File", "*.epub")
+	// dataStruct, err := epubMaker(res)
 	if res == "" {
 		Message.Code = -1
 		Message.Msg = "cancel"
 		return Message
 	}
+	reader, err := epubMaker.NewReader(res, filepath.Join(execPath, "tmp"))
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
 		Message.Code = 1
 		Message.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
 		return Message
 	}
-	jsonData := epubMaker.Dump(&dataStruct)
+	err = reader.Read()
+	if err != nil {
+		Message.Code = 1
+		Message.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return Message
+	}
+	err = reader.Pharse()
+	if err != nil {
+		Message.Code = 1
+		Message.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return Message
+	}
+	reader.Close()
+	jsonData := epubMaker.Dump(&reader.JsonData)
 	Message.Code = 0
 	Message.Msg = res
 	Message.Data = jsonData
@@ -353,18 +369,30 @@ func (a *App) Publish(name string, rawJson string) Message {
 	}
 	epubMaker.LoadJson([]byte(rawJson), &JsonStruct)
 	logger.Info("Start to export to EPUB", logging.RunFuncName())
-	tmpPath := epubMaker.FormXML(JsonStruct)
-	e := epubMaker.WriteEpub(tmpPath, path)
-	if e != nil {
-		e = os.RemoveAll(tmpPath)
+	// tmpPath := "epubMaker.(JsonStruct)"
+	// e := epubMaker.WriteEpub(tmpPath, path)
+	// if e != nil {
+	// 	e = os.RemoveAll(tmpPath)
+	// 	msg.Code = 1
+	// 	msg.Msg = e.Error()
+	// 	logger.Error(e.Error(), logging.RunFuncName())
+	// 	return msg
+	// }
+	// e = os.RemoveAll(tmpPath)
+	// if e != nil {
+	// 	logger.Error(e.Error(), logging.RunFuncName())
+	// }
+	// msg.Code = 0
+	// msg.Msg = "success"
+	// return msg
+	writer := epubMaker.NewWriter(path, filepath.Join(execPath, "tmp"), &JsonStruct)
+	err := writer.Write()
+	defer writer.Close()
+	if err != nil {
 		msg.Code = 1
-		msg.Msg = e.Error()
-		logger.Error(e.Error(), logging.RunFuncName())
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
-	}
-	e = os.RemoveAll(tmpPath)
-	if e != nil {
-		logger.Error(e.Error(), logging.RunFuncName())
 	}
 	msg.Code = 0
 	msg.Msg = "success"
@@ -373,7 +401,7 @@ func (a *App) Publish(name string, rawJson string) Message {
 
 // get the base64 string of the image
 func (a *App) GetImageData(filename string) Message {
-	imagePath := filepath.Join("./resources", filename)
+	imagePath := filepath.Join(execPath, "resources", filename)
 	var msg Message
 	fs, err := os.Open(imagePath)
 	if err != nil {

@@ -85,7 +85,7 @@ const handleChange = () => {
 
 const test = () => {
     const E = editorRef.value;
-    console.log(E.getHTML());
+    console.log(JSON.stringify(E.getJSON()));
 }
 </script>
 

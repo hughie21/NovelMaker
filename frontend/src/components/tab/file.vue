@@ -6,10 +6,10 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, Publish, FileImport, GetImageData, Base64Encode, Base64Decode, LoadImage } from '../../../wailsjs/go/main/App.js'
+import { FileOpen, FileSave, Publish, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/main/App.js'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, staticFiles } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -23,23 +23,28 @@ const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 
 const setImage = async (book) => {
-    const editor = editorRef.value;
-    const allImages = editor.$nodes("image");
-    const imageIDs = Array.from(new Set(allImages.map(e => e.attributes.alt)))
-    await Promise.all(imageIDs.map(async (v) => {
+    // const editor = editorRef.value;
+    // const allImages = editor.$nodes("image");
+    // const imageIDs = Array.from(new Set(allImages.map(e => e.attributes.alt)))
+    if (staticFiles.value === null || staticFiles.value.length === 0) {
+        return;
+    }
+    await Promise.all(staticFiles.value.map(async (v) => {
         let data = await GetImageData(v);
         if (data.Code == 1) {
             ElMessage.error(t('message.exportError') + ": " + data.Msg);
             return;
         }
+        let [name,suffix] = v.split(".");
         book.resources.push({
-            id: v,
-            name: v,
+            id: name,
+            name: name,
             data: data.Data,
-            type: "image/jpeg"
+            type: fileSuffix[suffix]
         });
     }));
 }
+//D:\NovelMaker\build\bin\tmp\style\style.css: The system cannot find the path specified.
 
 const exportFile = async () => {
     ElNotification({
@@ -105,21 +110,17 @@ const openFilePicker = async () => {
     }else if (res.Code == -1){
         return;
     }
-    let rawData = JSON.parse(res.Data);
+    try{
+        var rawData = JSON.parse(res.Data);
+    }catch(e){
+        ElMessage.error(t('message.openError'))
+        return;
+    }
     rawData.metadata.creator = rawData.metadata.creator.join(',');
     rawData.metadata.contributors = rawData.metadata.contributors.join(',');
     rawData.content = await Base64Decode(rawData.content).then((res)=> {
         return JSON.parse(res);
     });
-    // Load the images while opening the file
-    await Promise.all(rawData.resources.map(async (image) => {
-        return LoadImage(image.data).then(res => {
-            if(res.Code == 1) {
-                ElMessage.error(t('message.imageLoadError') + ": " + res.Msg);
-                return;
-            }
-        })
-    }));
     await getImageFiles();
     const E = editorRef.value;
     bookInfo.metadata = rawData.metadata;
@@ -129,6 +130,7 @@ const openFilePicker = async () => {
     E.chain().setContent(bookInfo.content, true).run();
     E.chain().focus().insertContent().run();
     initCover();
+    console.log(bookInfo.resources)
     change.value = false;
     currentSave.value = res.Msg;
 }
@@ -139,11 +141,13 @@ const saveFilePicker = async (saveAs) => {
     tempData.metadata.contributors = tempData.metadata.contributors.split(',');
     console.log(tempData)
     let jsonString = JSON.stringify(tempData.content);
-    tempData.content = await Base64Encode(jsonString);
+    // tempData.content = await Base64Encode(jsonString);
     tempData.metadata.description = tempData.metadata.description.replaceAll("\n", "\\n");
     let name = bookInfo.metadata.title;
+    console.log(tempData)
     await setImage(tempData);
     if (currentSave.value !== "" && !saveAs) {
+        // Save as another file
         FileSave(currentSave.value, JSON.stringify(tempData), true).then((res)=> {
             if(res.Code === 0) {
                 ElMessage.info(t('message.saveSuccess'));
