@@ -12,6 +12,8 @@
 </div>
 
 ## Introduce
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker?ref=badge_shield)
+
 
 This is a rich text editor built with Wails. It can export the content to the epub file.
 
@@ -75,3 +77,6 @@ You will find your executable file in the @build/bin.
 If you want to build the installation package, use `wails build -nsis`.
 
 For more detail in building see [here](https://wails.io/docs/next/reference/cli).
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker?ref=badge_large)
