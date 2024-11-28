@@ -15,7 +15,7 @@ import (
 	"io"
 	"os"
 
-	utils "NovelMaker/lib/utils"
+	"github.com/hughie21/NovelMaker/lib/utils"
 )
 
 type File struct {

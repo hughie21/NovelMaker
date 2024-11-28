@@ -1,4 +1,4 @@
-module NovelMaker
+module github.com/hughie21/NovelMaker
 
 go 1.20
 
@@ -9,13 +9,21 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require (
+	github.com/tklauser/go-sysconf v0.3.14 // indirect
+	github.com/tklauser/numcpus v0.8.0 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
+)
+
+replace core v0.0.0 => ./core
+
 replace epubMaker v0.0.0 => ./lib/epub
 
-replace logging v0.0.0 => ./logging
+replace logging v0.0.0 => ./lib/logging
 
-replace manager v0.0.0 => ./manager
+replace server v0.0.0 => ./lib/server
 
-replace sys v0.0.0 => ./sys
+replace config v0.0.0 => ./lib/config
 
 replace utils v0.0.0 => ./lib/utils
 
@@ -41,6 +49,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/samber/lo v1.38.1 // indirect
+	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -50,7 +59,7 @@ require (
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
 

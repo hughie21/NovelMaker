@@ -11,6 +11,7 @@ type AstElement struct {
 	Tag      string
 	Type     int
 	Children []*AstElement
+	Parent   *AstElement
 	Attrs    map[string]string
 }
 
@@ -33,11 +34,12 @@ func NewHTMLParser() *HTMLParser {
 	return &HTMLParser{}
 }
 
-func (p *HTMLParser) createAstElement(tagName string, attrs map[string]string) *AstElement {
+func (p *HTMLParser) createAstElement(tagName string, attrs map[string]string, parent *AstElement) *AstElement {
 	return &AstElement{
 		Tag:      tagName,
 		Type:     1,
 		Children: []*AstElement{},
+		Parent:   parent,
 		Attrs:    attrs,
 	}
 }
@@ -47,7 +49,7 @@ func (p *HTMLParser) start(tagName string, attributes map[string]string, unary b
 	if len(p.stack) > 0 {
 		parent = p.stack[len(p.stack)-1]
 	}
-	element := p.createAstElement(tagName, attributes)
+	element := p.createAstElement(tagName, attributes, parent)
 	if p.root == nil {
 		p.root = element
 	}
@@ -68,7 +70,6 @@ func (p *HTMLParser) end(tagName string) {
 }
 
 func (p *HTMLParser) chars(text string) {
-	// text = strings.ReplaceAll(text, " ", "")
 	text = strings.TrimSpace(text)
 	text = strings.ReplaceAll(text, "\n", "")
 	text = uselessCharacters.ReplaceAllString(text, "")
@@ -78,8 +79,9 @@ func (p *HTMLParser) chars(text string) {
 	}
 	if text != "" {
 		parent.Children = append(parent.Children, &AstElement{
-			Type: 3,
-			Tag:  text,
+			Type:   3,
+			Tag:    text,
+			Parent: parent,
 		})
 	}
 }

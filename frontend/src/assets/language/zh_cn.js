@@ -169,9 +169,6 @@ export default{
         openError: "无法打开指定文件",
         importSuccess: "导入成功",
         importError: "导入失败",
-        exportInfoTitle: "注意",
-        exportInfo: "导出文件时，请勿关闭该软件或者计算机",
-        exportSuccess: "导出成功",
-        exportError: "发生错误，导出失败",
+        loadingMessage: "解析中...",
     }
 }

@@ -1,35 +1,40 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-7-5
-@LastEditors: Hughie
-@LastEditTime: 2024-09-16
-@Description: This is the Go function that frontend can call for.
-*/
-
-package main
+// Description: This is the Go function that frontend can call for.
+// Author: Hughie21
+// Date: 2024-09-16
+// license that can be found in the LICENSE file.
+package core
 
 import (
-	epubMaker "NovelMaker/lib/epub"
-	logging "NovelMaker/logging"
-	Manager "NovelMaker/manager"
-	sys "NovelMaker/sys"
-
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
-
 	"bytes"
-	"context"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/hughie21/NovelMaker/lib/logging"
+	"github.com/hughie21/NovelMaker/lib/server"
+	"github.com/hughie21/NovelMaker/lib/utils"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+
+	"context"
 )
+
+// App struct
+type App struct {
+	ctx  context.Context
+	core *Core
+}
+
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
+}
 
 // the message formula that communiacte with the frontend
 type Message struct {
@@ -44,35 +49,23 @@ type ImageFIle struct {
 	Id   string
 }
 
-// App struct
-type App struct {
-	ctx context.Context
-}
-
-// NewApp creates a new App application struct
-func NewApp() *App {
-	return &App{}
-}
-
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-	logger.Info("App started", logging.RunFuncName())
+	a.core = NewCore()
 	a.ctx = ctx
 }
 
 func (a *App) shutdown(ctx context.Context) {
 	logger.Info("App shutdown", logging.RunFuncName())
-	err := logger.LogOutPut(execPath)
+	logger.LogOutPut(a.core.execPath)
+	err := a.core.cm.SaveConfig()
 	if err != nil {
-		sys.ShowMessage("Error when writing log: ", err.Error(), "error")
+		utils.ShowMessage("Error when writing config: ", err.Error(), "error")
 		panic(err)
 	}
-	err = cm.SaveConfig()
-	if err != nil {
-		sys.ShowMessage("Error when writing config: ", err.Error(), "error")
-		panic(err)
-	}
+
+	core.agt.Close()
 }
 
 // return the raw data of file
@@ -97,65 +90,24 @@ func (a *App) Base64Decode(str string) string {
 	return string(decodeBytes)
 }
 
-// when user open the epmb file directly, this function will be called
-func (a *App) DirectLoading() Message {
-	var msg Message
-	fmt.Println(Args)
-	if Args == "" {
-		msg.Code = -1
-		msg.Msg = "no args"
-		return msg
-	}
-	dataStruct, err := epubMaker.Load(Args)
-	if err != nil {
-		msg.Code = 1
-		msg.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return msg
-	}
-	jsonData := epubMaker.Dump(&dataStruct)
-	msg.Code = 0
-	msg.Msg = "success"
-	msg.Data = jsonData
-	return msg
-}
-
-// corresponding to the "Open" button on the frontend
 func (a *App) FileOpen() Message {
 	var Message Message
 	res := FileOpenDialog(a, "Epub File", "*.epub")
-	// dataStruct, err := epubMaker(res)
 	if res == "" {
 		Message.Code = -1
 		Message.Msg = "cancel"
 		return Message
 	}
-	reader, err := epubMaker.NewReader(res, filepath.Join(execPath, "tmp"))
-	if err != nil {
-		Message.Code = 1
-		Message.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
+	returnData := a.core.agt.Exec("reader", res)
+	if returnData.Err() != nil {
+		logger.Error(returnData.Err().Error(), logging.RunFuncName())
+		Message.Code = -1
+		Message.Msg = returnData.Err().Error()
 		return Message
 	}
-	err = reader.Read()
-	if err != nil {
-		Message.Code = 1
-		Message.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return Message
-	}
-	err = reader.Pharse()
-	if err != nil {
-		Message.Code = 1
-		Message.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return Message
-	}
-	reader.Close()
-	jsonData := epubMaker.Dump(&reader.JsonData)
 	Message.Code = 0
 	Message.Msg = res
-	Message.Data = jsonData
+	Message.Data = returnData.Data().(string)
 	return Message
 }
 
@@ -191,29 +143,26 @@ func (a *App) FileImport() Message {
 
 // corresponding to the "Save" button on the frontend
 func (a *App) FileSave(name string, rawJson string, skip bool) Message {
+	var msg Message
 	res := name
 	if !skip {
-		res = FileSaveDialog(a, name, "*.no")
+		res = FileSaveDialog(a, name, "*.epub")
 	}
-
-	var msg Message
 	if res == "" {
 		msg.Code = -1
 		msg.Msg = "cancel"
 		return msg
 	}
-	var JsonStruct epubMaker.JsonData
-	epubMaker.LoadJson([]byte(rawJson), &JsonStruct)
-	err := epubMaker.SaveToFile(&JsonStruct, res)
-	if err != nil {
+	returnData := a.core.agt.Exec("writer", res, rawJson)
+	if returnData.Err() != nil {
 		msg.Code = 1
-		msg.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Msg = returnData.Err().Error()
+		logger.Error(returnData.Err().Error(), logging.RunFuncName())
 		return msg
 	}
 	msg.Code = 0
-	msg.Msg = "success"
 	msg.Data = res
+	msg.Msg = "success"
 	return msg
 }
 
@@ -238,7 +187,7 @@ func (a *App) GetStaticResources() Message {
 
 // corresponding to the "Delete" button on the "insert picture"
 func (a *App) FileDelete(name string) Message {
-	path := filepath.Join(execPath, "resources", name)
+	path := filepath.Join(a.core.execPath, "resources", name)
 	msg := new(Message)
 	err := os.Remove(path)
 	if err != nil {
@@ -256,7 +205,7 @@ func (a *App) FileDelete(name string) Message {
 // corresponding to the "Upload" button on the "insert picture"
 func (a *App) ImageUpload() ImageFIle {
 	var img ImageFIle
-	var AllowExt = config.StaticResource.AllowExt
+	var AllowExt = a.core.config.StaticResource.AllowExt
 	conSuffix := strings.Join(AllowExt, ";")
 	conSuffix = strings.ReplaceAll(conSuffix, ".", "*")
 	path := FileOpenDialog(a, "Image File", conSuffix)
@@ -288,7 +237,7 @@ func (a *App) ImageUpload() ImageFIle {
 	h.Write(imgData)
 	id := hex.EncodeToString(h.Sum(nil))[8:24]
 
-	fp, err := os.Create(filepath.Join(execPath, "resources", id+".jpg"))
+	fp, err := os.Create(filepath.Join(a.core.execPath, "resources", id+".jpg"))
 	if err != nil {
 		img.Code = 1
 		logger.Error(err.Error(), logging.RunFuncName())
@@ -314,7 +263,7 @@ func (a *App) LoadImage(data string) Message {
 	h := md5.New()
 	h.Write(imgData)
 	id := hex.EncodeToString(h.Sum(nil))[8:24]
-	imagePath := filepath.Join(execPath, "resources", id+".jpg")
+	imagePath := filepath.Join(a.core.execPath, "resources", id+".jpg")
 	if _, err := os.Stat(imagePath); err == nil {
 		msg.Code = -1
 		msg.Msg = "resources folder already exists"
@@ -358,50 +307,9 @@ func (a *App) OpenImage() Message {
 	return msg
 }
 
-// corresponding to the "Export" button on the frontend
-func (a *App) Publish(name string, rawJson string) Message {
-	var JsonStruct epubMaker.JsonData
-	var msg Message
-	path := FileSaveDialog(a, name, "*.epub")
-	if path == "" {
-		msg.Code = -1
-		return msg
-	}
-	epubMaker.LoadJson([]byte(rawJson), &JsonStruct)
-	logger.Info("Start to export to EPUB", logging.RunFuncName())
-	// tmpPath := "epubMaker.(JsonStruct)"
-	// e := epubMaker.WriteEpub(tmpPath, path)
-	// if e != nil {
-	// 	e = os.RemoveAll(tmpPath)
-	// 	msg.Code = 1
-	// 	msg.Msg = e.Error()
-	// 	logger.Error(e.Error(), logging.RunFuncName())
-	// 	return msg
-	// }
-	// e = os.RemoveAll(tmpPath)
-	// if e != nil {
-	// 	logger.Error(e.Error(), logging.RunFuncName())
-	// }
-	// msg.Code = 0
-	// msg.Msg = "success"
-	// return msg
-	writer := epubMaker.NewWriter(path, filepath.Join(execPath, "tmp"), &JsonStruct)
-	err := writer.Write()
-	defer writer.Close()
-	if err != nil {
-		msg.Code = 1
-		msg.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return msg
-	}
-	msg.Code = 0
-	msg.Msg = "success"
-	return msg
-}
-
 // get the base64 string of the image
 func (a *App) GetImageData(filename string) Message {
-	imagePath := filepath.Join(execPath, "resources", filename)
+	imagePath := filepath.Join(a.core.execPath, "resources", filename)
 	var msg Message
 	fs, err := os.Open(imagePath)
 	if err != nil {
@@ -426,7 +334,7 @@ func (a *App) GetConfig(sector string, key string) Message {
 		msg.Msg = "sector or key is empty"
 		return msg
 	}
-	value, err := cm.GetConfigByKey(sector, key)
+	value, err := a.core.cm.GetConfigByKey(sector, key)
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
@@ -446,7 +354,7 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 		msg.Msg = "sector or key is empty"
 		return msg
 	}
-	err := cm.SetConfig(sector, key, value)
+	err := a.core.cm.SetConfig(sector, key, value)
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()
@@ -460,8 +368,8 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 
 func (a *App) ImageDownload(url string) Message {
 	var msg Message
-	downloader := Manager.NewImageDownloader(filepath.Join(execPath, "resources"), config.Dowload.Timeout)
-	err := Manager.ProcessDownload(downloader, url)
+	downloader := server.NewImageDownloader(filepath.Join(a.core.execPath, "resources"), a.core.config.Dowload.Timeout)
+	err := server.ProcessDownload(downloader, url)
 	if err != nil {
 		msg.Code = 1
 		msg.Msg = err.Error()

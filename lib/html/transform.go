@@ -74,7 +74,7 @@ func NewPMNode() *PMNode {
 }
 
 // Find the text node till the end of the tree
-func findTextTill(node *AstElement, parent *PMNode) {
+func FindTextTill(node *AstElement, parent *PMNode) {
 	s := NewStack()
 	s.Push(node)
 	for {
@@ -131,6 +131,7 @@ func ConvertIntoProseMirrorScheme(root *AstElement, Parsers map[string]TagParser
 	imageParser := &ImageParser{}
 	svgParser := &SVGParser{}
 	tableParser := &TableParser{}
+	brParser := &BrParser{}
 	BasicParser := map[string]TagParser{
 		"h1":    headerParser,
 		"h2":    headerParser,
@@ -142,6 +143,7 @@ func ConvertIntoProseMirrorScheme(root *AstElement, Parsers map[string]TagParser
 		"img":   imageParser,
 		"table": tableParser,
 		"image": svgParser,
+		"br":    brParser,
 	}
 
 	func(dst, src map[string]TagParser) {

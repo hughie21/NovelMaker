@@ -166,11 +166,8 @@ export default{
         openError: "Failed to open the file",
         saveSuccess: "Save success",
         saveError: "Save error",
-        exportInfoTitle: "Notice",
         importSuccess: "Import success",
         importError: "Import error",
-        exportInfo: "Exporting the file, please do not close the software or turn off the computer.",
-        exportSuccess: "Export success",
-        exportError: "Export error",
+        loadingMessage: "Loading...",
     }
 }

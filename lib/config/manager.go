@@ -1,12 +1,4 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-10-16
-@LastEditors: Hughie
-@LastEditTime: 2024-11-1
-@Description: Configurations reader and writer of the program
-*/
-
-package manager
+package config
 
 import (
 	"errors"
@@ -16,60 +8,17 @@ import (
 	"strconv"
 	"sync"
 
-	"NovelMaker/logging"
-	sys "NovelMaker/sys"
+	"github.com/hughie21/NovelMaker/lib/logging"
+	"github.com/hughie21/NovelMaker/lib/utils"
 
 	"gopkg.in/yaml.v2"
 )
 
-type Config struct {
-	Appearance     AppearanceConfig     `yaml:"appearance"`
-	Window         WindowConfig         `yaml:"window"`
-	Linux          LinuxConfig          `yaml:"linux"`
-	StaticResource StaticResourceConfig `yaml:"staticResource"`
-	Log            LogConfig            `yaml:"log"`
-	Dowload        DownloadConfig       `yaml:"download"`
-}
-
-type DownloadConfig struct {
-	Timeout int `yaml:"timeout"`
-}
-
-type AppearanceConfig struct {
-	DefaultOpen string `yaml:"defaultOpen"`
-	Width       int    `yaml:"width"`
-	Height      int    `yaml:"height"`
-}
-
-type WindowConfig struct {
-	GPUAccelerate   bool   `yaml:"GPUAccelerate"`
-	WebviewUserData string `yaml:"webviewUserData"`
-}
-
-type LinuxConfig struct {
-	WindowTransparent bool   `yaml:"windowTransparent"`
-	GPUStrategy       string `yaml:"GPUStrategy"`
-}
-
-type StaticResourceConfig struct {
-	Port     string   `yaml:"port"`
-	AllowExt []string `yaml:"allowExt"`
-}
-
-type LogConfig struct {
-	Level int `yaml:"level"`
-}
-
-type IConfigManager interface {
-	LoadConfig() error
-	SetConfig(sector string, key string, value string) error
-	GetConfig() *Config
-}
+var logger = logging.NewLog(logging.FatalLevel, true)
 
 type ConfigManager struct {
 	config *Config
 	path   string
-	IConfigManager
 }
 
 var (
@@ -93,14 +42,14 @@ func NewConfigManager(path string) *ConfigManager {
 func (cm *ConfigManager) LoadConfig() error {
 	fp, err := os.ReadFile(filepath.Join(cm.path, "config.yaml"))
 	if err != nil {
-		sys.ShowMessage("Error", "Failed to load config file: "+err.Error(), "error")
+		utils.ShowMessage("Error", "Failed to load config file: "+err.Error(), "error")
 		return err
 	}
 
 	var config Config
 	err = yaml.Unmarshal(fp, &config)
 	if err != nil {
-		sys.ShowMessage("Error", "Failed to unmarshal config file: "+err.Error(), "error")
+		utils.ShowMessage("Error", "Failed to unmarshal config file: "+err.Error(), "error")
 		return err
 	}
 	cm.config = &config

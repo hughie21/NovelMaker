@@ -8,50 +8,14 @@
 */
 
 import { useI18n } from 'vue-i18n';
-import { editorRef, imageInfo } from '../../assets/js/globals.js';
+import { editorRef } from '../../assets/js/globals.js';
 
 const { t } = useI18n();
 const editor = editorRef;
-const handleImagePos = (justifyContent) => {
-    imageInfo.postition = justifyContent;
-    const E = editorRef.value;
-    console.log(justifyContent)
-    E.chain().focus().updateAttributes("image", {pos: justifyContent}).run();
-}
 
-const handleImgSize = (val) => {
-    imageInfo.zoom = val;
-    const E = editorRef.value;
-    E.chain().focus().updateAttributes("image", {zoom: val}).run();
-}
 </script>
 
 <template>
-<!-- image -->
-<div id="bubbleMenu" style="display: none;">
-    <div class="bubble-menu">
-        <div class="position-btn">
-            <button :class="'bubble-btn '+ (imageInfo.postition == 'left' ? 'btn-active' : '')" @click="handleImagePos('left')">
-                <i class="el-icon">
-                    <svg t="1725182706562" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8984" width="200" height="200"><path d="M952 792H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM952 160H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM608 660c8.8 0 16-7.2 16-16V380c0-8.8-7.2-16-16-16H96c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16h512zM152 436h400v152H152V436zM704 646c0 4.4 3.6 8 8 8h224c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H712c-4.4 0-8 3.6-8 8v56zM712 442h224c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H712c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8z" p-id="8985"></path></svg>
-                </i>
-            </button>
-            <button :class="'bubble-btn '+ (imageInfo.postition == 'center' ? 'btn-active' : '')" @click="handleImagePos('center')">
-                <i class="el-icon">
-                    <svg t="1725182692917" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8826" width="200" height="200"><path d="M952 792H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM952 160H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM848 660c8.8 0 16-7.2 16-16V380c0-8.8-7.2-16-16-16H176c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16h672zM232 436h560v152H232V436z" p-id="8827"></path></svg>
-                </i>
-            </button>
-            <button :class="'bubble-btn '+ (imageInfo.postition == 'right' ? 'btn-active' : '')" @click="handleImagePos('right')">
-                <i class="el-icon">
-                    <svg t="1725182718546" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9142" width="200" height="200"><path d="M952 792H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM952 160H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM928 660c8.8 0 16-7.2 16-16V380c0-8.8-7.2-16-16-16H416c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16h512zM472 436h400v152H472V436zM80 646c0 4.4 3.6 8 8 8h224c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H88c-4.4 0-8 3.6-8 8v56zM88 442h224c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H88c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8z" p-id="9143"></path></svg>
-                </i>
-            </button>
-        </div>
-        <div class="size-bar">
-            <el-slider v-model="imageInfo.zoom" size="small" placement="bottom" @input="handleImgSize" :min="10"/>
-        </div>
-    </div>
-</div>
 
 <!-- table -->
 <div id="tableMenu" style="display: none;">

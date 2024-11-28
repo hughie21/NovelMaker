@@ -11,7 +11,7 @@ import { visio, editTheme, editLang } from '../../assets/js/globals';
 import { reactive, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElNotification } from 'element-plus'
-import { GetConfig, SetConfig } from '../../../wailsjs/go/main/App';
+import { GetConfig, SetConfig } from '../../../wailsjs/go/core/App';
 import { languages as langs } from '../../assets/js/i18n';
 
 const { t, locale } = useI18n();

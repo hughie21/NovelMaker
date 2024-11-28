@@ -12,7 +12,7 @@ import { visio, imageInfo, editorRef, staticFiles } from '../../assets/js/global
 import { ref } from 'vue';
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import $ from 'jquery'
-import { ImageUpload, FileDelete, ImageDownload } from '../../../wailsjs/go/main/App.js'
+import { ImageUpload, FileDelete, ImageDownload } from '../../../wailsjs/go/core/App.js'
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -82,22 +82,9 @@ const handleInsert = () => {
     var elem = lastClick.value;
     const url = elem.attr("src");
     const id = elem.attr("id");
-    const imgNode = {src: url, alt: id, title: id, zoom: 50, pos: "left"};
+    const imgNode = {src: url, alt: id, title: id};
     const editor = editorRef.value;
     editor.chain().focus().InsertImage(imgNode).createParagraphNear().run();
-    imageInfo.elem = "";
-    imageInfo.postition = "left";
-    imageInfo.zoom = 50;
-
-    // I consider that we shouldn't to push the image right now
-    // As we are not sure whether the user will delete the image or not
-    //
-    // So, I will push the image when the user save or export the book
-    // to avoid the frequently operation to the data
-
-    /* bookInfo.resources.push({
-        ... 
-    })*/
 
     visio.mediaVisible = false;
 }

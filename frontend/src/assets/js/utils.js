@@ -6,7 +6,7 @@
 @Description: This is the public methods for the whole program.
 */
 
-import {DirectLoading, Base64Decode, GetStaticResources} from "../../../wailsjs/go/main/App.js"
+import {Base64Decode, GetStaticResources} from "../../../wailsjs/go/core/App.js"
 
 import { ElMessage } from 'element-plus'
 import {
@@ -14,7 +14,9 @@ import {
     cover,
     bookInfo,
     change,
-    staticFiles
+    staticFiles,
+    title,
+    currentSave
 } from "./globals.js"
 
 /*
@@ -57,7 +59,10 @@ const resetState = () => {
         publisher: "",
         subject: [],
         date: "",
-        meta: []
+        cover: {
+            name: "",
+            data: ""
+        }
     }
     bookInfo.content = "";
     bookInfo.resources = [];
@@ -65,6 +70,8 @@ const resetState = () => {
     const editor = editorRef.value;
     editor.chain().clearContent().run();
     change.value = false;
+    title.value = "Untitle";
+    currentSave.value = "";
 }
 
 const getImageFiles = async () => {
@@ -87,7 +94,7 @@ const initCover = ()=>{
     }
     bookInfo.resources.push({
         id: "cover",
-        name: "cover.jpg",
+        name: "cover",
         type: "image/jpeg",
         data: bookInfo.metadata.cover.data
     })
@@ -95,32 +102,32 @@ const initCover = ()=>{
     cover.data = bookInfo.metadata.cover.data;
 }
 
-// Check if open the epmb suffix file directly and load the data
+// Check if open the epub suffix file directly and load the data
 const checkIfOpenFileDirectly = async () => { 
-    let message = await DirectLoading().then((res)=> {
-        return res;
-    })
-    if(message.Code != 0){
-        return;
-    }
-    let rawData = JSON.parse(message.Data);
-    if(rawData != null) {
-        rawData.metadata.creator = rawData.metadata.creator.join(',');
-        rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-        rawData.content = await Base64Decode(rawData.content).then((res)=> {
-            return JSON.parse(res);
-        });
-        const E = editorRef.value;
-        E.chain().setContent(rawData.content, true).run();
-        E.chain().focus().insertContent().run();
-        bookInfo.metadata = rawData.metadata;
-        bookInfo.content = rawData.content;
-        bookInfo.toc = rawData.toc;
-        bookInfo.resources = rawData.resources;
-        initCover();
-        change.value = false;
-    }
-    return
+    // let message = await DirectLoading().then((res)=> {
+    //     return res;
+    // })
+    // if(message.Code != 0){
+    //     return;
+    // }
+    // let rawData = JSON.parse(message.Data);
+    // if(rawData != null) {
+    //     rawData.metadata.creator = rawData.metadata.creator.join(',');
+    //     rawData.metadata.contributors = rawData.metadata.contributors.join(',');
+    //     rawData.content = await Base64Decode(rawData.content).then((res)=> {
+    //         return JSON.parse(res);
+    //     });
+    //     const E = editorRef.value;
+    //     E.chain().setContent(rawData.content, true).run();
+    //     E.chain().focus().insertContent().run();
+    //     bookInfo.metadata = rawData.metadata;
+    //     bookInfo.content = rawData.content;
+    //     bookInfo.toc = rawData.toc;
+    //     bookInfo.resources = rawData.resources;
+    //     initCover();
+    //     change.value = false;
+    // }
+    // return
 }
 
 // Based on the headers array, generate the toc structure

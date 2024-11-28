@@ -2,19 +2,14 @@ package html
 
 import (
 	"encoding/json"
-	"io"
-	"os"
 	"testing"
 )
 
-func TestAstElement(t *testing.T) {
-	fs, _ := os.Open("text.xhtml")
-	defer fs.Close()
-	rawData, _ := io.ReadAll(fs)
-	ast := LoadHTML(rawData)
-	// json_data, _ := json.Marshal(ast)
-	// t.Logf("Ast JSON: %s", json_data)
-	doc := ConvertIntoProseMirrorScheme(ast, map[string]TagParser{})
-	json_data, _ := json.Marshal(doc)
-	t.Logf("%s", json_data)
+func TestAst(t *testing.T) {
+	testContent := `<body><p>dawda</p><br></br><p>dawda</p><br></br><br></br><br></br><p>dwada</p><br></br><br></br><span style='display:flex;justify-content:left;'><img src='../Images/b882997817cfad8d.jpg' alt='b882997817cfad8d.jpg' title='b882997817cfad8d.jpg' style='width:50%;'/></span><br></br><br></br><span style='display:flex;justify-content:left;'><img src='../Images/0164b793d2f9252d.jpg' alt='0164b793d2f9252d.jpg' title='0164b793d2f9252d.jpg' style='width:50%;'/></span><br></br><br></br></body>`
+	ast := LoadHTML([]byte(testContent))
+	t.Error("test")
+	jsonNodes := ConvertIntoProseMirrorScheme(ast, map[string]TagParser{})
+	jsonData, _ := json.Marshal(jsonNodes)
+	t.Log(string(jsonData))
 }

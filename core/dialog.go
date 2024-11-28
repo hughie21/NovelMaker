@@ -1,14 +1,12 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-7-5
-@LastEditors: Hughie
-@LastEditTime: 2024-10-12
-*/
+// Description: This file encapsulated the system dialog provided by wails runtime, which is used to open and save files.
+// Author: Hughie21
+// Date: 2024-10-12
+// license that can be found in the LICENSE file.
 
-package main
+package core
 
 import (
-	logging "NovelMaker/logging"
+	logging "github.com/hughie21/NovelMaker/lib/logging"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )

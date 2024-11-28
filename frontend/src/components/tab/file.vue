@@ -6,10 +6,10 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, Publish, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/main/App.js'
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { FileOpen, FileSave, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/core/App.js'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, imageInfo, title } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -44,14 +44,76 @@ const setImage = async (book) => {
         });
     }));
 }
-//D:\NovelMaker\build\bin\tmp\style\style.css: The system cannot find the path specified.
 
-const exportFile = async () => {
-    ElNotification({
-        title: t('message.exportInfoTitle'),
-        message: h('p', { style: 'color: teal' }, t('message.exportInfo')),
-        type: 'warning',
+const findTheLastImage = (nodes) => {
+    if(nodes.type == "image"){
+            return nodes;
+    }
+    if(nodes.content){
+         for(let i = nodes.content.length - 1; i >= 0; i--){
+              let res = findTheLastImage(nodes.content[i]);
+              if(res){
+                return res;
+              }
+         }
+    }
+}
+
+const openFilePicker = async () => {
+    var res = await FileOpen().then((res) => {
+        return res
     })
+    if(res.Code == 1){
+        ElMessage.error(t('message.openError'))
+        return;
+    }else if (res.Code == -1){
+        return;
+    }
+
+    let loading = ElLoading.service({
+        lock: true,
+        text: t('message.loadingMessage'),
+        background: 'rgba(0, 0, 0, 0.7)',
+    })
+
+    try{
+        var rawData = JSON.parse(res.Data);
+    }catch(e){
+        loading.close();
+        ElMessage.error(t('message.openError'))
+        return;
+    }
+
+    rawData.metadata.creator = rawData.metadata.creator.join(',');
+
+    rawData.metadata.contributors = rawData.metadata.contributors.join(',');
+
+    rawData.content = await Base64Decode(rawData.content).then((res)=> {
+        return JSON.parse(res);
+    });
+
+    await getImageFiles();
+
+    const E = editorRef.value;
+
+    bookInfo.metadata = rawData.metadata;
+
+    let lastImage = findTheLastImage(rawData.content);
+    imageInfo.zoom = parseInt(lastImage.attrs.zoom);
+    imageInfo.pos = lastImage.attrs.pos;
+
+    console.log(rawData.content);
+
+    E.commands.setContent(rawData.content, true);
+
+    initCover();
+    loading.close();
+    change.value = false;
+    currentSave.value = res.Msg;
+    title.value = res.Msg;
+}
+
+const saveFilePicker = async (saveAs) => {
     let tempData = JSON.parse(JSON.stringify(bookInfo));
     const editor = editorRef.value;
     tempData.content = editor.getHTML();
@@ -83,94 +145,48 @@ const exportFile = async () => {
         return `<img${p1.replace(regex_url, "../Images")}/>`;
     })
     tempData.content = tempData.content.replaceAll('"', "'");
-    console.log(tempData)
     let name = bookInfo.metadata.title;
-    Publish(name, (()=>{
+
+    console.log(currentSave.value)
+
+    if (currentSave.value !== "" && !saveAs) {
+        console.log("auto save")
+        FileSave(currentSave.value, (()=>{
             return JSON.stringify(tempData)
         }  
-        )()
-    ).then((res)=> {
-        if(res.Code == 1){
-            ElMessage.error(t('message.exportError') + ": " + res.Msg)
-            return
-        }else if(res.Code == 0){
-            ElMessage.success(t('message.exportSuccess'))
-        }
-        return
-    })
-}
-
-const openFilePicker = async () => {
-    var res = await FileOpen().then((res) => {
-        return res
-    })
-    if(res.Code == 1){
-        ElMessage.error(t('message.openError'))
-        return;
-    }else if (res.Code == -1){
-        return;
-    }
-    try{
-        var rawData = JSON.parse(res.Data);
-    }catch(e){
-        ElMessage.error(t('message.openError'))
-        return;
-    }
-    rawData.metadata.creator = rawData.metadata.creator.join(',');
-    rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-    rawData.content = await Base64Decode(rawData.content).then((res)=> {
-        return JSON.parse(res);
-    });
-    await getImageFiles();
-    const E = editorRef.value;
-    bookInfo.metadata = rawData.metadata;
-    bookInfo.content = rawData.content;
-    bookInfo.toc = rawData.toc;
-    bookInfo.resources = rawData.resources;
-    E.chain().setContent(bookInfo.content, true).run();
-    E.chain().focus().insertContent().run();
-    initCover();
-    console.log(bookInfo.resources)
-    change.value = false;
-    currentSave.value = res.Msg;
-}
-
-const saveFilePicker = async (saveAs) => {
-    let tempData = JSON.parse(JSON.stringify(bookInfo));
-    tempData.metadata.creator = tempData.metadata.creator.split(',');
-    tempData.metadata.contributors = tempData.metadata.contributors.split(',');
-    console.log(tempData)
-    let jsonString = JSON.stringify(tempData.content);
-    // tempData.content = await Base64Encode(jsonString);
-    tempData.metadata.description = tempData.metadata.description.replaceAll("\n", "\\n");
-    let name = bookInfo.metadata.title;
-    console.log(tempData)
-    await setImage(tempData);
-    if (currentSave.value !== "" && !saveAs) {
-        // Save as another file
-        FileSave(currentSave.value, JSON.stringify(tempData), true).then((res)=> {
-            if(res.Code === 0) {
-                ElMessage.info(t('message.saveSuccess'));
-                change.value = false;
+        )(),
+        true
+        ).then((res)=> {
+            if(res.Code == 1){
+                ElMessage.error(t('message.saveError') + ": " + res.Msg)
+                return
+            }else if(res.Code == 0){
                 currentSave.value = res.Data;
-            }else if(res.Code === -1){
-                return;
-            }else{
-                ElMessage.error(t('message.saveError') + ": " + res);
+                title.value = res.Data;
+                change.value = false;
+                ElMessage.success(t('message.saveSuccess'))
+                return
             }
         })
-        return;
+        return
     }
-    FileSave(name, JSON.stringify(tempData), false).then((res)=>{
-        if(res.Code === 0) {
-            ElMessage.info(t('message.saveSuccess'));
-            change.value = false;
+
+    FileSave(name, (()=>{
+            return JSON.stringify(tempData)
+        }  
+        )(),
+        false
+    ).then((res)=> {
+        if(res.Code == 1){
+            ElMessage.error(t('message.saveError') + ": " + res.Msg)
+            return
+        }else if(res.Code == 0){
             currentSave.value = res.Data;
-        }else if(res.Code === -1){
-            return;
-        }else{
-            ElMessage.error(t('message.saveError') + ": " + res);
+            title.value = res.Data;
+            change.value = false;
+            ElMessage.success(t('message.saveSuccess'))
         }
+        return
     })
 }
 
@@ -308,14 +324,14 @@ const openFileInfo = ()=> {
                 </button>
                 <span>{{$t('toolBar.file.saveAs')}}</span>
             </span>
-            <span class="btn-group" style="width:50px;">
+            <!-- <span class="btn-group" style="width:50px;">
                 <button @click="exportFile" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-export">
                     <i class="el-icon">
                         <svg t="1717398848121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4277" width="200" height="200"><path d="M895.99896 1024H127.99992a63.99992 63.99992 0 0 1-63.99992-63.99992V384.0008a63.99992 63.99992 0 0 1 63.99992-63.99992h223.99972a31.99996 31.99996 0 0 1 0 63.99992H127.99992v575.99928h767.99904V384.0008h-223.99972a31.99996 31.99996 0 0 1 0-63.99992h223.99972a63.99992 63.99992 0 0 1 63.99992 63.99992v575.99928a63.99992 63.99992 0 0 1-63.99992 63.99992zM543.9994 100.481154V704.0004a31.99996 31.99996 0 0 1-63.99992 0V100.481154L340.479654 216.641009 299.519706 167.361071l191.99976-159.9998 0.255999 0.319999a30.463962 30.463962 0 0 1 40.44795 0l0.255999-0.319999 191.99976 159.9998-40.959948 49.279938z" p-id="4278"></path></svg>
                     </i>
                 </button>
                 <span>{{$t('toolBar.file.export')}}</span>
-            </span>
+            </span> -->
             <div class="division-border"></div>
             <span class="btn-group" style="width:80px;">
                 <button @click="openFileInfo" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file">

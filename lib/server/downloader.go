@@ -1,15 +1,6 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-10-31
-@LastEditors: Hughie
-@LastEditTime: 2024-11-1
-@Description: Download middleware
-*/
-
-package manager
+package server
 
 import (
-	"NovelMaker/logging"
 	"crypto/md5"
 	"encoding/hex"
 	"io"
@@ -18,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/hughie21/NovelMaker/lib/logging"
 )
 
 type Middleware interface {

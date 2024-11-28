@@ -9,7 +9,7 @@
 
 import { ref, onMounted } from 'vue';
 import * as runtime from "../wailsjs/runtime/runtime";
-import { FileSave } from '../wailsjs/go/main/App';
+import { FileSave } from '../wailsjs/go/core/App';
 import { useI18n } from 'vue-i18n';
 import { change, title, bookInfo, editorRef } from './assets/js/globals';
 import { ElMessage, ElMessageBox } from 'element-plus';

@@ -6,10 +6,9 @@
 @Description: This is the program that get the right execution path of the program when go build or run
 */
 
-package main
+package utils
 
 import (
-	sys "NovelMaker/sys"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,7 +16,7 @@ import (
 	"strings"
 )
 
-func getCurrentAbPath() string {
+func GetCurrentAbPath() string {
 	dir := getCurrentAbPathByExecutable()
 	if strings.Contains(dir, getTmpDir()) {
 		return getCurrentAbPathByCaller()
@@ -35,17 +34,16 @@ func getTmpDir() string {
 }
 
 func getCurrentAbPathByExecutable() string {
-	exePath, err := os.Executable()
+	exePath, err := os.Getwd()
 	if err != nil {
-		sys.ShowMessage("Error", "Failed to get current directory: "+err.Error(), "error")
+		ShowMessage("Error", "Failed to get current directory: "+err.Error(), "error")
 	}
-	res, _ := filepath.EvalSymlinks(filepath.Dir(exePath))
-	return res
+	return exePath
 }
 
 func getCurrentAbPathByCaller() string {
 	var abPath string
-	_, filename, _, ok := runtime.Caller(0)
+	_, filename, _, ok := runtime.Caller(1)
 	if ok {
 		abPath = path.Dir(filename)
 	}

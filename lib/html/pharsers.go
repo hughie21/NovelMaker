@@ -3,6 +3,7 @@ package html
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 type (
@@ -16,6 +17,7 @@ type (
 	ListParser   struct{}
 	TableParser  struct{}
 	SVGParser    struct{}
+	BrParser     struct{}
 )
 
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {
@@ -28,7 +30,7 @@ func (p *HeaderParser) Parse(node *AstElement) *PMNode {
 		Attrs:   map[string]string{"level": fmt.Sprintf("%d", level)},
 		Content: []*PMNode{},
 	}
-	findTextTill(node, heading)
+	FindTextTill(node, heading)
 	return heading
 }
 
@@ -49,8 +51,19 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 		imageAttr["title"] = ""
 	}
 
-	imageAttr["zoom"] = "50"
-	imageAttr["pos"] = "left"
+	if v, ok := node.Attrs["width"]; ok {
+		if strings.Contains(v, "%") {
+			imageAttr["zoom"] = v
+		}
+	} else {
+		imageAttr["zoom"] = "50"
+	}
+
+	if v, ok := node.Parent.Attrs["justify-content"]; ok {
+		imageAttr["pos"] = v
+	} else {
+		imageAttr["pos"] = "left"
+	}
 
 	image := &PMNode{
 		Type:  "image",
@@ -92,7 +105,7 @@ func (p *ListParser) Parse(node *AstElement) *PMNode {
 				Type:    "listItem",
 				Content: []*PMNode{},
 			}
-			findTextTill(node, listItem)
+			FindTextTill(node, listItem)
 			bulletList.Content = append(bulletList.Content, listItem)
 		}
 		for _, child := range node.Children {
@@ -115,7 +128,6 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 	// this function is to find the table cell when reach the tr tag
 	//
 	// the reason why we need to do this is because the text node is not the direct child of the tr tag
-	//
 	// so we need an extra funtion to find the table cell node
 	//
 	sf := func(node *AstElement, parent *PMNode) {
@@ -136,7 +148,7 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 					},
 					Content: []*PMNode{},
 				}
-				findTextTill(node, tableCell)
+				FindTextTill(node, tableCell)
 				parent.Content = append(parent.Content, tableCell)
 			}
 			for _, child := range node.Children {
@@ -196,4 +208,14 @@ func (p *SVGParser) Parse(node *AstElement) *PMNode {
 		Attrs: imageAttr,
 	}
 	return image
+}
+
+func (p *BrParser) Parse(node *AstElement) *PMNode {
+	if node == nil {
+		return nil
+	}
+	br := &PMNode{
+		Type: "paragraph",
+	}
+	return br
 }

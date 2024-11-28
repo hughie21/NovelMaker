@@ -85,7 +85,12 @@ const handleChange = () => {
 
 const test = () => {
     const E = editorRef.value;
-    console.log(JSON.stringify(E.getJSON()));
+    
+    // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
+    console.log(E.getHTML());
+    
+    // var data = JSON.parse('{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"dawda"}]},{"type":"image","attrs":{"alt":"b882997817cfad8d.jpg","pos":"left","src":"http://127.0.0.1:7288/b882997817cfad8d.jpg","title":"b882997817cfad8d.jpg","zoom":"10"}}]}')
+    // E.commands.setContent(data)
 }
 </script>
 

@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	html "NovelMaker/lib/html"
-	utils "NovelMaker/lib/utils"
+	"github.com/hughie21/NovelMaker/lib/html"
+	"github.com/hughie21/NovelMaker/lib/utils"
 
 	"github.com/beevik/etree"
 )
@@ -115,7 +115,7 @@ func (r *Reader) moveImage() error {
 	return nil
 }
 
-func (r *Reader) Pharse() error {
+func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	// Pharse package document
 	packageDoc := r.Package
 	r.MetaData.Identifier = packageDoc.FindElement("//dc:identifier").Text()
@@ -194,7 +194,7 @@ func (r *Reader) Pharse() error {
 			defer fs.Close()
 			rawData, _ := io.ReadAll(fs)
 			ast := html.LoadHTML(rawData)
-			currentNode := html.ConvertIntoProseMirrorScheme(ast, map[string]html.TagParser{})
+			currentNode := html.ConvertIntoProseMirrorScheme(ast, extension)
 			textNode.Content = append(textNode.Content, currentNode.Content...)
 		}
 	}

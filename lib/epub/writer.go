@@ -9,8 +9,6 @@
 package epub
 
 import (
-	utils "NovelMaker/lib/utils"
-	logging "NovelMaker/logging"
 	"archive/zip"
 	"encoding/base64"
 	"encoding/xml"
@@ -18,9 +16,9 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-)
 
-var logger = logging.NewLog(logging.FatalLevel, true)
+	"github.com/hughie21/NovelMaker/lib/utils"
+)
 
 type XMLData struct {
 	Container []byte
@@ -119,11 +117,6 @@ func (w *Writer) formPackage() error {
 		Manifest: ManifestNode{
 			Items: []ItemNode{
 				{
-					Id:        "ncx",
-					Href:      "toc.ncx",
-					MediaType: "application/x-dtbncx+xml",
-				},
-				{
 					Id:        "style.css",
 					Href:      "Styles/style.css",
 					MediaType: "text/css",
@@ -170,7 +163,7 @@ func (w *Writer) formPackage() error {
 	for _, item := range w.JsonData.Resources {
 		if item.Id == "cover" {
 			content.Manifest.Items = append(content.Manifest.Items, ItemNode{
-				Id:         item.Id,
+				Id:         "image_" + item.Id,
 				Href:       "Images/" + item.Name + utils.FileSuffix[item.Type],
 				MediaType:  item.Type,
 				Properties: "cover-image",
@@ -178,8 +171,8 @@ func (w *Writer) formPackage() error {
 			continue
 		}
 		content.Manifest.Items = append(content.Manifest.Items, ItemNode{
-			Id:        item.Id,
-			Href:      "Images/" + item.Name,
+			Id:        "item_" + item.Id,
+			Href:      "Images/" + item.Name + utils.FileSuffix[item.Type],
 			MediaType: item.Type,
 		})
 	}
@@ -256,40 +249,39 @@ func (w *Writer) formText() error {
 	return nil
 }
 
-func (w *Writer) loadMedia() {
+func (w *Writer) loadMedia() error {
 	for _, item := range w.JsonData.Resources {
 		if utils.Contains(Image, item.Type) {
-			decodeData, e := base64.StdEncoding.DecodeString(item.Data)
-			if e != nil {
-				// logger.Error(e.Error(), logging.RunFuncName())
-				// continue
-				panic(e)
+			decodeData, err := base64.StdEncoding.DecodeString(item.Data)
+			if err != nil {
+				return err
 			}
 			w.Media = append(w.Media, File{Name: item.Name, Data: decodeData, Type: item.Type})
 		}
 	}
+	return nil
 }
 
 func (w *Writer) toTemp() error {
 	FoldName := w.tempDir
 	var err error
 	if err = os.Mkdir(FoldName, os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	if err = os.MkdirAll(FoldName+"/META-INF", os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	if err = os.MkdirAll(FoldName+"/OEBPS", os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	if err = os.MkdirAll(FoldName+"/OEBPS/Text", os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	if err = os.MkdirAll(FoldName+"/OEBPS/Styles", os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	if err = os.MkdirAll(FoldName+"/OEBPS/Images", os.ModePerm); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	mimetype := `application/epub+zip`
 	WriteToFile([]byte(mimetype), FoldName+"/mimetype")
@@ -308,7 +300,7 @@ func (w *Writer) toTemp() error {
 	for _, medium := range w.Media {
 		err := os.WriteFile(FoldName+"/OEBPS/Images/"+medium.Name+utils.FileSuffix[medium.Type], medium.Data, 0644)
 		if err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
+			return err
 		}
 	}
 	return nil
@@ -331,7 +323,10 @@ func (w *Writer) Write() error {
 	if err != nil {
 		return err
 	}
-	w.loadMedia()
+	err = w.loadMedia()
+	if err != nil {
+		return err
+	}
 	err = w.toTemp()
 	if err != nil {
 		return err
@@ -350,23 +345,14 @@ func (w *Writer) Close() {
 // Generate an EPUB file from the temp fold
 // @Quoted from https://github.com/gonejack/html-to-epub/blob/main/go-epub/write.go
 func WriteEpub(tempDir string, destFilePath string) error {
-	logger.Info("Write to EPUB: "+destFilePath, logging.RunFuncName())
 	f, err := os.Create(destFilePath)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
-		}
-	}()
+	defer f.Close()
 
 	z := zip.NewWriter(f)
-	defer func() {
-		if err := z.Close(); err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
-		}
-	}()
+	defer z.Close()
 
 	skipMimetypeFile := false
 
@@ -380,7 +366,7 @@ func WriteEpub(tempDir string, destFilePath string) error {
 		relativePath = filepath.ToSlash(relativePath)
 		if err != nil {
 			// tempDir and path are both internal, so we shouldn't get here
-			logger.Error(err.Error(), logging.RunFuncName())
+			return err
 		}
 
 		// Only include regular files, not directories
@@ -403,22 +389,18 @@ func WriteEpub(tempDir string, destFilePath string) error {
 			w, err = z.Create(relativePath)
 		}
 		if err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
+			return err
 		}
 
 		r, err := os.Open(path)
 		if err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
+			return err
 		}
-		defer func() {
-			if err := r.Close(); err != nil {
-				logger.Error(err.Error(), logging.RunFuncName())
-			}
-		}()
+		defer r.Close()
 
 		_, err = io.Copy(w, r)
 		if err != nil {
-			logger.Error(err.Error(), logging.RunFuncName())
+			return err
 		}
 
 		return nil
@@ -428,18 +410,18 @@ func WriteEpub(tempDir string, destFilePath string) error {
 	mimetypeFilePath := filepath.Join(tempDir, "mimetype")
 	mimetypeInfo, err := os.Lstat(mimetypeFilePath)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 	err = addFileToZip(mimetypeFilePath, mimetypeInfo, nil)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 
 	skipMimetypeFile = true
 
 	err = filepath.Walk(tempDir, addFileToZip)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		return err
 	}
 
 	return nil

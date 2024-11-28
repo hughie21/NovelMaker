@@ -21,7 +21,6 @@ import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import '../assets/css/editor.css';
 
-const bubbleMenu = document.getElementById("bubbleMenu").children[0];
 const tableMenu = document.getElementById("tableMenu").children[0];
  
 function throttle(func, wait) {
@@ -41,14 +40,15 @@ const editor = new Editor({
     extensions: [
         StarterKit,
         CustomImage,
+        // ImageResize,
         CustomHeading,
-        BubbleMenu.configure({
-            pluginKey: "bubbleMenuImage",
-            element: bubbleMenu,
-            shouldShow: (({ editor, view, state, oldState, from, to }) => {
-                return editor.isActive("image")
-            })
-        }),
+        // BubbleMenu.configure({
+        //     pluginKey: "bubbleMenuImage",
+        //     element: bubbleMenu,
+        //     shouldShow: (({ editor, view, state, oldState, from, to }) => {
+        //         return editor.isActive("image")
+        //     })
+        // }),
         BubbleMenu.configure({
             pluginKey: "bubbleMenuTable",
             element: tableMenu,

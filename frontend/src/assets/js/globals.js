@@ -17,9 +17,17 @@ const fontVal = ref("Arial");
 const fonts = ref([])
 const fontSizeVal = ref("16px")
 const imageInfo = reactive({
-    zoom: 100,
-    postition: "left",
-    elem: ""
+    props: {
+        state: null,
+        elem: null
+    },
+    attrs: {
+        src: "",
+        alt: "",
+        title: "",
+        zoom: 50,
+        pos: "left"
+    }
 })
 
 // i18n

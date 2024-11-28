@@ -1,15 +1,6 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-7-20
-@LastEditors: Hughie
-@LastEditTime: 2024-08-1
-@Description: This is the static resource manager of the program, use to display the static resource on the frontend
-*/
-
-package manager
+package server
 
 import (
-	logging "NovelMaker/logging"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,6 +10,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+
+	"github.com/hughie21/NovelMaker/lib/logging"
 )
 
 var logger = logging.NewLog(logging.FatalLevel, true)

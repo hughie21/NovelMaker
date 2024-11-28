@@ -11,7 +11,7 @@ import { visio, change, cover, language_list as languages, bookInfo } from '../.
 import { ref, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Delete, Plus, ZoomIn } from '@element-plus/icons-vue'
-import { OpenImage } from '../../../wailsjs/go/main/App.js'
+import { OpenImage } from '../../../wailsjs/go/core/App.js'
 
 const { t } = useI18n();
 const bookinfo = bookInfo;

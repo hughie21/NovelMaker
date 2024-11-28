@@ -1,15 +1,6 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-10-14
-@LastEditors: Hughie
-@LastEditTime: 2024-11-1
-@Description: Log module of the program
-*/
-
 package logging
 
 import (
-	sys "NovelMaker/sys"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,37 +8,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/hughie21/NovelMaker/lib/utils"
 )
-
-type Level map[string]int
-
-var (
-	Logger     *Log
-	once       *sync.Once
-	InfoLevel  = Level{"weight": 1}
-	WarnLevel  = Level{"weight": 2}
-	ErrorLevel = Level{"weight": 3}
-	DebugLevel = Level{"weight": 5}
-	FatalLevel = Level{"weight": 4}
-)
-
-type LogMessage struct {
-	Level    Level
-	Time     time.Time
-	Message  string
-	FuncName string
-}
-
-type FileLogger struct {
-	Filename string
-}
-
-type Log struct {
-	Level      Level
-	Message    []LogMessage
-	FileLogger *FileLogger
-	FileFlag   bool
-}
 
 func RunFuncName() string {
 	pc, file, line, ok := runtime.Caller(1)
@@ -58,17 +21,17 @@ func RunFuncName() string {
 	return fmt.Sprintf("%s:%d | %s", file, line, f.Name())
 }
 
-func (message *LogMessage) toString() string {
+func (message *LogMessage) String() string {
 	timeFormat := message.Time.Format("2006-01-02 15:04:05")
 	var str_level string
-	switch message.Level["weight"] {
-	case 1:
+	switch message.Level {
+	case 0:
 		str_level = "INFO"
-	case 2:
+	case 1:
 		str_level = "WARN"
-	case 3:
+	case 2:
 		str_level = "ERROR"
-	case 5:
+	case 3:
 		str_level = "DEBUG"
 	case 4:
 		str_level = "FATAL"
@@ -79,7 +42,6 @@ func (message *LogMessage) toString() string {
 func (fl *FileLogger) Print(message string) error {
 	f, err := os.OpenFile(fl.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
-		sys.ShowMessage("Warning", "Unable to write the log file: "+err.Error(), "warning")
 		return err
 	}
 	f.WriteString(message)
@@ -106,7 +68,15 @@ func (l *Log) SetLevel(level Level) {
 }
 
 func (l *Log) SetFileLogger(filename string) {
-	print(filename)
+	if !utils.PathExists(filename) {
+		fs, err := os.Create(filename)
+		if err != nil {
+			utils.ShowMessage("Error", "Failed to create log file: "+err.Error(), "error")
+		}
+		defer fs.Close()
+		systemInfo := NewSystem()
+		fs.WriteString(systemInfo.String() + "\n")
+	}
 	l.FileLogger.Filename = filename
 }
 
@@ -180,8 +150,8 @@ func (l *Log) LogOutPut(rootpath string) error {
 	var err error
 	for _, message := range l.Message {
 		fmt.Println(message.Message)
-		if message.Level["weight"] <= l.Level["weight"] {
-			err = l.FileLogger.Print(message.toString())
+		if message.Level <= l.Level {
+			err = l.FileLogger.Print(message.String())
 		}
 	}
 	return err
