@@ -16,8 +16,8 @@ const (
 	InfoLevel = iota
 	WarnLevel
 	ErrorLevel
-	DebugLevel
 	FatalLevel
+	DebugLevel
 )
 
 type LogMessage struct {

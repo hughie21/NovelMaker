@@ -10,6 +10,12 @@
 import tab from './components/tab.vue'
 import dialogs from './components/dialog.vue'
 import editor from './components/editor.vue'
+import { useI18n } from 'vue-i18n';
+import {checkIfOpenFileDirectly} from './assets/js/utils'
+
+const { t } = useI18n();
+
+checkIfOpenFileDirectly(t);
 </script>
 
 <template>

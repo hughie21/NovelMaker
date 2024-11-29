@@ -66,8 +66,7 @@ func DirList(w http.ResponseWriter, r *http.Request, f http.File) {
 
 func ResourceHandler(execPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ResourcePath := filepath.Join(execPath, "resources")
-		path := ResourcePath + r.URL.Path
+		path := filepath.Join(execPath, "resources", r.URL.Path)
 		f, err := os.Open(path)
 		if err != nil {
 			logger.Error(err.Error(), logging.RunFuncName())

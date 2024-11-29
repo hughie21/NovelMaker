@@ -8,6 +8,7 @@ import (
 	"embed"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/hughie21/NovelMaker/lib/config"
 	"github.com/hughie21/NovelMaker/lib/logging"
@@ -54,7 +55,7 @@ func (c *Core) Init(assets embed.FS, app *App) *options.App {
 		utils.ShowMessage("Load Configuration Failed", err.Error(), "error")
 	}
 	c.config = c.cm.GetConfig()
-	c.agt = NewAgent(5, 300)
+	c.agt = NewAgent(c.config.Core.MaxTask, time.Duration(c.config.Core.Timeout))
 
 	// The args is the path of the epub file which is used to open the file directly.
 	ArgsLength := len(os.Args)

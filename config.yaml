@@ -16,7 +16,13 @@ staticResource:
   - .png
   - .gif
   - .bmp
+  deleteCache: true
 log:
   level: 4
 download:
   timeout: 10
+core:
+  maxTask: 5
+  timeout: 300
+  autoSave: true
+  autoSaveInterval: 60

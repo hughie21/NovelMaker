@@ -14,7 +14,6 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import i18n from './i18n';
-import {checkIfOpenFileDirectly} from './utils'
 
 // initialize the theme and language settings
 if(!localStorage.getItem('lock')){
@@ -24,8 +23,6 @@ if(!localStorage.getItem('lock')){
     localStorage.setItem("clipboard", "");
     location.reload();
 }
-
-checkIfOpenFileDirectly();
 
 const app = createApp(App);
 const header = createApp(Header)

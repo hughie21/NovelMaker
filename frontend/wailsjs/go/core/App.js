@@ -10,6 +10,10 @@ export function Base64Encode(arg1) {
   return window['go']['core']['App']['Base64Encode'](arg1);
 }
 
+export function DirectLoading() {
+  return window['go']['core']['App']['DirectLoading']();
+}
+
 export function FileDelete(arg1) {
   return window['go']['core']['App']['FileDelete'](arg1);
 }

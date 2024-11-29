@@ -90,7 +90,9 @@ func (e *EpubReader) Run(ctx context.Context, args ...interface{}) (interface{},
 		return nil, ctx.Err()
 	default:
 		reader, err := epub.NewReader(targetPath, e.tempDir)
-		defer reader.Close()
+		if reader != nil {
+			defer reader.Close()
+		}
 		if err != nil {
 			return nil, err
 		}

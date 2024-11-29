@@ -6,6 +6,8 @@ export function Base64Decode(arg1:string):Promise<string>;
 
 export function Base64Encode(arg1:string):Promise<string>;
 
+export function DirectLoading():Promise<core.Message>;
+
 export function FileDelete(arg1:string):Promise<core.Message>;
 
 export function FileImport():Promise<core.Message>;

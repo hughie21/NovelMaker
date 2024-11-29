@@ -7,6 +7,7 @@ type Config struct {
 	StaticResource StaticResourceConfig `yaml:"staticResource"`
 	Log            LogConfig            `yaml:"log"`
 	Dowload        DownloadConfig       `yaml:"download"`
+	Core           CoreConfig           `yaml:"core"`
 }
 
 type DownloadConfig struct {
@@ -30,10 +31,18 @@ type LinuxConfig struct {
 }
 
 type StaticResourceConfig struct {
-	Port     string   `yaml:"port"`
-	AllowExt []string `yaml:"allowExt"`
+	Port        string   `yaml:"port"`
+	AllowExt    []string `yaml:"allowExt"`
+	DeleteCache bool     `yaml:"deleteCache"`
 }
 
 type LogConfig struct {
 	Level int `yaml:"level"`
+}
+
+type CoreConfig struct {
+	MaxTask          int  `yaml:"maxTask"`
+	Timeout          int  `yaml:"timeout"`
+	AutoSave         bool `yaml:"autoSave"`
+	AutoSaveInterval int  `yaml:"autoSaveInterval"`
 }

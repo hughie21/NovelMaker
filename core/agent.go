@@ -64,7 +64,6 @@ func NewAgent(size int, timeout time.Duration) *Agent {
 		plugins: make(map[string]Extension),
 	}
 	tmpDir := filepath.Join(utils.GetCurrentAbPath(), "tmp")
-
 	reader := NewEpubReader(tmpDir)
 	writer := NewEpubWriter(tmpDir)
 
