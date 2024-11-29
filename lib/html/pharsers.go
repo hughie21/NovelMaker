@@ -3,7 +3,8 @@ package html
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
+	"regexp"
+	"strconv"
 )
 
 type (
@@ -51,18 +52,21 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 		imageAttr["title"] = ""
 	}
 
-	if v, ok := node.Attrs["width"]; ok {
-		if strings.Contains(v, "%") {
-			imageAttr["zoom"] = v
+	widthReg := regexp.MustCompile(`width:\s?(\d+)px`)
+	style, ok := node.Attrs["style"]
+	if ok {
+		matches := widthReg.FindStringSubmatch(style)
+		if len(matches) > 1 {
+			width := matches[1]
+			if intV, _ := strconv.Atoi(width); intV > 500 {
+				width = "500"
+			}
+			imageAttr["style"] = fmt.Sprintf("width: %s; height: auto; cursor: pointer;", width)
+		} else {
+			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
 		}
 	} else {
-		imageAttr["zoom"] = "50"
-	}
-
-	if v, ok := node.Parent.Attrs["justify-content"]; ok {
-		imageAttr["pos"] = v
-	} else {
-		imageAttr["pos"] = "left"
+		imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
 	}
 
 	image := &PMNode{

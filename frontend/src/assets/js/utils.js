@@ -6,9 +6,8 @@
 @Description: This is the public methods for the whole program.
 */
 
-import {Base64Decode, GetStaticResources} from "../../../wailsjs/go/core/App.js"
-
-import { ElMessage } from 'element-plus'
+import {Base64Decode, GetStaticResources, DirectLoading } from "../../../wailsjs/go/core/App.js"
+import { ElMessage, ElLoading } from 'element-plus'
 import {
     editorRef,
     cover,
@@ -16,8 +15,9 @@ import {
     change,
     staticFiles,
     title,
-    currentSave
+    currentSave,
 } from "./globals.js"
+
 
 /*
 public methods
@@ -103,31 +103,48 @@ const initCover = ()=>{
 }
 
 // Check if open the epub suffix file directly and load the data
-const checkIfOpenFileDirectly = async () => { 
-    // let message = await DirectLoading().then((res)=> {
-    //     return res;
-    // })
-    // if(message.Code != 0){
-    //     return;
-    // }
-    // let rawData = JSON.parse(message.Data);
-    // if(rawData != null) {
-    //     rawData.metadata.creator = rawData.metadata.creator.join(',');
-    //     rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-    //     rawData.content = await Base64Decode(rawData.content).then((res)=> {
-    //         return JSON.parse(res);
-    //     });
-    //     const E = editorRef.value;
-    //     E.chain().setContent(rawData.content, true).run();
-    //     E.chain().focus().insertContent().run();
-    //     bookInfo.metadata = rawData.metadata;
-    //     bookInfo.content = rawData.content;
-    //     bookInfo.toc = rawData.toc;
-    //     bookInfo.resources = rawData.resources;
-    //     initCover();
-    //     change.value = false;
-    // }
-    // return
+const checkIfOpenFileDirectly = async (t) => {
+    let loading = ElLoading.service({
+        lock: true,
+        text: t("message.loading"),
+        background: 'rgba(0, 0, 0, 0.7)',
+    })
+    let message = await DirectLoading().then((res)=> {
+        return res;
+    })
+    if(message.Code == -1){
+        loading.close();
+        return;
+    }
+    if (message.Code == 1) {
+        loading.close();
+        ElMessage.error(t("message.openError") + message.Msg);
+        return;
+    }
+    let rawData = JSON.parse(message.Data);
+    if(rawData != null) {
+        rawData.metadata.creator = rawData.metadata.creator.join(',');
+
+        rawData.metadata.contributors = rawData.metadata.contributors.join(',');
+
+        rawData.content = await Base64Decode(rawData.content).then((res)=> {
+            return JSON.parse(res);
+        });
+
+        await getImageFiles();
+
+        const E = editorRef.value;
+
+        bookInfo.metadata = rawData.metadata;
+        E.commands.setContent(rawData.content, false);
+
+        initCover();
+        loading.close();
+        change.value = false;
+        currentSave.value = message.Msg;
+        title.value = message.Msg;
+    }
+    return
 }
 
 // Based on the headers array, generate the toc structure

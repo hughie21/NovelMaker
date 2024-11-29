@@ -101,7 +101,7 @@ func (a *App) FileOpen() Message {
 	returnData := a.core.agt.Exec("reader", res)
 	if returnData.Err() != nil {
 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
-		Message.Code = -1
+		Message.Code = 1
 		Message.Msg = returnData.Err().Error()
 		return Message
 	}
@@ -109,6 +109,27 @@ func (a *App) FileOpen() Message {
 	Message.Msg = res
 	Message.Data = returnData.Data().(string)
 	return Message
+}
+
+func (a *App) DirectLoading() Message {
+	var msg Message
+	if a.core.Args == "" {
+		msg.Code = -1
+		msg.Msg = "no file"
+		return msg
+	}
+
+	returnData := a.core.agt.Exec("reader", a.core.Args)
+	if returnData.Err() != nil {
+		logger.Error(returnData.Err().Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = returnData.Err().Error()
+		return msg
+	}
+	msg.Code = 0
+	msg.Msg = a.core.Args
+	msg.Data = returnData.Data().(string)
+	return msg
 }
 
 func (a *App) FileImport() Message {

@@ -8,7 +8,7 @@
 */
 
 import {  getImageFiles } from '../../assets/js/utils';
-import { visio, imageInfo, editorRef, staticFiles } from '../../assets/js/globals.js';
+import { visio, editorRef, staticFiles } from '../../assets/js/globals.js';
 import { ref } from 'vue';
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import $ from 'jquery'

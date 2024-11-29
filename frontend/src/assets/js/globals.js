@@ -16,19 +16,6 @@ const headerVal = ref(0);
 const fontVal = ref("Arial");
 const fonts = ref([])
 const fontSizeVal = ref("16px")
-const imageInfo = reactive({
-    props: {
-        state: null,
-        elem: null
-    },
-    attrs: {
-        src: "",
-        alt: "",
-        title: "",
-        zoom: 50,
-        pos: "left"
-    }
-})
 
 // i18n
 const language_list = ref(lang);
@@ -114,7 +101,6 @@ export {
     fontVal,
     fonts,
     fontSizeVal,
-    imageInfo,
     language_list,
     editLang,
     editTheme,

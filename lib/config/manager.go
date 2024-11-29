@@ -8,13 +8,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/hughie21/NovelMaker/lib/logging"
 	"github.com/hughie21/NovelMaker/lib/utils"
 
 	"gopkg.in/yaml.v2"
 )
-
-var logger = logging.NewLog(logging.FatalLevel, true)
 
 type ConfigManager struct {
 	config *Config
@@ -59,19 +56,19 @@ func (cm *ConfigManager) LoadConfig() error {
 func (cm *ConfigManager) SaveConfig() error {
 	fp, err := os.Create(filepath.Join(cm.path, "config.yaml"))
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		utils.ShowMessage("Error", "Failed to save config file: "+err.Error(), "error")
 		return err
 	}
 
 	data, err := yaml.Marshal(cm.config)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		utils.ShowMessage("Error", "Failed to marshal config file: "+err.Error(), "error")
 		return err
 	}
 
 	_, err = fp.Write(data)
 	if err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
+		utils.ShowMessage("Error", "Failed to write config file: "+err.Error(), "error")
 		return err
 	}
 

@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, imageInfo, title } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, title } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -43,20 +43,6 @@ const setImage = async (book) => {
             type: fileSuffix[suffix]
         });
     }));
-}
-
-const findTheLastImage = (nodes) => {
-    if(nodes.type == "image"){
-            return nodes;
-    }
-    if(nodes.content){
-         for(let i = nodes.content.length - 1; i >= 0; i--){
-              let res = findTheLastImage(nodes.content[i]);
-              if(res){
-                return res;
-              }
-         }
-    }
 }
 
 const openFilePicker = async () => {
@@ -97,14 +83,7 @@ const openFilePicker = async () => {
     const E = editorRef.value;
 
     bookInfo.metadata = rawData.metadata;
-
-    let lastImage = findTheLastImage(rawData.content);
-    imageInfo.zoom = parseInt(lastImage.attrs.zoom);
-    imageInfo.pos = lastImage.attrs.pos;
-
-    console.log(rawData.content);
-
-    E.commands.setContent(rawData.content, true);
+    E.commands.setContent(rawData.content, false);
 
     initCover();
     loading.close();

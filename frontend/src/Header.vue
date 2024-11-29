@@ -216,8 +216,9 @@ const handleSelect = (index) => {
         </el-menu>
     </div>
     <div class="header-center">
-        <span class="save-flag" v-show="change">*</span>
+        
         <div class="header-title">
+            <span class="save-flag" v-show="change">*</span>
             {{title}}
         </div>
     </div>
@@ -313,21 +314,22 @@ const handleSelect = (index) => {
     width: 62%;
     height: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    padding: 0 10%;
 }
 .save-flag {
     color: var(--el-text-color-secondary);
     font-size: 1em;
 }
 .header-title {
-    width: 300px;
+    width: 400px;
     height: 100%;
     font-size: 0.8em;
     color: var(--el-text-color-secondary);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    text-align: center;
 }
 .header-right {
     width: 10%;

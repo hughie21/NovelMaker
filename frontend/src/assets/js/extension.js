@@ -217,7 +217,7 @@ const CustomImage = Image.extend({
                 default: null,
             },
             style: {
-                default: 'width: 100%; height: auto; cursor: pointer;',
+                default: 'width: 300px; height: auto; cursor: pointer;',
                 parseHTML: (element) => {
                     const width = element.getAttribute('width');
                     return width
