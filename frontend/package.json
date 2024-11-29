@@ -9,29 +9,29 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@imengyu/vue3-context-menu": "^1.4.2",
-    "@tiptap/extension-color": "^2.6.6",
-    "@tiptap/extension-font-family": "^2.6.6",
-    "@tiptap/extension-image": "^2.6.6",
-    "@tiptap/extension-table": "^2.6.6",
-    "@tiptap/extension-table-cell": "^2.6.6",
-    "@tiptap/extension-table-header": "^2.6.6",
-    "@tiptap/extension-table-row": "^2.6.6",
-    "@tiptap/pm": "^2.6.6",
-    "@tiptap/starter-kit": "^2.6.6",
-    "@tiptap/vue-3": "^2.6.6",
-    "element-plus": "^2.7.4",
+    "@imengyu/vue3-context-menu": "^1.4.3",
+    "@tiptap/extension-color": "^2.10.3",
+    "@tiptap/extension-font-family": "^2.10.3",
+    "@tiptap/extension-image": "^2.10.3",
+    "@tiptap/extension-table": "^2.10.3",
+    "@tiptap/extension-table-cell": "^2.10.3",
+    "@tiptap/extension-table-header": "^2.10.3",
+    "@tiptap/extension-table-row": "^2.10.3",
+    "@tiptap/pm": "^2.10.3",
+    "@tiptap/starter-kit": "^2.10.3",
+    "@tiptap/vue-3": "^2.10.3",
+    "element-plus": "^2.8.8",
     "jquery": "^3.7.1",
-    "marked": "^13.0.2",
+    "marked": "^15.0.3",
     "polyfill": "^0.1.0",
-    "rollup": "^2.79.2",
+    "rollup": "^4.27.4",
     "tiptap-extension-resize-image": "^1.2.1",
-    "vue": "^3.2.37",
-    "vue-i18n": "^9.13.1",
+    "vue": "^3.5.13",
+    "vue-i18n": "^10.0.5",
     "x2js": "^3.4.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^3.0.3",
-    "vite": "^3.0.7"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.1"
   }
 }
