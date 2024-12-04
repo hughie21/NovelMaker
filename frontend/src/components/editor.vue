@@ -8,6 +8,7 @@
 */
 import { onMounted } from 'vue';
 import * as constant from '../assets/js/globals';
+import { updateCatalog } from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import { CustomImage, CustomHeading, TextBackground, TextFontSize, SearchSelBackground } from '../assets/js/extension';
@@ -82,16 +83,7 @@ const editor = new Editor({
         })
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
-        const headerContainer = document.getElementById('header-container');
-        // const headers = $doc.querySelectorAll('custom-heading'); // Abondoned: When the amount of data is large, the time consumption is too long
-        const editorContainer = document.getElementById('editor');
-        const headers = editorContainer.querySelectorAll('h1, h2, h3, h4, h5, h6')
-        headerContainer.innerHTML = [...headers].map((header)=>{
-            let id = header.id;
-            let type = header.tagName;
-            let text = header.innerText;
-            return `<li data-id="${id}" type="${type}">${text}</li>`;
-        }).join('');
+        updateCatalog();
         bookinfo.content = editor.getJSON();
         constant.change.value = true;
     }, 100),

@@ -1,11 +1,15 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"io"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/hughie21/NovelMaker/lib/html"
 )
 
 func GetFileData(path string) []byte {
@@ -21,6 +25,19 @@ func GetFileData(path string) []byte {
 	}
 
 	return rawData
+}
+
+func GenerateHash(data []byte) string {
+	h := sha1.New()
+	h.Write(data)
+	return hex.EncodeToString(h.Sum(nil))[:20]
+}
+
+func CombineMap(m1, m2 map[string]html.TagParser) map[string]html.TagParser {
+	for k, v := range m2 {
+		m1[k] = v
+	}
+	return m1
 }
 
 func PathExists(path string) bool {

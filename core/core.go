@@ -98,6 +98,7 @@ func (c *Core) formOptions(assets embed.FS, app *App) *options.App {
 		"auto":   linux.WebviewGpuPolicyOnDemand,
 	}
 
+	c.logger.Info("App Options Formed", logging.RunFuncName())
 	return &options.App{
 		Title:     "NovelMaker",
 		Width:     c.config.Appearance.Width,

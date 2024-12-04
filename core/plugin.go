@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	Extension interface {
+	Pluginer interface {
 		Run(context.Context, ...interface{}) (interface{}, error)
 		Info() PluginInfo
 	}

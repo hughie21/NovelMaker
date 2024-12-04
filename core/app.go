@@ -27,13 +27,16 @@ import (
 
 // App struct
 type App struct {
-	ctx  context.Context
-	core *Core
+	ctx          context.Context
+	core         *Core
+	resourceFold string
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{
+		resourceFold: utils.GenerateHash([]byte(time.Now().String())),
+	}
 }
 
 // the message formula that communiacte with the frontend
@@ -54,18 +57,33 @@ type ImageFIle struct {
 func (a *App) startup(ctx context.Context) {
 	a.core = NewCore()
 	a.ctx = ctx
+	if core.Args != "" {
+		a.resourceFold = utils.GenerateHash([]byte(core.Args))
+		return
+	}
+	defaultPath := filepath.Join(core.execPath, "resources", a.resourceFold)
+	if !utils.PathExists(defaultPath) {
+		err := os.Mkdir(defaultPath, os.ModePerm)
+		if err != nil {
+			logger.Fatal(err.Error(), logging.RunFuncName())
+			utils.ShowMessage("Error when creating resource folder: ", err.Error(), "error")
+			panic(err)
+		}
+	}
 }
 
 func (a *App) shutdown(ctx context.Context) {
 	logger.Info("App shutdown", logging.RunFuncName())
-	logger.LogOutPut(a.core.execPath)
 	err := a.core.cm.SaveConfig()
 	if err != nil {
 		utils.ShowMessage("Error when writing config: ", err.Error(), "error")
 		panic(err)
 	}
-
+	logger.Info("Config saved", logging.RunFuncName())
+	os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
+	logger.Info("Temporary resource folder removed", logging.RunFuncName())
 	core.agt.Close()
+	logger.LogOutPut(a.core.execPath)
 }
 
 // return the raw data of file
@@ -98,6 +116,7 @@ func (a *App) FileOpen() Message {
 		Message.Msg = "cancel"
 		return Message
 	}
+	os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
 	returnData := a.core.agt.Exec("reader", res)
 	if returnData.Err() != nil {
 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
@@ -105,6 +124,7 @@ func (a *App) FileOpen() Message {
 		Message.Msg = returnData.Err().Error()
 		return Message
 	}
+	a.resourceFold = utils.GenerateHash([]byte(res))
 	Message.Code = 0
 	Message.Msg = res
 	Message.Data = returnData.Data().(string)
@@ -181,6 +201,7 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
 		return msg
 	}
+	a.resourceFold = utils.GenerateHash([]byte(res))
 	msg.Code = 0
 	msg.Data = res
 	msg.Msg = "success"
@@ -191,7 +212,7 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 func (a *App) GetStaticResources() Message {
 	var msg Message
 	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:7288/")
+	resp, err := client.Get("http://127.0.0.1:7288/" + a.resourceFold)
 	if err != nil {
 		logger.Fatal(err.Error(), logging.RunFuncName())
 		msg.Code = 1
@@ -208,7 +229,7 @@ func (a *App) GetStaticResources() Message {
 
 // corresponding to the "Delete" button on the "insert picture"
 func (a *App) FileDelete(name string) Message {
-	path := filepath.Join(a.core.execPath, "resources", name)
+	path := filepath.Join(a.core.execPath, "resources", a.resourceFold, name)
 	msg := new(Message)
 	err := os.Remove(path)
 	if err != nil {
@@ -258,7 +279,7 @@ func (a *App) ImageUpload() ImageFIle {
 	h.Write(imgData)
 	id := hex.EncodeToString(h.Sum(nil))[8:24]
 
-	fp, err := os.Create(filepath.Join(a.core.execPath, "resources", id+".jpg"))
+	fp, err := os.Create(filepath.Join(a.core.execPath, "resources", a.resourceFold, id+".jpg"))
 	if err != nil {
 		img.Code = 1
 		logger.Error(err.Error(), logging.RunFuncName())
@@ -389,7 +410,7 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 
 func (a *App) ImageDownload(url string) Message {
 	var msg Message
-	downloader := server.NewImageDownloader(filepath.Join(a.core.execPath, "resources"), a.core.config.Dowload.Timeout)
+	downloader := server.NewImageDownloader(filepath.Join(a.core.execPath, "resources", a.resourceFold), a.core.config.Dowload.Timeout)
 	err := server.ProcessDownload(downloader, url)
 	if err != nil {
 		msg.Code = 1

@@ -106,7 +106,7 @@ const initCover = ()=>{
 const checkIfOpenFileDirectly = async (t) => {
     let loading = ElLoading.service({
         lock: true,
-        text: t("message.loading"),
+        text: t("message.loadingMessage"),
         background: 'rgba(0, 0, 0, 0.7)',
     })
     let message = await DirectLoading().then((res)=> {
@@ -145,6 +145,18 @@ const checkIfOpenFileDirectly = async (t) => {
         title.value = message.Msg;
     }
     return
+}
+
+const updateCatalog = () => {
+    const headerContainer = document.getElementById('header-container');
+    const editorContainer = document.getElementById('editor');
+    const headers = editorContainer.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    headerContainer.innerHTML = [...headers].map((header)=>{
+        let id = header.id;
+        let type = header.tagName;
+        let text = header.innerText;
+        return `<li data-id="${id}" type="${type}">${text}</li>`;
+    }).join('');
 }
 
 // Based on the headers array, generate the toc structure
@@ -266,6 +278,7 @@ export {
     rgbaToHex,
     arrayEquel,
     getImageFiles,
+    updateCatalog
 }
 
 export default {

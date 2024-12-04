@@ -81,7 +81,10 @@ const downloadImage = () => {
 const handleInsert = () => {
     var elem = lastClick.value;
     const url = elem.attr("src");
-    const id = elem.attr("id");
+    let id = elem.attr("id");
+    if (id == undefined) {
+        id = elem.parent().attr("id");
+    }
     const imgNode = {src: url, alt: id, title: id};
     const editor = editorRef.value;
     editor.chain().focus().InsertImage(imgNode).createParagraphNear().run();
@@ -100,7 +103,10 @@ const handleDelImg = () => {
         cancelButtonText: t("dialog.cancel"),
         type: 'warning',
     }).then(()=> {
-        const name = elem.attr("id");     
+        let name = elem.attr("id");
+        if(name == undefined){
+           name = elem.parent().attr('id');
+        } 
         FileDelete(name).then((res) => {
             if(res.Code == 0){
                 getImageFiles();
@@ -108,7 +114,6 @@ const handleDelImg = () => {
                     message: t("dialog.media.deleteSuccess"),
                     type: 'success'
                 });
-                visio.mediaVisible = false;
                 const state = E.state;
                 const doc = state.doc;
                 const positionsToDelete = [];
@@ -149,7 +154,7 @@ const handleDelImg = () => {
                 <el-image
                 @click="handleSelected"
                 v-for="item in staticFiles"
-                :id="item"
+                :id="item.split('\\')[2]"
                 style="width: 160px; height: 160px;"
                 :src="'http://127.0.0.1:7288/' + item"
                 fit="contain"
