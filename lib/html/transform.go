@@ -15,10 +15,10 @@ type (
 		prev  *node
 	}
 	PMNode struct {
-		Type    string            `json:"type"`
-		Attrs   map[string]string `json:"attrs,omitempty"`
-		Content []*PMNode         `json:"content,omitempty"`
-		Text    string            `json:"text,omitempty"`
+		Type    string                 `json:"type"`
+		Attrs   map[string]interface{} `json:"attrs,omitempty"`
+		Content []*PMNode              `json:"content,omitempty"`
+		Text    string                 `json:"text,omitempty"`
 	}
 	ParserContext struct {
 		parsers map[string]TagParser
@@ -68,7 +68,7 @@ func (s *Stack) Push(value interface{}) {
 func NewPMNode() *PMNode {
 	return &PMNode{
 		Type:    "",
-		Attrs:   make(map[string]string),
+		Attrs:   make(map[string]interface{}),
 		Content: []*PMNode{},
 	}
 }
@@ -126,31 +126,32 @@ func ConvertIntoProseMirrorScheme(root *AstElement, Parsers map[string]TagParser
 		return nil
 	}
 
-	headerParser := &HeaderParser{}
-	textParser := &TextParser{}
-	imageParser := &ImageParser{}
-	svgParser := &SVGParser{}
-	tableParser := &TableParser{}
-	brParser := &BrParser{}
-	BasicParser := map[string]TagParser{
-		"h1":    headerParser,
-		"h2":    headerParser,
-		"h3":    headerParser,
-		"h4":    headerParser,
-		"h5":    headerParser,
-		"h6":    headerParser,
-		"text":  textParser,
-		"img":   imageParser,
-		"table": tableParser,
-		"image": svgParser,
-		"br":    brParser,
-	}
+	// headerParser := &HeaderParser{}
+	// textParser := &TextParser{}
+	// // imageParser := &ImageParser{}
+	// svgParser := &SVGParser{}
+	// tableParser := &TableParser{}
+	// brParser := &BrParser{}
 
-	func(dst, src map[string]TagParser) {
-		for k, v := range src {
-			dst[k] = v
-		}
-	}(Parsers, BasicParser)
+	// BasicParser := map[string]TagParser{
+	// 	"h1":   headerParser,
+	// 	"h2":   headerParser,
+	// 	"h3":   headerParser,
+	// 	"h4":   headerParser,
+	// 	"h5":   headerParser,
+	// 	"h6":   headerParser,
+	// 	"text": textParser,
+	// 	// "img":   imageParser,
+	// 	"table": tableParser,
+	// 	"image": svgParser,
+	// 	"br":    brParser,
+	// }
+
+	// func(dst, src map[string]TagParser) {
+	// 	for k, v := range src {
+	// 		dst[k] = v
+	// 	}
+	// }(Parsers, BasicParser)
 
 	context := NewParserContext()
 	for tag, parser := range Parsers {

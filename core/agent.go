@@ -31,7 +31,7 @@ type Result struct {
 }
 
 type Transaction struct {
-	executor Extension
+	executor Pluginer
 	args     []interface{}
 	result   chan Result
 	wg       *sync.WaitGroup
@@ -42,7 +42,7 @@ type Transaction struct {
 // The context that carraied by the agent is used to cancel the plugin when the app is shutdown.
 // The timeout that represent the time to wait for the plugin to find a empty transaction.
 type Agent struct {
-	plugins map[string]Extension
+	plugins map[string]Pluginer
 	ctx     context.Context
 	cancel  context.CancelFunc
 	timeout time.Duration
@@ -61,7 +61,7 @@ func (r *Result) Err() error {
 // the size of the pool and the timeout are defined at the config file.
 func NewAgent(size int, timeout time.Duration) *Agent {
 	agt := Agent{
-		plugins: make(map[string]Extension),
+		plugins: make(map[string]Pluginer),
 	}
 	tmpDir := filepath.Join(utils.GetCurrentAbPath(), "tmp")
 	reader := NewEpubReader(tmpDir)
@@ -84,7 +84,7 @@ func NewAgent(size int, timeout time.Duration) *Agent {
 	return &agt
 }
 
-func (agt *Agent) RegisterPlugin(name string, plugin Extension) error {
+func (agt *Agent) RegisterPlugin(name string, plugin Pluginer) error {
 	if _, ok := agt.plugins[name]; ok {
 		return errors.New("plugin already registered")
 	}

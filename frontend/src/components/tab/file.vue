@@ -10,7 +10,7 @@ import { FileOpen, FileSave, FileImport, GetImageData, Base64Decode } from '../.
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
 import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, title } from '../../assets/js/globals.js';
-import { TocGenerator, initCover, resetState, getImageFiles } from '../../assets/js/utils.js';
+import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
 
@@ -23,9 +23,6 @@ const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 
 const setImage = async (book) => {
-    // const editor = editorRef.value;
-    // const allImages = editor.$nodes("image");
-    // const imageIDs = Array.from(new Set(allImages.map(e => e.attributes.alt)))
     if (staticFiles.value === null || staticFiles.value.length === 0) {
         return;
     }
@@ -35,7 +32,7 @@ const setImage = async (book) => {
             ElMessage.error(t('message.exportError') + ": " + data.Msg);
             return;
         }
-        let [name,suffix] = v.split(".");
+        let [name,suffix] = v.split('\\')[2].split(".");
         book.resources.push({
             id: name,
             name: name,
@@ -45,51 +42,82 @@ const setImage = async (book) => {
     }));
 }
 
-const openFilePicker = async () => {
-    var res = await FileOpen().then((res) => {
-        return res
-    })
-    if(res.Code == 1){
-        ElMessage.error(t('message.openError'))
-        return;
-    }else if (res.Code == -1){
-        return;
-    }
+const openFilePicker = () => {
+    async function innerOpner(){
+        var res = await FileOpen().then((res) => {
+            console.log(res)
+            return res
+        })
+        if(res.Code == 1){
+            ElMessage.error(t('message.openError'))
+            return;
+        }else if (res.Code == -1){
+            return;
+        }
 
-    let loading = ElLoading.service({
-        lock: true,
-        text: t('message.loadingMessage'),
-        background: 'rgba(0, 0, 0, 0.7)',
-    })
+        let loading = ElLoading.service({
+            lock: true,
+            text: t('message.loadingMessage'),
+            background: 'rgba(0, 0, 0, 0.7)',
+        })
 
-    try{
-        var rawData = JSON.parse(res.Data);
-    }catch(e){
+        try{
+            var rawData = JSON.parse(res.Data);
+        }catch(e){
+            loading.close();
+            ElMessage.error(t('message.openError'))
+            return;
+        }
+
+        rawData.metadata.creator = rawData.metadata.creator.join(',');
+
+        rawData.metadata.contributors = rawData.metadata.contributors.join(',');
+
+        rawData.content = await Base64Decode(rawData.content).then((res)=> {
+            return JSON.parse(res);
+        });
+
+        await getImageFiles();
+
+        const E = editorRef.value;
+
+        bookInfo.metadata = rawData.metadata;
+        E.commands.setContent(rawData.content);
+        
+        updateCatalog();
+        bookInfo.content = E.getJSON();
+        initCover();
         loading.close();
-        ElMessage.error(t('message.openError'))
-        return;
+        change.value = false;
+        currentSave.value = res.Msg;
+        title.value = res.Msg;
     }
-
-    rawData.metadata.creator = rawData.metadata.creator.join(',');
-
-    rawData.metadata.contributors = rawData.metadata.contributors.join(',');
-
-    rawData.content = await Base64Decode(rawData.content).then((res)=> {
-        return JSON.parse(res);
-    });
-
-    await getImageFiles();
-
-    const E = editorRef.value;
-
-    bookInfo.metadata = rawData.metadata;
-    E.commands.setContent(rawData.content, false);
-
-    initCover();
-    loading.close();
-    change.value = false;
-    currentSave.value = res.Msg;
-    title.value = res.Msg;
+    function innerCallBack(action){
+        if(action == 'confirm'){
+            saveFilePicker(true).then(()=> {
+                setTimeout(()=>{
+                    innerOpner();
+                }, 3000)
+            })
+        }else if(action == 'close'){
+            return;
+        }else if (action == 'cancel'){
+            innerOpner();
+            return;
+        }
+    }
+    if(change.value){
+        ElMessageBox.confirm(t('message.saveWarning'),t('message.warning'), {
+            confirmButtonText: t('message.confirm'),
+            cancelButtonText: t('message.notSave'),
+            distinguishCancelAndClose: true,
+            type: 'warning',
+            callback: innerCallBack
+        })
+    }else {
+        innerOpner();
+    }
+    
 }
 
 const saveFilePicker = async (saveAs) => {
@@ -126,10 +154,7 @@ const saveFilePicker = async (saveAs) => {
     tempData.content = tempData.content.replaceAll('"', "'");
     let name = bookInfo.metadata.title;
 
-    console.log(currentSave.value)
-
     if (currentSave.value !== "" && !saveAs) {
-        console.log("auto save")
         FileSave(currentSave.value, (()=>{
             return JSON.stringify(tempData)
         }  

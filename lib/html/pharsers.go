@@ -12,23 +12,29 @@ type (
 		Parse(node *AstElement) *PMNode
 	}
 
-	HeaderParser struct{}
-	TextParser   struct{}
-	ImageParser  struct{}
-	ListParser   struct{}
-	TableParser  struct{}
-	SVGParser    struct{}
-	BrParser     struct{}
+	HeaderParser struct {
+		Level int
+	}
+	TextParser  struct{}
+	ImageParser struct {
+		FoldName string
+	}
+	ListParser  struct{}
+	TableParser struct{}
+	SVGParser   struct {
+		FoldName string
+	}
+	BrParser struct{}
 )
 
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
 	}
-	level := map[string]int{"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}[node.Tag]
+	// level := map[string]int{"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}[node.Tag]
 	heading := &PMNode{
 		Type:    "custom-heading",
-		Attrs:   map[string]string{"level": fmt.Sprintf("%d", level)},
+		Attrs:   map[string]interface{}{"level": p.Level},
 		Content: []*PMNode{},
 	}
 	FindTextTill(node, heading)
@@ -39,10 +45,10 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
 	}
-	imageAttr := make(map[string]string)
+	imageAttr := make(map[string]interface{})
 	if v, ok := node.Attrs["src"]; ok {
 		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s", imageName)
+		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
 	}
 	if v, ok := node.Attrs["alt"]; ok {
 		imageAttr["alt"] = v
@@ -61,7 +67,7 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 			if intV, _ := strconv.Atoi(width); intV > 500 {
 				width = "500"
 			}
-			imageAttr["style"] = fmt.Sprintf("width: %s; height: auto; cursor: pointer;", width)
+			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
 		} else {
 			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
 		}
@@ -145,9 +151,9 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 			if node.Tag == "td" {
 				tableCell := &PMNode{
 					Type: "tableCell",
-					Attrs: map[string]string{
-						"colspan":  "1",
-						"rowspan":  "1",
+					Attrs: map[string]interface{}{
+						"colspan":  1,
+						"rowspan":  1,
 						"colwidth": "",
 					},
 					Content: []*PMNode{},
@@ -187,14 +193,14 @@ func (p *SVGParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
 	}
-	imageAttr := make(map[string]string)
+	imageAttr := make(map[string]interface{})
 	if v, ok := node.Attrs["xlink:href"]; ok { // compatible to the svg
 		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s", imageName)
+		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
 	}
 	if v, ok := node.Attrs["href"]; ok {
 		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s", imageName)
+		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
 	}
 	if v, ok := node.Attrs["alt"]; ok {
 		imageAttr["alt"] = v
@@ -204,8 +210,22 @@ func (p *SVGParser) Parse(node *AstElement) *PMNode {
 		imageAttr["title"] = ""
 	}
 
-	imageAttr["zoom"] = "50"
-	imageAttr["pos"] = "left"
+	widthReg := regexp.MustCompile(`width:\s?(\d+)px`)
+	style, ok := node.Attrs["style"]
+	if ok {
+		matches := widthReg.FindStringSubmatch(style)
+		if len(matches) > 1 {
+			width := matches[1]
+			if intV, _ := strconv.Atoi(width); intV > 500 {
+				width = "500"
+			}
+			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
+		} else {
+			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
+		}
+	} else {
+		imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
+	}
 
 	image := &PMNode{
 		Type:  "image",

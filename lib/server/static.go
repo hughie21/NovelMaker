@@ -40,7 +40,7 @@ func ErrorHandler(e error, w http.ResponseWriter) {
 	}
 }
 
-func DirList(w http.ResponseWriter, r *http.Request, f http.File) {
+func DirList(w http.ResponseWriter, r *http.Request, f http.File, parentDir string) {
 	dirs, err := f.Readdir(-1)
 	if err != nil {
 		logger.Fatal(err.Error(), logging.RunFuncName())
@@ -52,13 +52,15 @@ func DirList(w http.ResponseWriter, r *http.Request, f http.File) {
 	w.Header().Set("Content-Type", "text/json; charset=utf-8")
 	staticResource := new(StaticResource)
 	staticResource.Code = 0
+
 	for _, d := range dirs {
 		name := d.Name()
 		if d.IsDir() {
 			name += "/"
 		}
-		url := url.URL{Path: name}
-		staticResource.FileList = append(staticResource.FileList, url.String())
+		mdUrl := url.URL{Path: filepath.Join(parentDir, name)}
+		mdPath, _ := url.PathUnescape(mdUrl.String())
+		staticResource.FileList = append(staticResource.FileList, mdPath)
 	}
 	rawJson, _ := json.Marshal(staticResource)
 	io.WriteString(w, string(rawJson))
@@ -66,7 +68,8 @@ func DirList(w http.ResponseWriter, r *http.Request, f http.File) {
 
 func ResourceHandler(execPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		path := filepath.Join(execPath, "resources", r.URL.Path)
+		ResourcePath := filepath.Join(execPath, "resources")
+		path := ResourcePath + r.URL.Path
 		f, err := os.Open(path)
 		if err != nil {
 			logger.Error(err.Error(), logging.RunFuncName())
@@ -81,7 +84,7 @@ func ResourceHandler(execPath string) http.HandlerFunc {
 		}
 
 		if d.IsDir() {
-			DirList(w, r, f)
+			DirList(w, r, f, r.URL.Path)
 			return
 		}
 

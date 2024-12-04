@@ -49,7 +49,7 @@ func NewReader(targetPath string, tempDir string) (*Reader, error) {
 	r := &Reader{
 		tempDir:      filepath.Join(tempDir, fmt.Sprintf("~%s", name)),
 		targetPath:   targetPath,
-		resourcePath: filepath.Join(filepath.Join(tempDir, ".."), "resources"),
+		resourcePath: filepath.Join(filepath.Join(tempDir, ".."), "resources", utils.GenerateHash([]byte(targetPath))),
 	}
 	return r, nil
 }
@@ -104,6 +104,12 @@ func (r *Reader) Read() error {
 }
 
 func (r *Reader) moveImage() error {
+	if !utils.PathExists(r.resourcePath) {
+		err := os.Mkdir(r.resourcePath, os.ModePerm)
+		if err != nil {
+			return errors.New("create resource path error: " + err.Error())
+		}
+	}
 	for _, image := range r.Images {
 		ts, err := os.Create(filepath.Join(r.resourcePath, image.Name))
 		if err != nil {
@@ -118,10 +124,35 @@ func (r *Reader) moveImage() error {
 func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	// Pharse package document
 	packageDoc := r.Package
-	r.MetaData.Identifier = packageDoc.FindElement("//dc:identifier").Text()
-	r.MetaData.Title = packageDoc.FindElement("//dc:title").Text()
-	r.MetaData.Language = packageDoc.FindElement("//dc:language").Text()
-	r.MetaData.Publisher = packageDoc.FindElement("//dc:publisher").Text()
+
+	idElem := packageDoc.FindElement("//dc:identifier")
+	if idElem != nil {
+		r.MetaData.Identifier = idElem.Text()
+	} else {
+		r.MetaData.Identifier = ""
+	}
+
+	titleElem := packageDoc.FindElement("//dc:title")
+	if titleElem != nil {
+		r.MetaData.Title = titleElem.Text()
+	} else {
+		r.MetaData.Title = ""
+	}
+
+	langElem := packageDoc.FindElement("//dc:language")
+	if langElem != nil {
+		r.MetaData.Language = langElem.Text()
+	} else {
+		r.MetaData.Language = "en"
+	}
+
+	pubElem := packageDoc.FindElement("//dc:publisher")
+	if pubElem != nil {
+		r.MetaData.Publisher = packageDoc.FindElement("//dc:publisher").Text()
+	} else {
+		r.MetaData.Publisher = ""
+	}
+
 	CreaterElements := packageDoc.FindElements("//dc:creator")
 	for _, CreaterElement := range CreaterElements {
 		r.MetaData.Creator = append(r.MetaData.Creator, CreaterElement.Text())
@@ -194,7 +225,35 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 			defer fs.Close()
 			rawData, _ := io.ReadAll(fs)
 			ast := html.LoadHTML(rawData)
-			currentNode := html.ConvertIntoProseMirrorScheme(ast, extension)
+			currentNode := html.ConvertIntoProseMirrorScheme(ast, utils.CombineMap(extension, map[string]html.TagParser{
+				"img": &html.ImageParser{
+					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+				},
+				"h1": &html.HeaderParser{
+					Level: 1,
+				},
+				"h2": &html.HeaderParser{
+					Level: 2,
+				},
+				"h3": &html.HeaderParser{
+					Level: 3,
+				},
+				"h4": &html.HeaderParser{
+					Level: 4,
+				},
+				"h5": &html.HeaderParser{
+					Level: 5,
+				},
+				"h6": &html.HeaderParser{
+					Level: 6,
+				},
+				"text":  &html.TextParser{},
+				"table": &html.TableParser{},
+				"image": &html.SVGParser{
+					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+				},
+				"br": &html.BrParser{},
+			}))
 			textNode.Content = append(textNode.Content, currentNode.Content...)
 		}
 	}
