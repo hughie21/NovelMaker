@@ -7,7 +7,7 @@
 @Description: This is the dialog allow user to set up the config.
 */
 
-import { visio, editTheme, editLang } from '../../assets/js/globals';
+import { visio, editTheme, editLang, autoSave } from '../../assets/js/globals';
 import { reactive, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElNotification } from 'element-plus'
@@ -67,6 +67,16 @@ const initConfig = async () => {
             return res.Data;
         }
     });
+    autoSave.value.isAutoSave = await GetConfig("Core", "AutoSave").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    autoSave.value.autoSaveTime = await GetConfig("Core", "AutoSaveInterval").then(res => {
+        if(handleError(res)){
+            return parseInt(res.Data);
+        }
+    });
     generalSetting.windowSize = size;
     generalSetting.resPort = parseInt(port, 10);
     windowSetting.GPU = windowGPU == "true" ? true : false;
@@ -91,6 +101,15 @@ const sizes = computed(() => [
     {label: t('dialog.setting.normal'), value: 'normal'},
     {label: t('dialog.setting.fullScreen'), value: 'fullscreen'},
 ]);
+
+const saveTimes = [
+    {label: "30s", value: 30},
+    {label: "1min", value: 60},
+    {label: "5min", value: 300},
+    {label: "10min", value: 600},
+    {label: "30min", value: 1800},
+    {label: "1h", value: 3600},
+]
 
 const saveConfig = async (sector, key, val) => {
     return SetConfig(sector, key, val).then(res => {
@@ -119,6 +138,8 @@ const handleSaveConfig = async () => {
     flag = await saveConfig("StaticResource", "Port", generalSetting.resPort.toString());
     flag = await saveConfig("Window", "GPUAccelerate", windowSetting.GPU === true ? "true" : "false");
     flag = await saveConfig("Linux", "GPUStrategy", linuxSetting.GPUPolicy);
+    flag = await saveConfig("Core", "AutoSaveInterval", autoSave.value.autoSaveTime.toString());
+    flag = await saveConfig("Core", "AutoSave", autoSave.value.isAutoSave === true ? "true" : "false");
     if (flag && changeFlag.value) {
         ElNotification({
             title: t('message.saveSuccess'),
@@ -179,6 +200,24 @@ const handleSaveConfig = async () => {
                     >
                     <el-option
                         v-for="item in sizes"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                    />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.autoSave')">
+                    <el-switch @change="changeFlag = true" v-model="autoSave.isAutoSave"></el-switch>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.autoSaveTime')">
+                    <el-select
+                    @change="changeFlag = true"
+                    v-model="autoSave.autoSaveTime"
+                    style="width: 240px"
+                    :disabled="!autoSave.isAutoSave"
+                    >
+                    <el-option
+                        v-for="item in saveTimes"
                         :key="item.value"
                         :label="item.label"
                         :value="item.value"

@@ -6,11 +6,11 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/core/App.js'
+import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, title } from '../../assets/js/globals.js';
-import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog } from '../../assets/js/utils.js';
+import { editorRef, change, visio, bookInfo, currentSave, title } from '../../assets/js/globals.js';
+import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, autoSaving, setImage } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
 
@@ -22,25 +22,7 @@ const disableBtn = reactive({
 const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 
-const setImage = async (book) => {
-    if (staticFiles.value === null || staticFiles.value.length === 0) {
-        return;
-    }
-    await Promise.all(staticFiles.value.map(async (v) => {
-        let data = await GetImageData(v);
-        if (data.Code == 1) {
-            ElMessage.error(t('message.exportError') + ": " + data.Msg);
-            return;
-        }
-        let [name,suffix] = v.split('\\')[2].split(".");
-        book.resources.push({
-            id: name,
-            name: name,
-            data: data.Data,
-            type: fileSuffix[suffix]
-        });
-    }));
-}
+autoSaving(t);
 
 const openFilePicker = () => {
     async function innerOpner(){

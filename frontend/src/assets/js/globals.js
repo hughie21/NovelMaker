@@ -92,7 +92,12 @@ const fileSuffix = {
     "m4b": "audio/x-ms-m4b",
     "m4p": "audio/x-ms-m4p",
     "m4r": "audio/x-ms-m4r"
-  }
+}
+
+const autoSave = ref({
+    isAutoSave: true,
+    autoSaveTime: 60
+})
 
 export {
     editorRef,
@@ -111,7 +116,8 @@ export {
     title,
     currentSave,
     staticFiles,
-    fileSuffix
+    fileSuffix,
+    autoSave
 }
 
 export default{}

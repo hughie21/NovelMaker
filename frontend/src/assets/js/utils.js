@@ -6,7 +6,7 @@
 @Description: This is the public methods for the whole program.
 */
 
-import {Base64Decode, GetStaticResources, DirectLoading } from "../../../wailsjs/go/core/App.js"
+import {Base64Decode, GetStaticResources, DirectLoading, FileSave, GetImageData } from "../../../wailsjs/go/core/App.js"
 import { ElMessage, ElLoading } from 'element-plus'
 import {
     editorRef,
@@ -16,6 +16,8 @@ import {
     staticFiles,
     title,
     currentSave,
+    autoSave,
+    fileSuffix
 } from "./globals.js"
 
 
@@ -77,6 +79,11 @@ const resetState = () => {
 const getImageFiles = async () => {
     const _ = await GetStaticResources().then((res)=>{
         if(res.Code == 0) {
+            if(res.Data == '') {
+                staticFiles.value = [];
+                return;
+            }
+            console.log(res)
             let data = JSON.parse(res.Data);
             staticFiles.value = data.FileList;
         }else {
@@ -269,6 +276,87 @@ class TocGenerator {
 
 }
 
+const setImage = async (book) => {
+    if (staticFiles.value === null || staticFiles.value.length === 0) {
+        return;
+    }
+    await Promise.all(staticFiles.value.map(async (v) => {
+        let data = await GetImageData(v);
+        if (data.Code == 1) {
+            ElMessage.error(t('message.exportError') + ": " + data.Msg);
+            return;
+        }
+        let [name,suffix] = v.split('\\')[2].split(".");
+        book.resources.push({
+            id: name,
+            name: name,
+            data: data.Data,
+            type: fileSuffix[suffix]
+        });
+    }));
+}
+
+const autoSaving = (t) => {
+    const autoSaveFunction = async (t) => {
+        console.log("runing autoSaveFunction in ", autoSave.value.autoSaveTime);
+        if (autoSave.value.isAutoSave == false && currentSave.value == "") return;
+        let tempData = JSON.parse(JSON.stringify(bookInfo));
+        const editor = editorRef.value;
+        tempData.content = editor.getHTML();
+        await setImage(tempData);
+
+        const headers = [];
+        editor.$nodes('custom-heading').forEach(h => {
+            headers.push({
+                type: "header" + h.attributes.level,
+                text: h.textContent
+            });
+        });
+        const Toc = new TocGenerator(headers);
+        const res = Toc.process();
+        tempData.toc = res;
+        tempData.metadata.creator = tempData.metadata.creator.split(',');
+        tempData.metadata.contributors = tempData.metadata.contributors.split(',');
+        const doc = new DOMParser().parseFromString(tempData.content, 'text/html');
+        let titles = doc.querySelectorAll("h1, h2, h3, h4, h5");
+        titles.forEach((e, i) => {
+            e.id = "guide_signal_" + (i + 1);
+        });
+        tempData.content = doc.body.innerHTML;
+        const regex_image = /<img(.*?)>/g;
+        const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
+        tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
+        tempData.content = tempData.content.replaceAll(" ", "");
+        tempData.content = tempData.content.replace(regex_image, (match, p1) => {
+            return `<img${p1.replace(regex_url, "../Images")}/>`;
+        });
+        tempData.content = tempData.content.replaceAll('"', "'");
+
+        FileSave(currentSave.value, (() => {
+            return JSON.stringify(tempData);
+        })(),
+            true).then((res) => {
+                if (res.Code == 1) {
+                    ElMessage.error(t('message.saveError') + ": " + res.Msg);
+                    return;
+                } else if (res.Code == 0) {
+                    currentSave.value = res.Data;
+                    title.value = res.Data;
+                    change.value = false;
+                    ElMessage.success(t('message.saveSuccess'));
+                    return;
+                }
+                return;
+            });
+
+        // reuse setTimeout to use the latest autoSaveTime
+        setTimeout(autoSaveFunction, autoSave.value.autoSaveTime * 1000);
+    };
+
+    // first time to call the function
+    setTimeout(autoSaveFunction, autoSave.value.autoSaveTime * 1000);
+};
+
 export {
     TocGenerator,
     checkIfOpenFileDirectly,
@@ -278,7 +366,9 @@ export {
     rgbaToHex,
     arrayEquel,
     getImageFiles,
-    updateCatalog
+    updateCatalog,
+    autoSaving,
+    setImage
 }
 
 export default {

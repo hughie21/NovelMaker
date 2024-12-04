@@ -108,6 +108,8 @@ export default{
             auto: "Auto",
             never: "Never",
             always: "Always",
+            autoSave: "Auto Save",
+            autoSaveTime: "Auto Save Time",
         },
         info: {
             title: "Book info",

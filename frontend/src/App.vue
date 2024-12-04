@@ -15,6 +15,11 @@ import {checkIfOpenFileDirectly} from './assets/js/utils'
 
 const { t } = useI18n();
 
+window.onerror = (message, source, lineno, colno, error) => {
+  console.log("Error: " + message + " in " + source + " at line " + lineno + " and column " + colno);
+  console.log(error);
+}
+
 checkIfOpenFileDirectly(t);
 </script>
 
