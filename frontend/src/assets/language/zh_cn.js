@@ -109,6 +109,8 @@ export default{
             auto: "自动",
             never: "关闭",
             always: "常驻",
+            autoSave: "自动保存",
+            autoSaveTime: "自动保存间隔",
         },
         info: {
             title: "书籍信息",

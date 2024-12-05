@@ -14,7 +14,7 @@ import (
 	"github.com/hughie21/NovelMaker/lib/logging"
 )
 
-var logger = logging.NewLog(logging.FatalLevel, true)
+var logger *logging.Log
 
 type StaticResource struct {
 	Code     int
@@ -103,7 +103,8 @@ func ResourceHandler(execPath string) http.HandlerFunc {
 	}
 }
 
-func StaticSevice(port string, execPath string) {
+func StaticSevice(port string, execPath string, log *logging.Log) {
+	logger = log
 	logger.Info("Static resource service started", logging.RunFuncName())
 	http.HandleFunc("/", ResourceHandler(execPath))
 	http.ListenAndServe(port, nil)

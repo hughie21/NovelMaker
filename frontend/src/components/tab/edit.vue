@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 import "../../assets/css/tab.css"
 import { ref, inject } from 'vue';
 import { editorRef, fontSizeVal, fontVal, headerVal, visio, fonts } from '../../assets/js/globals';
+import { rgbaToHex } from '../../assets/js/utils';
 
 const { t } = useI18n();
 const fontColors = ref('#000000');

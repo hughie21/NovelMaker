@@ -18,7 +18,9 @@ staticResource:
   - .bmp
   deleteCache: true
 log:
+  enable: true
   level: 4
+  expired: 7
 download:
   timeout: 10
 core:

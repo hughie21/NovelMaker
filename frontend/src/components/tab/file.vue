@@ -6,11 +6,11 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, FileImport, GetImageData, Base64Decode } from '../../../wailsjs/go/core/App.js'
+import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, staticFiles, fileSuffix, title } from '../../assets/js/globals.js';
-import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog } from '../../assets/js/utils.js';
+import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting } from '../../assets/js/globals.js';
+import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, autoSaving, setImage } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
 
@@ -22,25 +22,7 @@ const disableBtn = reactive({
 const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 
-const setImage = async (book) => {
-    if (staticFiles.value === null || staticFiles.value.length === 0) {
-        return;
-    }
-    await Promise.all(staticFiles.value.map(async (v) => {
-        let data = await GetImageData(v);
-        if (data.Code == 1) {
-            ElMessage.error(t('message.exportError') + ": " + data.Msg);
-            return;
-        }
-        let [name,suffix] = v.split('\\')[2].split(".");
-        book.resources.push({
-            id: name,
-            name: name,
-            data: data.Data,
-            type: fileSuffix[suffix]
-        });
-    }));
-}
+autoSaving(t);
 
 const openFilePicker = () => {
     async function innerOpner(){
@@ -74,7 +56,13 @@ const openFilePicker = () => {
         rawData.metadata.contributors = rawData.metadata.contributors.join(',');
 
         rawData.content = await Base64Decode(rawData.content).then((res)=> {
-            return JSON.parse(res);
+            try{
+                return JSON.parse(res);
+            }catch{
+                let imageUrls = /..\/Images/g
+                res = res.replace(imageUrls, 'http://127.0.0.1:' + generalSetting.resPort)
+                return res;
+            }
         });
 
         await getImageFiles();
@@ -145,11 +133,11 @@ const saveFilePicker = async (saveAs) => {
     })
     tempData.content = doc.body.innerHTML;
     const regex_image = /<img(.*?)>/g;
-    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
+    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)\/(.*)\//g;
     tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
     tempData.content = tempData.content.replaceAll(" ", "");
     tempData.content = tempData.content.replace(regex_image, (match, p1)=> {
-        return `<img${p1.replace(regex_url, "../Images")}/>`;
+        return `<img${p1.replace(regex_url, "../Images/")}/>`;
     })
     tempData.content = tempData.content.replaceAll('"', "'");
     let name = bookInfo.metadata.title;

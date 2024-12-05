@@ -20,6 +20,11 @@ const (
 	DebugLevel
 )
 
+type Message interface {
+	String() string
+	getLevel() Level
+}
+
 type LogMessage struct {
 	Level    Level
 	Time     time.Time
@@ -27,13 +32,20 @@ type LogMessage struct {
 	FuncName string
 }
 
+type TraceMessage struct {
+	Time    time.Time
+	Message string
+	Stack   string
+}
+
 type FileLogger struct {
 	Filename string
+	expired  int
 }
 
 type Log struct {
 	Level      Level
-	Message    []LogMessage
+	Message    []Message
 	FileLogger *FileLogger
 	FileFlag   bool
 }

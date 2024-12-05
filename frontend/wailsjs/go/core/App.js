@@ -65,3 +65,7 @@ export function OpenImage() {
 export function SetConfig(arg1, arg2, arg3) {
   return window['go']['core']['App']['SetConfig'](arg1, arg2, arg3);
 }
+
+export function Trace(arg1, arg2) {
+  return window['go']['core']['App']['Trace'](arg1, arg2);
+}

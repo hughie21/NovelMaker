@@ -46,7 +46,8 @@ const handleInputConfirm = () => {
 }
 
 const handleRemove = () => {
-    arrayRemove(bookinfo.metadata.meta, "cover");
+    bookInfo.metadata.cover.name = "";
+    bookInfo.metadata.cover.data = "";
     arrayRemove(bookinfo.resources, "cover.jpg");
     initCover();
 }
@@ -55,17 +56,11 @@ const uploadCover = async () => {
     var coverData = await OpenImage().then((res)=>{
        return res.Data;
     });
-    bookinfo.metadata.meta.push({
-        id: 'cover',
-        content: "cover.jpg"
-    });
-    bookinfo.resources.push({
-        id: "cover.jpg",
-        name: "cover.jpg",
-        type: "image/jpeg",
-        data: coverData
-    });
+    bookinfo.metadata.cover.name = "cover.jpg";
+    bookinfo.metadata.cover.data = coverData;
     initCover();
+
+    console.log(bookInfo)
 }
 const handleBookInfo = () => {
     visio.bookInfoVisible = false;

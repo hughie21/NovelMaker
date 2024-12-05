@@ -142,6 +142,22 @@ func (w *Writer) formPackage() error {
 			},
 		},
 	}
+	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+		Property: "dcterms:modified",
+		Value:    w.JsonData.MetaData.Date,
+	})
+	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+		Property: "rendition:layout",
+		Value:    "pre-paginated",
+	})
+	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+		Property: "rendition:orientation",
+		Value:    "auto",
+	})
+	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+		Name:  "generator",
+		Value: "NovelMaker",
+	})
 	for _, creator := range w.JsonData.MetaData.Creator {
 		content.Metadata.Creators = append(content.Metadata.Creators, DCCreator{
 			Id:    "id-" + creator,

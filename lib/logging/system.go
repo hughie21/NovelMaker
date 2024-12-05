@@ -8,18 +8,18 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
-type System struct {
+type SystemMssage struct {
 	OS     string
 	Kernel string
 	CPU    string
 	Memory uint64
 }
 
-func NewSystem() *System {
+func NewSystem() *SystemMssage {
 	hostInfo, _ := host.Info()
 	cpuinfo, _ := cpu.Info()
 	memoryInfo, _ := mem.VirtualMemory()
-	return &System{
+	return &SystemMssage{
 		OS:     hostInfo.Platform,
 		Kernel: hostInfo.KernelVersion,
 		CPU:    cpuinfo[0].ModelName,
@@ -27,7 +27,7 @@ func NewSystem() *System {
 	}
 }
 
-func (s *System) String() string {
+func (s *SystemMssage) String() string {
 	return fmt.Sprintf(`
 ===================System Information====================
 SystemOS: %s
@@ -36,4 +36,8 @@ CPU: %s
 Memory: %d
 ====================================================
 	`, s.OS, s.Kernel, s.CPU, s.Memory)
+}
+
+func (s *SystemMssage) getLevel() Level {
+	return InfoLevel
 }

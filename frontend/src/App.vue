@@ -12,8 +12,19 @@ import dialogs from './components/dialog.vue'
 import editor from './components/editor.vue'
 import { useI18n } from 'vue-i18n';
 import {checkIfOpenFileDirectly} from './assets/js/utils'
+import { Trace } from "../wailsjs/go/core/App"
 
 const { t } = useI18n();
+
+window.onerror = (message, source, lineno, colno, error) => {
+  let filePath = source + ":" + lineno + ":" + colno
+  let stack = ""
+  error.stack.split("\n").forEach((line) => {
+    stack += line.replace(/\t?at\s?/, "├ ")+"\n"
+  })
+  stack = stack.replace(/\n$/, "");
+  Trace(filePath, stack)
+}
 
 checkIfOpenFileDirectly(t);
 </script>

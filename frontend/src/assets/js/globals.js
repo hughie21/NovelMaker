@@ -92,7 +92,27 @@ const fileSuffix = {
     "m4b": "audio/x-ms-m4b",
     "m4p": "audio/x-ms-m4p",
     "m4r": "audio/x-ms-m4r"
-  }
+}
+
+const autoSave = ref({
+    isAutoSave: true,
+    autoSaveTime: 60
+})
+
+let defaultLang = localStorage.getItem('lang');
+let defaultTheme =localStorage.getItem('theme');
+const generalSetting = reactive({
+    language: defaultLang,
+    theme: defaultTheme,
+    windowSize: "normal",
+    resPort: 7288
+});
+const windowSetting = reactive({
+    GPU : true
+})
+const linuxSetting = reactive({
+    GPUPolicy: "auto"
+})
 
 export {
     editorRef,
@@ -111,7 +131,11 @@ export {
     title,
     currentSave,
     staticFiles,
-    fileSuffix
+    fileSuffix,
+    autoSave,
+    generalSetting,
+    windowSetting,
+    linuxSetting
 }
 
 export default{}
