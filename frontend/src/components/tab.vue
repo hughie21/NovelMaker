@@ -90,8 +90,6 @@ const test = () => {
     // console.log(E.getJSON());
 
     // console.log(printStack());
-    const a = 1
-    a = 2
     // console.log(change.value);
     
     // var data = JSON.parse('{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"dawda"}]},{"type":"image","attrs":{"alt":"b882997817cfad8d.jpg","pos":"left","src":"http://127.0.0.1:7288/b882997817cfad8d.jpg","title":"b882997817cfad8d.jpg","zoom":"10"}}]}')

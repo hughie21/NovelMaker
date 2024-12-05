@@ -127,11 +127,11 @@ const saveFilePicker = async (saveAs) => {
     })
     tempData.content = doc.body.innerHTML;
     const regex_image = /<img(.*?)>/g;
-    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
+    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)\/(.*)\//g;
     tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
     tempData.content = tempData.content.replaceAll(" ", "");
     tempData.content = tempData.content.replace(regex_image, (match, p1)=> {
-        return `<img${p1.replace(regex_url, "../Images")}/>`;
+        return `<img${p1.replace(regex_url, "../Images/")}/>`;
     })
     tempData.content = tempData.content.replaceAll('"', "'");
     let name = bookInfo.metadata.title;
