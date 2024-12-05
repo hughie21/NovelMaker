@@ -86,6 +86,7 @@ const handleChange = () => {
 const test = () => {
     const E = editorRef.value;
     
+    throw new Error('This is a test error');
     // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
     // console.log(E.getJSON());
 

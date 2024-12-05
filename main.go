@@ -22,6 +22,13 @@ var (
 )
 
 func main() {
+	defer func() {
+		err := recover()
+		if err != nil {
+			utils.ShowMessage("Core Dump", err.(error).Error(), "error")
+		}
+	}()
+
 	// Create an instance of the app structure
 	app := core.NewApp()
 

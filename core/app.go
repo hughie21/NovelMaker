@@ -422,3 +422,7 @@ func (a *App) ImageDownload(url string) Message {
 	msg.Msg = "success"
 	return msg
 }
+
+func (a *App) Trace(source, stack string) {
+	logger.Trace(source, stack)
+}

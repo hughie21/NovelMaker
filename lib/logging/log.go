@@ -22,7 +22,7 @@ func RunFuncName() string {
 	return fmt.Sprintf("%s:%d | %s", file, line, f.Name())
 }
 
-func (message *LogMessage) String() string {
+func (message LogMessage) String() string {
 	timeFormat := message.Time.Format("2006-01-02 15:04:05")
 	var str_level string
 	switch message.Level {
@@ -38,6 +38,19 @@ func (message *LogMessage) String() string {
 		str_level = "FATAL"
 	}
 	return fmt.Sprintf("%s [%s] %s -> %s \n", timeFormat, str_level, message.FuncName, message.Message)
+}
+
+func (messgae LogMessage) getLevel() Level {
+	return messgae.Level
+}
+
+func (message TraceMessage) String() string {
+	timeFormat := message.Time.Format("2006-01-02 15:04:05")
+	return fmt.Sprintf("%s [TRACE] %s \n↳%s\n", timeFormat, message.Message, message.Stack)
+}
+
+func (message TraceMessage) getLevel() Level {
+	return ErrorLevel
 }
 
 func (fl *FileLogger) Print(message string) error {
@@ -87,8 +100,18 @@ func (l *Log) SetFileLogger(filename string) {
 	l.FileLogger.Filename = filename
 }
 
-func (l *Log) AddLogMessage(logMessage LogMessage) {
+func (l *Log) AddLogMessage(logMessage Message) {
 	l.Message = append(l.Message, logMessage)
+}
+
+func (l *Log) Trace(message string, stack string) {
+	if message != "" {
+		l.AddLogMessage(TraceMessage{
+			Time:    time.Now(),
+			Message: message,
+			Stack:   stack,
+		})
+	}
 }
 
 func (l *Log) Info(message string, funcName string) {
@@ -185,8 +208,8 @@ func (l *Log) LogOutPut(rootpath string) error {
 	logFileName := strconv.FormatInt(todayint.Unix(), 10) + ".log"
 	l.SetFileLogger(filepath.Join(rootpath, "log", logFileName))
 	for _, message := range l.Message {
-		fmt.Println(message.Message)
-		if message.Level <= l.Level {
+		fmt.Println(message.String())
+		if message.getLevel() <= l.Level {
 			err = l.FileLogger.Print(message.String())
 			if err != nil {
 				return err

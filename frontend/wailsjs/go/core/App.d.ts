@@ -33,3 +33,5 @@ export function LoadImage(arg1:string):Promise<core.Message>;
 export function OpenImage():Promise<core.Message>;
 
 export function SetConfig(arg1:string,arg2:string,arg3:string):Promise<core.Message>;
+
+export function Trace(arg1:string,arg2:string):Promise<void>;
