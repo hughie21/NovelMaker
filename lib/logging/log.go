@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -49,15 +50,17 @@ func (fl *FileLogger) Print(message string) error {
 	return nil
 }
 
-func NewLog(level Level, file bool) *Log {
+func NewLog(level Level, file bool, expired int) *Log {
 	if once == nil {
 		once = &sync.Once{}
 	}
 	once.Do(func() {
 		Logger = &Log{
-			Level:      level,
-			FileLogger: &FileLogger{},
-			FileFlag:   file,
+			Level: level,
+			FileLogger: &FileLogger{
+				expired: expired,
+			},
+			FileFlag: file,
 		}
 	})
 	return Logger
@@ -65,6 +68,10 @@ func NewLog(level Level, file bool) *Log {
 
 func (l *Log) SetLevel(level Level) {
 	l.Level = level
+}
+
+func (l *Log) Expired() {
+
 }
 
 func (l *Log) SetFileLogger(filename string) {
@@ -139,7 +146,37 @@ func (l *Log) Error(message string, funcName string) {
 	}
 }
 
+func (l *Log) expired(rootpath string) error {
+	expireTime := l.FileLogger.expired // days
+	expireDuration := time.Duration(expireTime) * 24 * time.Hour
+	now := time.Now()
+	err := filepath.Walk(filepath.Join(rootpath, "log"), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".log" {
+			filename := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+			timeInt, err := strconv.ParseInt(filename, 10, 64)
+			fileTime := time.Unix(timeInt, 0)
+			if err != nil {
+				return nil
+			}
+			if now.Sub(fileTime) > expireDuration {
+				if err := os.Remove(path); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	return err
+}
+
 func (l *Log) LogOutPut(rootpath string) error {
+	err := l.expired(rootpath)
+	if err != nil {
+		return err
+	}
 	if !l.FileFlag {
 		return nil
 	}
@@ -147,11 +184,13 @@ func (l *Log) LogOutPut(rootpath string) error {
 	todayint, _ := time.ParseInLocation("2006-01-02", todaystr, time.Local)
 	logFileName := strconv.FormatInt(todayint.Unix(), 10) + ".log"
 	l.SetFileLogger(filepath.Join(rootpath, "log", logFileName))
-	var err error
 	for _, message := range l.Message {
 		fmt.Println(message.Message)
 		if message.Level <= l.Level {
 			err = l.FileLogger.Print(message.String())
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return err

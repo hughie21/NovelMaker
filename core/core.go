@@ -72,12 +72,12 @@ func (c *Core) Init(assets embed.FS, app *App) *options.App {
 		4: logging.FatalLevel,
 	}
 
-	c.logger = logging.NewLog(logLevel[c.config.Log.Level], true)
+	c.logger = logging.NewLog(logLevel[c.config.Log.Level], c.config.Log.Enable, c.config.Log.Expired)
 
 	logger = c.logger
 
 	// Here is the static server that provide the static resources for the frontend.
-	go server.StaticSevice(":"+c.config.StaticResource.Port, c.execPath)
+	go server.StaticSevice(":"+c.config.StaticResource.Port, c.execPath, logger)
 
 	c.logger.Info("Core Initialized", logging.RunFuncName())
 	return c.formOptions(assets, app)

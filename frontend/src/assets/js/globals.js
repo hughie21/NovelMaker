@@ -99,6 +99,21 @@ const autoSave = ref({
     autoSaveTime: 60
 })
 
+let defaultLang = localStorage.getItem('lang');
+let defaultTheme =localStorage.getItem('theme');
+const generalSetting = reactive({
+    language: defaultLang,
+    theme: defaultTheme,
+    windowSize: "normal",
+    resPort: 7288
+});
+const windowSetting = reactive({
+    GPU : true
+})
+const linuxSetting = reactive({
+    GPUPolicy: "auto"
+})
+
 export {
     editorRef,
     valueHtml,
@@ -117,7 +132,10 @@ export {
     currentSave,
     staticFiles,
     fileSuffix,
-    autoSave
+    autoSave,
+    generalSetting,
+    windowSetting,
+    linuxSetting
 }
 
 export default{}

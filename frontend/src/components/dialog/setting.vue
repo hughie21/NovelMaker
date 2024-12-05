@@ -7,29 +7,17 @@
 @Description: This is the dialog allow user to set up the config.
 */
 
-import { visio, editTheme, editLang, autoSave } from '../../assets/js/globals';
-import { reactive, computed, ref } from 'vue';
+import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting } from '../../assets/js/globals';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElNotification } from 'element-plus'
 import { GetConfig, SetConfig } from '../../../wailsjs/go/core/App';
 import { languages as langs } from '../../assets/js/i18n';
 
 const { t, locale } = useI18n();
-let defaultLang = localStorage.getItem('lang');
-let defaultTheme =localStorage.getItem('theme');
+
 const changeFlag = ref(false);
-const generalSetting = reactive({
-    language: defaultLang,
-    theme: defaultTheme,
-    windowSize: "normal",
-    resPort: 7288
-});
-const windowSetting = reactive({
-    GPU : true
-})
-const linuxSetting = reactive({
-    GPUPolicy: "auto"
-})
+
 const activeBlock = ref([]);
 
 const initConfig = async () => {

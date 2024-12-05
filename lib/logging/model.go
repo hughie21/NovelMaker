@@ -29,6 +29,7 @@ type LogMessage struct {
 
 type FileLogger struct {
 	Filename string
+	expired  int
 }
 
 type Log struct {

@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, h } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, title } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, autoSaving, setImage } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -56,7 +56,13 @@ const openFilePicker = () => {
         rawData.metadata.contributors = rawData.metadata.contributors.join(',');
 
         rawData.content = await Base64Decode(rawData.content).then((res)=> {
-            return JSON.parse(res);
+            try{
+                return JSON.parse(res);
+            }catch{
+                let imageUrls = /..\/Images/g
+                res = res.replace(imageUrls, 'http://127.0.0.1:' + generalSetting.resPort)
+                return res;
+            }
         });
 
         await getImageFiles();

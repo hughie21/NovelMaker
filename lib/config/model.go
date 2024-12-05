@@ -37,7 +37,9 @@ type StaticResourceConfig struct {
 }
 
 type LogConfig struct {
-	Level int `yaml:"level"`
+	Enable  bool `yaml:"enable"`
+	Level   int  `yaml:"level"`
+	Expired int  `yaml:"expired"`
 }
 
 type CoreConfig struct {
