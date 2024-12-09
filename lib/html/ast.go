@@ -1,6 +1,7 @@
 package html
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
@@ -13,6 +14,7 @@ type AstElement struct {
 	Children []*AstElement
 	Parent   *AstElement
 	Attrs    map[string]string
+	Text     string
 }
 
 var (
@@ -41,6 +43,7 @@ func (p *HTMLParser) createAstElement(tagName string, attrs map[string]string, p
 		Children: []*AstElement{},
 		Parent:   parent,
 		Attrs:    attrs,
+		Text:     "",
 	}
 }
 
@@ -70,9 +73,9 @@ func (p *HTMLParser) end(tagName string) {
 }
 
 func (p *HTMLParser) chars(text string) {
-	text = strings.TrimSpace(text)
-	text = strings.ReplaceAll(text, "\n", "")
-	text = uselessCharacters.ReplaceAllString(text, "")
+	// text = strings.TrimSpace(text)
+	// text = strings.ReplaceAll(text, "\n", "")
+	// text = uselessCharacters.ReplaceAllString(text, "")
 	var parent *AstElement
 	if len(p.stack) > 0 {
 		parent = p.stack[len(p.stack)-1]
@@ -80,7 +83,9 @@ func (p *HTMLParser) chars(text string) {
 	if text != "" {
 		parent.Children = append(parent.Children, &AstElement{
 			Type:   3,
-			Tag:    text,
+			Text:   text,
+			Tag:    parent.Tag,
+			Attrs:  parent.Attrs,
 			Parent: parent,
 		})
 	}
@@ -147,19 +152,19 @@ func (p *HTMLParser) parserHTML(html string) *AstElement {
 	return p.root
 }
 
-func LoadHTML(html []byte) *AstElement {
+func LoadHTML(html []byte) (*AstElement, error) {
 	textDoc := etree.NewDocument()
 	if err := textDoc.ReadFromBytes(html); err != nil {
-		panic(err)
+		return nil, err
 	}
 	body := textDoc.FindElement("//body")
 	if body == nil {
-		panic("no body element found")
+		return nil, errors.New("no body element found")
 	}
 	bodyDoc := etree.NewDocument()
 	bodyDoc.SetRoot(body.Copy())
 	rawText, _ := bodyDoc.WriteToBytes()
 	parser := NewHTMLParser()
 	ast := parser.parserHTML(string(rawText))
-	return ast
+	return ast, nil
 }

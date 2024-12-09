@@ -50,6 +50,25 @@ const arrayEquel = (arr1, arr2) => {
     return false;
 }
 
+const normalizeHTML = (html) => {
+    // change the tag name to lowercase
+    html = html.replace(/<\/?([A-Z][A-Z0-9]*)\b[^>]*>/gi, function (match) {
+        return match.toLowerCase();
+    });
+
+    // makesure the self-closing tags are closed properly
+    html = html.replace(/<([a-z]+)([^>]*)\/?>/g, function (match, tagName, attributes) {
+        const selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+        if (selfClosingTags.includes(tagName)) {
+            return `<${tagName}${attributes}></${tagName}>`;
+        } else {
+            return match;
+        }
+    });
+
+    return html;
+}
+
 const resetState = () => {
     bookInfo.metadata = {
         title: "Untitle",
@@ -83,7 +102,6 @@ const getImageFiles = async () => {
                 staticFiles.value = [];
                 return;
             }
-            console.log(res)
             let data = JSON.parse(res.Data);
             staticFiles.value = data.FileList;
         }else {
@@ -296,11 +314,26 @@ const setImage = async (book) => {
     }));
 }
 
-const autoSaving = (t) => {
-    const autoSaveFunction = async (t) => {
-        console.log("runing autoSaveFunction in ", autoSave.value.autoSaveTime);
+
+class TimerContext {
+    constructor(t) {
+        if (TimerContext.instance) {
+            return TimerContext.instance;
+        }
+        this.timer = null;
+        this.time = autoSave.value.autoSaveTime * 1000;
+        this.t = t;
+        this.state = false; // false: not running, true: running
+        this.currentTime = null;
+        TimerContext.instance = this;
+    }
+
+    async save() {
         if (autoSave.value.isAutoSave == false && currentSave.value == "") return;
         let tempData = JSON.parse(JSON.stringify(bookInfo));
+        if(editorRef.value == null) {
+            return;
+        }
         const editor = editorRef.value;
         tempData.content = editor.getHTML();
         await setImage(tempData);
@@ -325,6 +358,7 @@ const autoSaving = (t) => {
         tempData.content = doc.body.innerHTML;
         const regex_image = /<img(.*?)>/g;
         const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
+        tempData.content = normalizeHTML(tempData.content);
         tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
         tempData.content = tempData.content.replaceAll(" ", "");
         tempData.content = tempData.content.replace(regex_image, (match, p1) => {
@@ -337,25 +371,64 @@ const autoSaving = (t) => {
         })(),
             true).then((res) => {
                 if (res.Code == 1) {
-                    ElMessage.error(t('message.saveError') + ": " + res.Msg);
+                    ElMessage.error(this.t('message.saveError') + ": " + res.Msg);
                     return;
                 } else if (res.Code == 0) {
                     currentSave.value = res.Data;
                     title.value = res.Data;
                     change.value = false;
-                    ElMessage.success(t('message.saveSuccess'));
+                    ElMessage.success(this.t('message.saveSuccess'));
                     return;
                 }
                 return;
             });
+    }
 
-        // reuse setTimeout to use the latest autoSaveTime
-        setTimeout(autoSaveFunction, autoSave.value.autoSaveTime * 1000);
-    };
+    Start() {
+        if (autoSave.value.isAutoSave == false || currentSave.value == "") {
+            this.stop();
+            return;
+        }
+        this.state = true;
+        this.currentTime = new Date().getTime();
+        this.timer = setInterval(() => {
+            this.save();
+            this.currentTime = new Date().getTime();
+        }, this.time);
+    }
 
-    // first time to call the function
-    setTimeout(autoSaveFunction, autoSave.value.autoSaveTime * 1000);
-};
+    Reset() {
+        this.stop();
+        this.time = autoSave.value.autoSaveTime * 1000;
+        if (autoSave.value.isAutoSave == false || currentSave.value == "") return;
+        this.Start();
+    }
+
+    stop() {
+        if(this.timer == null) return;
+        this.state = false;
+        clearInterval(this.timer);
+        this.timer = null;
+        this.currentTime = null;
+    }
+
+    static getInstance(t) {
+        if (!TimerContext.instance) {
+            TimerContext.instance = new TimerContext(t);
+        }
+        return TimerContext.instance;
+    }
+
+    State() {
+        let currentTime = new Date().getTime();
+        console.log(`Timer state: ${this.state == true ? "running" : "stop"}
+Time each round: ${this.time/1000} seconds`);
+        if(this.currentTime != null) {
+            console.log(`Have run: ${(currentTime - this.currentTime) / 1000} seconds
+Time left: ${(this.time - (currentTime - this.currentTime)) / 1000} seconds`);
+        }
+    }
+}
 
 export {
     TocGenerator,
@@ -367,8 +440,9 @@ export {
     arrayEquel,
     getImageFiles,
     updateCatalog,
-    autoSaving,
-    setImage
+    TimerContext,
+    setImage,
+    normalizeHTML
 }
 
 export default {

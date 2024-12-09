@@ -11,16 +11,17 @@ import * as constant from '../assets/js/globals';
 import { updateCatalog } from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { CustomImage, CustomHeading, TextBackground, TextFontSize, SearchSelBackground } from '../assets/js/extension';
+import { CustomImage, CustomHeading, SearchSelBackground, TextStyleExtends } from '../assets/js/extension';
 import BubbleMenu from "@tiptap/extension-bubble-menu";
-import TextStyle from '@tiptap/extension-text-style'
-import FontFamily from '@tiptap/extension-font-family'
-import { Color } from '@tiptap/extension-color'
 import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { createLowlight, all } from 'lowlight'
 import '../assets/css/editor.css';
+
+const lowlight = createLowlight(all)
 
 const tableMenu = document.getElementById("tableMenu").children[0];
  
@@ -39,17 +40,12 @@ function throttle(func, wait) {
 const editor = new Editor({
     content: ``,
     extensions: [
+        CodeBlockLowlight.configure({
+          lowlight,
+        }),
         StarterKit,
         CustomImage,
-        // ImageResize,
         CustomHeading,
-        // BubbleMenu.configure({
-        //     pluginKey: "bubbleMenuImage",
-        //     element: bubbleMenu,
-        //     shouldShow: (({ editor, view, state, oldState, from, to }) => {
-        //         return editor.isActive("image")
-        //     })
-        // }),
         BubbleMenu.configure({
             pluginKey: "bubbleMenuTable",
             element: tableMenu,
@@ -57,18 +53,8 @@ const editor = new Editor({
                 return editor.isActive("table")
             })
         }),
-        TextStyle,
-        FontFamily.configure({
+        TextStyleExtends.configure({
             types: ['textStyle'],
-        }),
-        TextFontSize.configure({
-            types: ['textStyle'],
-        }),
-        Color.configure({
-            types: ["textStyle"],
-        }),
-        TextBackground.configure({
-            types: ["textStyle"],
         }),
         Table.configure({
             resizable: true,
@@ -80,11 +66,10 @@ const editor = new Editor({
         TableCell,
         SearchSelBackground.configure({
             types: ['textStyle'],
-        })
+        }),
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         updateCatalog();
-        bookinfo.content = editor.getJSON();
         constant.change.value = true;
     }, 100),
     onSelectionUpdate: ({ editor }) => { // Synchronising editor content properties to tab option values
@@ -104,7 +89,7 @@ const editor = new Editor({
                 constant.fontVal.value = v.value;
             }
         })
-        const fontSize = editor.getAttributes("font-size").fontSize;
+        const fontSize = editor.getAttributes("textStyle").fontSize;
         if(fontSize){
             constant.fontSizeVal.value = fontSize;
         }

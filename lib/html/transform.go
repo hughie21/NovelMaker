@@ -19,6 +19,7 @@ type (
 		Attrs   map[string]interface{} `json:"attrs,omitempty"`
 		Content []*PMNode              `json:"content,omitempty"`
 		Text    string                 `json:"text,omitempty"`
+		Mark    []*PMNode              `json:"marks,omitempty"`
 	}
 	ParserContext struct {
 		parsers map[string]TagParser
@@ -73,29 +74,6 @@ func NewPMNode() *PMNode {
 	}
 }
 
-// Find the text node till the end of the tree
-func FindTextTill(node *AstElement, parent *PMNode) {
-	s := NewStack()
-	s.Push(node)
-	for {
-		if s.Len() == 0 {
-			break
-		}
-		node := s.Pop().(*AstElement)
-		if node.Type == 3 {
-			textNode := &PMNode{
-				Type: "text",
-				Text: node.Tag,
-			}
-			parent.Content = append(parent.Content, textNode)
-			break
-		}
-		for _, child := range node.Children {
-			s.Push(child)
-		}
-	}
-}
-
 func NewParserContext() *ParserContext {
 	return &ParserContext{
 		parsers: make(map[string]TagParser),
@@ -110,9 +88,6 @@ func (c *ParserContext) Parse(node *AstElement) *PMNode {
 	if parser, ok := c.parsers[node.Tag]; ok {
 		return parser.Parse(node)
 	}
-	if node.Type == 3 {
-		return c.parsers["text"].Parse(node)
-	}
 	return nil
 }
 
@@ -125,34 +100,6 @@ func ConvertIntoProseMirrorScheme(root *AstElement, Parsers map[string]TagParser
 	if root == nil {
 		return nil
 	}
-
-	// headerParser := &HeaderParser{}
-	// textParser := &TextParser{}
-	// // imageParser := &ImageParser{}
-	// svgParser := &SVGParser{}
-	// tableParser := &TableParser{}
-	// brParser := &BrParser{}
-
-	// BasicParser := map[string]TagParser{
-	// 	"h1":   headerParser,
-	// 	"h2":   headerParser,
-	// 	"h3":   headerParser,
-	// 	"h4":   headerParser,
-	// 	"h5":   headerParser,
-	// 	"h6":   headerParser,
-	// 	"text": textParser,
-	// 	// "img":   imageParser,
-	// 	"table": tableParser,
-	// 	"image": svgParser,
-	// 	"br":    brParser,
-	// }
-
-	// func(dst, src map[string]TagParser) {
-	// 	for k, v := range src {
-	// 		dst[k] = v
-	// 	}
-	// }(Parsers, BasicParser)
-
 	context := NewParserContext()
 	for tag, parser := range Parsers {
 		context.Register(tag, parser)
