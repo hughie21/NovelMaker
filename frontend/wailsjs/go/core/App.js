@@ -18,10 +18,6 @@ export function FileDelete(arg1) {
   return window['go']['core']['App']['FileDelete'](arg1);
 }
 
-export function FileImport() {
-  return window['go']['core']['App']['FileImport']();
-}
-
 export function FileOpen() {
   return window['go']['core']['App']['FileOpen']();
 }

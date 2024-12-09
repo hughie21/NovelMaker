@@ -59,8 +59,6 @@ const uploadCover = async () => {
     bookinfo.metadata.cover.name = "cover.jpg";
     bookinfo.metadata.cover.data = coverData;
     initCover();
-
-    console.log(bookInfo)
 }
 const handleBookInfo = () => {
     visio.bookInfoVisible = false;

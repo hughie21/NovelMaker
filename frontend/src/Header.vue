@@ -164,7 +164,6 @@ const handleClose = () => {
 }
 
 const handleSelect = (index) => {
-    // console.log(index);
     menu[index]();
 }
 </script>

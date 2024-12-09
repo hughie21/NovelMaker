@@ -62,13 +62,12 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 		}
 		node := s.Pop().(*AstElement)
 		if node.Type == 3 {
-			fmt.Println("Node text: ", node.Text)
 			if node.Tag == "span" {
 				textStyleString, ok := node.Attrs["style"]
 				if !ok {
 					textNode := &PMNode{
 						Type: "text",
-						Text: html.UnescapeString(node.Text),
+						Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 					}
 					parent.Content = append([]*PMNode{textNode}, parent.Content...)
 					continue
@@ -86,7 +85,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 				if checks[0] && checks[1] && checks[2] && checks[3] {
 					textNode := &PMNode{
 						Type: "text",
-						Text: html.UnescapeString(node.Text),
+						Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 						Mark: []*PMNode{
 							{
 								Type: "textStyle",
@@ -110,7 +109,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 							Type: "bold",
 						},
 					},
-					Text: html.UnescapeString(node.Text),
+					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 				}
 				parent.Content = append([]*PMNode{bold}, parent.Content...)
 				continue
@@ -122,7 +121,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 							Type: "italic",
 						},
 					},
-					Text: html.UnescapeString(node.Text),
+					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 				}
 				parent.Content = append([]*PMNode{italic}, parent.Content...)
 				continue
@@ -134,7 +133,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 							Type: "strike",
 						},
 					},
-					Text: html.UnescapeString(node.Text),
+					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 				}
 				parent.Content = append([]*PMNode{strike}, parent.Content...)
 				continue
@@ -142,7 +141,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 
 			textNode := &PMNode{
 				Type: "text",
-				Text: html.UnescapeString(node.Text),
+				Text: strings.TrimSpace(html.UnescapeString(node.Text)),
 			}
 			parent.Content = append([]*PMNode{textNode}, parent.Content...)
 			continue

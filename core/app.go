@@ -5,7 +5,6 @@
 package core
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
@@ -19,8 +18,6 @@ import (
 	"github.com/hughie21/NovelMaker/lib/logging"
 	"github.com/hughie21/NovelMaker/lib/server"
 	"github.com/hughie21/NovelMaker/lib/utils"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
 
 	"context"
 )
@@ -152,35 +149,26 @@ func (a *App) DirectLoading() Message {
 	return msg
 }
 
-func (a *App) FileImport() Message {
-	var Message Message
-	res := FileOpenDialog(a, "Text File", "*.md;*.txt")
-	if res == "" {
-		Message.Code = -1
-		Message.Msg = "cancel"
-		return Message
-	}
-	fp, err := os.Open(res)
-	if err != nil {
-		Message.Code = 1
-		Message.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return Message
-	}
-	defer fp.Close()
-	content, _ := io.ReadAll(fp)
-	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
-	)
-	var buf bytes.Buffer
-	if err := md.Convert(content, &buf); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
-	}
-	Message.Code = 0
-	Message.Msg = "success"
-	Message.Data = buf.String()
-	return Message
-}
+// func (a *App) FileImport() Message {
+// 	var Message Message
+// 	res := FileOpenDialog(a, "Text File", "*.md;*.txt")
+// 	if res == "" {
+// 		Message.Code = -1
+// 		Message.Msg = "cancel"
+// 		return Message
+// 	}
+// 	returnData := a.core.agt.Exec("markdown", res)
+// 	if returnData.Err() != nil {
+// 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
+// 		Message.Code = 1
+// 		Message.Msg = returnData.Err().Error()
+// 		return Message
+// 	}
+// 	Message.Code = 0
+// 	Message.Msg = "success"
+// 	Message.Data = returnData.Data().(string)
+// 	return Message
+// }
 
 // corresponding to the "Save" button on the frontend
 func (a *App) FileSave(name string, rawJson string, skip bool) Message {

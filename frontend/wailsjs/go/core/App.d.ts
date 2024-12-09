@@ -10,8 +10,6 @@ export function DirectLoading():Promise<core.Message>;
 
 export function FileDelete(arg1:string):Promise<core.Message>;
 
-export function FileImport():Promise<core.Message>;
-
 export function FileOpen():Promise<core.Message>;
 
 export function FileSave(arg1:string,arg2:string,arg3:boolean):Promise<core.Message>;

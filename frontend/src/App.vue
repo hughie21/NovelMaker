@@ -23,6 +23,7 @@ window.onerror = (message, source, lineno, colno, error) => {
     stack += line.replace(/\t?at\s?/, "├ ")+"\n"
   })
   stack = stack.replace(/\n$/, "");
+  console.log(stack)
   Trace(filePath, stack)
 }
 

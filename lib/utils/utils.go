@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -48,6 +49,31 @@ func PathExists(path string) bool {
 func Contains(arr []string, target string) bool {
 	str := strings.Join(arr, " ")
 	return strings.Contains(str, target)
+}
+
+func NormalizeHTML(html string) string {
+	// change the tag name to lowercase
+	html = regexp.MustCompile(`<\/?([A-Z][A-Z0-9]*)\b[^>]*>`).ReplaceAllStringFunc(html, func(match string) string {
+		return strings.ToLower(match)
+	})
+
+	// makesure the self-closing tags are closed properly
+	selfClosingTags := map[string]bool{
+		"area": true, "base": true, "br": true, "col": true, "embed": true, "hr": true, "img": true, "input": true, "link": true, "meta": true, "param": true, "source": true, "track": true, "wbr": true,
+	}
+	html = regexp.MustCompile(`<([a-z]+)([^>]*)\/?>`).ReplaceAllStringFunc(html, func(match string) string {
+		re := regexp.MustCompile(`<([a-z]+)([^>]*)\/?>`)
+		submatches := re.FindStringSubmatch(match)
+		tagName := submatches[1]
+		attributes := submatches[2]
+		if selfClosingTags[tagName] {
+			return `<` + tagName + attributes + `></` + tagName + `>`
+		} else {
+			return match
+		}
+	})
+
+	return html
 }
 
 var FileSuffix = map[string]string{

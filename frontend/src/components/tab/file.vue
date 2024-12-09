@@ -6,7 +6,7 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
+import { FileOpen, FileSave, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, onMounted } from 'vue';
 import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting } from '../../assets/js/globals.js';
@@ -73,7 +73,6 @@ const openFilePicker = () => {
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
-        console.log(JSON.stringify(rawData.content))
         E.commands.setContent(rawData.content);
         
         updateCatalog();
@@ -185,22 +184,35 @@ const saveFilePicker = async (saveAs) => {
     })
 }
 
-const importFilePicker = async () => {
-    var res = await FileImport().then((res) => {
-        return res
-    })
-    if(res.Code == 1){
-        ElMessage.error(t('message.openError'))
-        return;
-    }else if (res.Code == -1){
-        return;
-    }
-    const E = editorRef.value;
-    let content = res.Data;
-
-    E.commands.setContent(content, true);
-    ElMessage.success(t('message.importSuccess'));
-}
+// const importFilePicker = async () => {
+//     let loading = ElLoading.service({
+//         lock: true,
+//         text: t('message.loadingMessage'),
+//         background: 'rgba(0, 0, 0, 0.7)',
+//     })
+//     var res = await FileImport().then((res) => {
+//         return res
+//     })
+//     if(res.Code == 1){
+//         loading.close();
+//         ElMessage.error(t('message.openError'))
+//         return;
+//     }else if (res.Code == -1){
+//         loading.close();
+//         return;
+//     }
+//     const E = editorRef.value;
+//     try{
+//         var content = JSON.parse(res.Data);
+//         console.log(content)
+//         E.commands.insertContent(content);
+//     }catch(e){
+//         loading.close();
+//         ElMessage.error(t('message.importError'))
+//         return;
+//     }
+//     ElMessage.success(t('message.importSuccess'));
+// }
 
 const handleNew = ()=> {
     function innerCallBack(action){
@@ -286,14 +298,14 @@ const openFileInfo = ()=> {
                 <span>{{$t('toolBar.file.new')}}</span>
             </span>
             <div class="division-border"></div>
-            <span style=" width:50px; " class="btn-group">
+            <!-- <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="importFilePicker" id="btn-open">
                     <i class="el-icon">
                         <svg t="1717816393836" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8897" width="200" height="200"><path d="M921.6 450.133333c-6.4-8.533333-14.933333-12.8-25.6-12.8h-10.666667V341.333333c0-40.533333-34.133333-74.666667-74.666666-74.666666H514.133333c-4.266667 0-6.4-2.133333-8.533333-4.266667l-38.4-66.133333c-12.8-21.333333-38.4-36.266667-64-36.266667H170.666667c-40.533333 0-74.666667 34.133333-74.666667 74.666667v597.333333c0 6.4 2.133333 12.8 6.4 19.2 6.4 8.533333 14.933333 12.8 25.6 12.8h640c12.8 0 25.6-8.533333 29.866667-21.333333l128-362.666667c4.266667-10.666667 2.133333-21.333333-4.266667-29.866667zM170.666667 224h232.533333c4.266667 0 6.4 2.133333 8.533333 4.266667l38.4 66.133333c12.8 21.333333 38.4 36.266667 64 36.266667H810.666667c6.4 0 10.666667 4.266667 10.666666 10.666666v96H256c-12.8 0-25.6 8.533333-29.866667 21.333334l-66.133333 185.6V234.666667c0-6.4 4.266667-10.666667 10.666667-10.666667z m573.866666 576H172.8l104.533333-298.666667h571.733334l-104.533334 298.666667z" p-id="8898"></path></svg>
                     </i>
                 </button>
                 <span>{{$t('toolBar.file.import')}}</span>
-            </span>
+            </span> -->
             <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="openFilePicker" id="btn-open">
                     <i class="el-icon">
@@ -302,7 +314,6 @@ const openFileInfo = ()=> {
                 </button>
                 <span>{{$t('toolBar.file.open')}}</span>
             </span>
-            <div class="division-border"></div>
             <span class="btn-group" style="width:50px;">
                 <button @click="saveFilePicker(false)" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-save">
                     <i class="el-icon">

@@ -10,7 +10,12 @@ func TestAst(t *testing.T) {
 	//
 	testContent := `
 	<body>
-		<p>a <strong>bold</strong> <em>italic</em> <s>strike</s></p>
+		<h1>
+                序章
+        </h1>
+        <p>
+                在寂静的店内响起的门铃声，让他抬起了头。
+        </p>
 	</body>
 	`
 	ast, err := LoadHTML([]byte(testContent))
@@ -20,10 +25,13 @@ func TestAst(t *testing.T) {
 	}
 	t.Error("test")
 	jsonNodes := ConvertIntoProseMirrorScheme(ast, map[string]TagParser{
-		"p":     &TextParser{},
-		"span":  &TextParser{},
+		"text": &TextParser{},
+		// "span":  &TextParser{},
 		"table": &TableParser{},
 		"h1":    &HeaderParser{Level: 1},
+		"h2":    &HeaderParser{Level: 1},
+		"h3":    &HeaderParser{Level: 1},
+		"img":   &ImageParser{},
 		"ol": &ListParser{
 			Type: "orderedList",
 		},
