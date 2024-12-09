@@ -25,7 +25,7 @@ const btnNormalClass = inject("btnNormalClass");
 
 for(var i = 12; i < 72; i+=2) {
     sizes.push({
-        value: i + "px",
+        value: i*(1/16) + "rem",
         label: i + "px"
     })
 }

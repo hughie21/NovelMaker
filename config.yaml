@@ -26,5 +26,5 @@ download:
 core:
   maxTask: 5
   timeout: 300
-  autoSave: true
+  autoSave: false
   autoSaveInterval: 60

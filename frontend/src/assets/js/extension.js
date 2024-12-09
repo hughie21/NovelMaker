@@ -11,15 +11,21 @@ import Image from "@tiptap/extension-image";
 import Heading from "@tiptap/extension-heading"
 import TextStyle from '@tiptap/extension-text-style'
 
-const TextFontSize = TextStyle.extend({
+ const TextStyleExtends = TextStyle.extend({
     priority: 1000,
-    name: 'font-size',
     addAttributes() {
         return {
             ...this.parent?.(),
             fontSize: {
-                default: "14px", // default value
+                default: "1rem", // default value
             },
+            fontColor: {},
+            backgroundColor: {
+                default: "transparent",
+            },
+            fontFamily: {
+                default: "Arial",
+            }
         }
     },
     addOptions() {
@@ -28,14 +34,19 @@ const TextFontSize = TextStyle.extend({
         }
     },
     renderHTML({ HTMLAttributes }) {
-        return ['span', { style: `font-size: ${HTMLAttributes.fontSize};` }, 0];
+        return ['span', { 
+            style: `font-size: ${HTMLAttributes.fontSize};color: ${HTMLAttributes.fontColor};background: ${HTMLAttributes.backgroundColor};font-family: ${HTMLAttributes.fontFamily};`
+        }, 0];
     },
     parseHTML() {
         return [{
             tag: 'span',
             getAttrs: node => {
                 const fontSize = node.style.fontSize;
-                return { fontSize };
+                const fontColor = node.style.color;
+                const backgroundColor = node.style.background;
+                const fontFamily = node.style.fontFamily;
+                return { fontSize, fontColor, backgroundColor, fontFamily };
             },
         }]
     },
@@ -44,52 +55,19 @@ const TextFontSize = TextStyle.extend({
             setFontSize: size => ({ commands }) => {
                 return commands.setMark(this.name, { fontSize: size });
             },
-            unsetTextBackColor: () => ({ commands }) => {
-                return commands.unsetMark(this.name)
-            }
-        }
-    }
-})
-
-const TextBackground = TextStyle.extend({
-    priority: 1000,
-    name: 'background-color',
-    addAttributes() {
-        return {
-            ...this.parent?.(),
-            backgroundColor: {
-                default: "transparent", // default value
+            setColor: color => ({ commands }) => {
+                return commands.setMark(this.name, { fontColor: color });
             },
-        }
-    },
-    addOptions() {
-        return {
-            ...this.parent?.()
-        }
-    },
-    renderHTML({ HTMLAttributes }) {
-        return ['span', { style: `background-color: ${HTMLAttributes.backgroundColor};` }, 0];
-    },
-    parseHTML() {
-        return [{
-            tag: 'span',
-            getAttrs: node => {
-                const backgroundColor = node.style.backgroundColor;
-                return { backgroundColor };
-            },
-        }]
-    },
-    addCommands() {
-        return {
             setTextBackColor: color => ({ commands }) => {
                 return commands.setMark(this.name, { backgroundColor: color });
             },
-            unsetTextBackColor: () => ({ commands }) => {
-                return commands.unsetMark(this.name)
+            setFontFamily: family => ({ commands }) => {
+                return commands.setMark(this.name, { fontFamily: family });
             }
         }
     }
-})
+ })
+
 
 const SearchSelBackground = TextStyle.extend({
     priority: 1000,
@@ -247,11 +225,16 @@ const CustomImage = Image.extend({
                 }
             }
 
+            const createIcon = (svg) => {
+                const $icon = document.createElement('i');
+                $icon.innerHTML = svg
+                return $icon;
+            }
             const paintPositionContoller = () => {
                 const $postionController = document.createElement('div');
-                const $leftController = document.createElement('img');
-                const $centerController = document.createElement('img');
-                const $rightController = document.createElement('img');
+                const $leftController = createIcon(`<svg t="1733712915480" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8173" width="200" height="200" style="fill: #000 !important"><path d="M128 213.333333l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM128 725.333333l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM128 554.666667l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM128 384l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333z" fill="#444444" p-id="8174"></path></svg>`)
+                const $centerController = createIcon(`<svg t="1733713030570" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8489" width="200" height="200" style="fill: #000 !important"><path d="M128 213.333333l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM213.333333 725.333333l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM128 554.666667l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM213.333333 384l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333z" fill="#444444" p-id="8490"></path></svg>`)
+                const $rightController = createIcon(`<svg t="1733712984344" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8331" width="200" height="200" style="fill: #000 !important"><path d="M128 213.333333l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM298.666667 725.333333l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM128 554.666667l768 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-768 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333zM298.666667 384l597.333333 0q17.664 0 30.165333 12.501333t12.501333 30.165333-12.501333 30.165333-30.165333 12.501333l-597.333333 0q-17.664 0-30.165333-12.501333t-12.501333-30.165333 12.501333-30.165333 30.165333-12.501333z" fill="#444444" p-id="8332"></path></svg>`)
 
                 const controllerMouseOver = (e) => {
                     e.target.style.opacity = 0.3;
@@ -261,18 +244,15 @@ const CustomImage = Image.extend({
                 };
 
                 $postionController.setAttribute('style', 'position: absolute; top: 5%; left: 50%; width: 100px; height: 25px; z-index: 999; background-color: rgba(255, 255, 255, 0.7); border-radius: 4px; border: 2px solid #6C6C6C; cursor: pointer; transform: translate(-50%, -50%); display: flex; justify-content: space-between; align-items: center; padding: 0 10px;');
-                
-                $leftController.setAttribute('src', './src/assets/images/justify-left.png');
+
                 $leftController.setAttribute('style', iconStyle);
                 $leftController.addEventListener('mouseover', controllerMouseOver);
                 $leftController.addEventListener('mouseout', controllerMouseOut);
 
-                $centerController.setAttribute('src', './src/assets/images/justify-center.png');
                 $centerController.setAttribute('style', iconStyle);
                 $centerController.addEventListener('mouseover', controllerMouseOver);
                 $centerController.addEventListener('mouseout', controllerMouseOut);
 
-                $rightController.setAttribute('src', './src/assets/images/justify-right.png');
                 $rightController.setAttribute('style', iconStyle);
                 $rightController.addEventListener('mouseover', controllerMouseOver);    
                 $rightController.addEventListener('mouseout', controllerMouseOut);
@@ -498,9 +478,8 @@ const CustomImage = Image.extend({
 export {
     CustomImage,
     CustomHeading,
-    TextFontSize,
-    TextBackground,
-    SearchSelBackground
+    SearchSelBackground,
+    TextStyleExtends
 }
 
 export default {

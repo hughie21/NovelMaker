@@ -8,6 +8,7 @@
 */
 
 import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting } from '../../assets/js/globals';
+import { TimerContext } from '../../assets/js/utils';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElNotification } from 'element-plus'
@@ -19,6 +20,8 @@ const { t, locale } = useI18n();
 const changeFlag = ref(false);
 
 const activeBlock = ref([]);
+
+const timer = TimerContext.getInstance(t);
 
 const initConfig = async () => {
     function handleError(res) {
@@ -57,18 +60,19 @@ const initConfig = async () => {
     });
     autoSave.value.isAutoSave = await GetConfig("Core", "AutoSave").then(res => {
         if(handleError(res)){
-            return res.Data;
+            return res.Data == "true" ? true : false;
         }
     });
     autoSave.value.autoSaveTime = await GetConfig("Core", "AutoSaveInterval").then(res => {
         if(handleError(res)){
-            return parseInt(res.Data);
+            return parseInt(parseInt(res.Data));
         }
     });
     generalSetting.windowSize = size;
     generalSetting.resPort = parseInt(port, 10);
     windowSetting.GPU = windowGPU == "true" ? true : false;
     linuxSetting.GPUPolicy = linuxGPU;
+    timer.Start();
 }
 
 initConfig()
@@ -137,6 +141,7 @@ const handleSaveConfig = async () => {
     }
     changeFlag.value = false;
     visio.settingVisible = false;
+    timer.Reset();
 }
 </script>
 

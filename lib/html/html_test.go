@@ -6,10 +6,32 @@ import (
 )
 
 func TestAst(t *testing.T) {
-	testContent := `<body><p>dawda</p><br></br><p>dawda</p><br></br><br></br><br></br><p>dwada</p><br></br><br></br><span style='display:flex;justify-content:left;'><img src='../Images/b882997817cfad8d.jpg' alt='b882997817cfad8d.jpg' title='b882997817cfad8d.jpg' style='width:50%;'/></span><br></br><br></br><span style='display:flex;justify-content:left;'><img src='../Images/0164b793d2f9252d.jpg' alt='0164b793d2f9252d.jpg' title='0164b793d2f9252d.jpg' style='width:50%;'/></span><br></br><br></br></body>`
-	ast := LoadHTML([]byte(testContent))
+	//{"type":"doc","content":[{"type":"codeBlock","attrs":{"language":"go"},"content":[{"type":"text","text":"var test string"}]}]}
+	//
+	testContent := `
+	<body>
+		<p>a <strong>bold</strong> <em>italic</em> <s>strike</s></p>
+	</body>
+	`
+	ast, err := LoadHTML([]byte(testContent))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	t.Error("test")
-	jsonNodes := ConvertIntoProseMirrorScheme(ast, map[string]TagParser{})
+	jsonNodes := ConvertIntoProseMirrorScheme(ast, map[string]TagParser{
+		"p":     &TextParser{},
+		"span":  &TextParser{},
+		"table": &TableParser{},
+		"h1":    &HeaderParser{Level: 1},
+		"ol": &ListParser{
+			Type: "orderedList",
+		},
+		"ul": &ListParser{
+			Type: "bulletList",
+		},
+		"code": &CodeBlockParser{},
+	})
 	jsonData, _ := json.Marshal(jsonNodes)
 	t.Log(string(jsonData))
 }

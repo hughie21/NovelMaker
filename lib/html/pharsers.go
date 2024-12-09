@@ -2,9 +2,11 @@ package html
 
 import (
 	"fmt"
+	"html"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type (
@@ -19,13 +21,137 @@ type (
 	ImageParser struct {
 		FoldName string
 	}
-	ListParser  struct{}
+	ListParser struct {
+		Type string
+	}
 	TableParser struct{}
 	SVGParser   struct {
 		FoldName string
 	}
-	BrParser struct{}
+	BrParser        struct{}
+	CodeBlockParser struct{}
 )
+
+func splitStyle(style string) map[string]string {
+	result := make(map[string]string)
+	for _, item := range strings.Split(style, ";") {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		kv := strings.SplitN(item, ":", 2)
+		if len(kv) == 2 {
+			key := strings.TrimSpace(kv[0])
+			value := strings.TrimSpace(kv[1])
+			if (strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) || (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) {
+				value = value[1 : len(value)-1]
+			}
+			result[key] = value
+		}
+	}
+	return result
+}
+
+// Find the text node till the end of the tree
+func FindTextTill(node *AstElement, parent *PMNode) {
+	s := NewStack()
+	s.Push(node)
+	for {
+		if s.Len() == 0 {
+			break
+		}
+		node := s.Pop().(*AstElement)
+		if node.Type == 3 {
+			fmt.Println("Node text: ", node.Text)
+			if node.Tag == "span" {
+				textStyleString, ok := node.Attrs["style"]
+				if !ok {
+					textNode := &PMNode{
+						Type: "text",
+						Text: html.UnescapeString(node.Text),
+					}
+					parent.Content = append([]*PMNode{textNode}, parent.Content...)
+					continue
+				}
+				textStyle := splitStyle(html.UnescapeString(textStyleString))
+				var checks []bool
+				fontSize, ok := textStyle["font-size"]
+				checks = append(checks, ok)
+				fontColor, ok := textStyle["color"]
+				checks = append(checks, ok)
+				backgroundColor, ok := textStyle["background"]
+				checks = append(checks, ok)
+				fontFamily, ok := textStyle["font-family"]
+				checks = append(checks, ok)
+				if checks[0] && checks[1] && checks[2] && checks[3] {
+					textNode := &PMNode{
+						Type: "text",
+						Text: html.UnescapeString(node.Text),
+						Mark: []*PMNode{
+							{
+								Type: "textStyle",
+								Attrs: map[string]interface{}{
+									"fontSize":        fontSize,
+									"fontColor":       fontColor,
+									"backgroundColor": backgroundColor,
+									"fontFamily":      fontFamily,
+								},
+							},
+						},
+					}
+					parent.Content = append([]*PMNode{textNode}, parent.Content...)
+					continue
+				}
+			} else if node.Tag == "strong" {
+				bold := &PMNode{
+					Type: "text",
+					Mark: []*PMNode{
+						{
+							Type: "bold",
+						},
+					},
+					Text: html.UnescapeString(node.Text),
+				}
+				parent.Content = append([]*PMNode{bold}, parent.Content...)
+				continue
+			} else if node.Tag == "em" {
+				italic := &PMNode{
+					Type: "text",
+					Mark: []*PMNode{
+						{
+							Type: "italic",
+						},
+					},
+					Text: html.UnescapeString(node.Text),
+				}
+				parent.Content = append([]*PMNode{italic}, parent.Content...)
+				continue
+			} else if node.Tag == "s" {
+				strike := &PMNode{
+					Type: "text",
+					Mark: []*PMNode{
+						{
+							Type: "strike",
+						},
+					},
+					Text: html.UnescapeString(node.Text),
+				}
+				parent.Content = append([]*PMNode{strike}, parent.Content...)
+				continue
+			}
+
+			textNode := &PMNode{
+				Type: "text",
+				Text: html.UnescapeString(node.Text),
+			}
+			parent.Content = append([]*PMNode{textNode}, parent.Content...)
+			continue
+		}
+		for _, child := range node.Children {
+			s.Push(child)
+		}
+	}
+}
 
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
@@ -87,11 +213,9 @@ func (p *TextParser) Parse(node *AstElement) *PMNode {
 		Type:    "paragraph",
 		Content: []*PMNode{},
 	}
-	textNode := &PMNode{
-		Type: "text",
-		Text: node.Tag,
-	}
-	paragraph.Content = append(paragraph.Content, textNode)
+
+	FindTextTill(node, paragraph)
+
 	return paragraph
 }
 
@@ -100,7 +224,7 @@ func (p *ListParser) Parse(node *AstElement) *PMNode {
 		return nil
 	}
 	bulletList := &PMNode{
-		Type:    "bulletList",
+		Type:    p.Type,
 		Content: []*PMNode{},
 	}
 	s := NewStack()
@@ -112,14 +236,20 @@ func (p *ListParser) Parse(node *AstElement) *PMNode {
 		node := s.Pop().(*AstElement)
 		if node.Tag == "li" {
 			listItem := &PMNode{
-				Type:    "listItem",
-				Content: []*PMNode{},
+				Type: "listItem",
+				Content: []*PMNode{
+					{
+						Type:    "paragraph",
+						Content: []*PMNode{},
+					},
+				},
 			}
-			FindTextTill(node, listItem)
+			FindTextTill(node, listItem.Content[0])
 			bulletList.Content = append(bulletList.Content, listItem)
-		}
-		for _, child := range node.Children {
-			s.Push(child)
+		} else {
+			for _, child := range node.Children {
+				s.Push(child)
+			}
 		}
 	}
 	return bulletList
@@ -134,23 +264,16 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 		Content: []*PMNode{},
 	}
 
-	//
-	// this function is to find the table cell when reach the tr tag
-	//
-	// the reason why we need to do this is because the text node is not the direct child of the tr tag
-	// so we need an extra funtion to find the table cell node
-	//
+	// parse the table cells
 	sf := func(node *AstElement, parent *PMNode) {
-		s := NewStack()
-		s.Push(node)
-		for {
-			if s.Len() == 0 {
-				break
-			}
-			node := s.Pop().(*AstElement)
-			if node.Tag == "td" {
+		for _, child := range node.Children {
+			if child.Tag == "td" || child.Tag == "th" {
+				cellType := "tableCell"
+				if child.Tag == "th" {
+					cellType = "tableHeader"
+				}
 				tableCell := &PMNode{
-					Type: "tableCell",
+					Type: cellType,
 					Attrs: map[string]interface{}{
 						"colspan":  1,
 						"rowspan":  1,
@@ -158,32 +281,45 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 					},
 					Content: []*PMNode{},
 				}
-				FindTextTill(node, tableCell)
+				for _, grandChild := range child.Children {
+					if grandChild.Tag == "p" {
+						paragraph := &PMNode{
+							Type:    "paragraph",
+							Content: []*PMNode{},
+						}
+						FindTextTill(grandChild, paragraph)
+						tableCell.Content = append(tableCell.Content, paragraph)
+					}
+				}
 				parent.Content = append(parent.Content, tableCell)
-			}
-			for _, child := range node.Children {
-				s.Push(child)
 			}
 		}
 	}
 
-	s := NewStack()
-	s.Push(node)
-	for {
-		if s.Len() == 0 {
-			break
+	// parse the table rows
+	parseRows := func(node *AstElement, parent *PMNode) {
+		for _, child := range node.Children {
+			if child.Tag == "tr" {
+				tableRow := &PMNode{
+					Type:    "tableRow",
+					Content: []*PMNode{},
+				}
+				sf(child, tableRow)
+				parent.Content = append(parent.Content, tableRow)
+			}
 		}
-		node := s.Pop().(*AstElement)
-		if node.Tag == "tr" {
+	}
+
+	for _, child := range node.Children {
+		if child.Tag == "tr" {
 			tableRow := &PMNode{
 				Type:    "tableRow",
 				Content: []*PMNode{},
 			}
-			sf(node, tableRow)
+			sf(child, tableRow)
 			table.Content = append(table.Content, tableRow)
-		}
-		for _, child := range node.Children {
-			s.Push(child)
+		} else if child.Tag == "thead" || child.Tag == "tbody" {
+			parseRows(child, table)
 		}
 	}
 	return table
@@ -242,4 +378,19 @@ func (p *BrParser) Parse(node *AstElement) *PMNode {
 		Type: "paragraph",
 	}
 	return br
+}
+
+func (p *CodeBlockParser) Parse(node *AstElement) *PMNode {
+	if node == nil {
+		return nil
+	}
+	codeBlock := &PMNode{
+		Type: "codeBlock",
+		Attrs: map[string]interface{}{
+			"class": node.Attrs["class"],
+		},
+		Content: []*PMNode{},
+	}
+	FindTextTill(node, codeBlock)
+	return codeBlock
 }

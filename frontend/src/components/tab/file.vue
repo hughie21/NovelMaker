@@ -8,9 +8,9 @@
 import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
-import { ref, reactive, inject, h } from 'vue';
+import { ref, reactive, inject, onMounted } from 'vue';
 import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting } from '../../assets/js/globals.js';
-import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, autoSaving, setImage } from '../../assets/js/utils.js';
+import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, TimerContext, setImage, normalizeHTML } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
 
@@ -21,13 +21,16 @@ const disableBtn = reactive({
 })
 const btnNormalClass = inject("btnNormalClass");
 const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
+const timer = new TimerContext(t);
 
-autoSaving(t);
+onMounted(()=> {
+    timer.Start();
+    console.log(timer.State())
+})
 
 const openFilePicker = () => {
     async function innerOpner(){
         var res = await FileOpen().then((res) => {
-            console.log(res)
             return res
         })
         if(res.Code == 1){
@@ -70,6 +73,7 @@ const openFilePicker = () => {
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
+        console.log(JSON.stringify(rawData.content))
         E.commands.setContent(rawData.content);
         
         updateCatalog();
@@ -79,6 +83,7 @@ const openFilePicker = () => {
         change.value = false;
         currentSave.value = res.Msg;
         title.value = res.Msg;
+        timer.Reset();
     }
     function innerCallBack(action){
         if(action == 'confirm'){
@@ -131,14 +136,10 @@ const saveFilePicker = async (saveAs) => {
     titles.forEach((e, i) => {
         e.id = "guide_signal_" + (i+1);
     })
-    tempData.content = doc.body.innerHTML;
-    const regex_image = /<img(.*?)>/g;
+    tempData.content = normalizeHTML(editor.getHTML());
     const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)\/(.*)\//g;
     tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
     tempData.content = tempData.content.replaceAll(" ", "");
-    tempData.content = tempData.content.replace(regex_image, (match, p1)=> {
-        return `<img${p1.replace(regex_url, "../Images/")}/>`;
-    })
     tempData.content = tempData.content.replaceAll('"', "'");
     let name = bookInfo.metadata.title;
 
@@ -156,6 +157,7 @@ const saveFilePicker = async (saveAs) => {
                 currentSave.value = res.Data;
                 title.value = res.Data;
                 change.value = false;
+                timer.Reset();
                 ElMessage.success(t('message.saveSuccess'))
                 return
             }
@@ -176,6 +178,7 @@ const saveFilePicker = async (saveAs) => {
             currentSave.value = res.Data;
             title.value = res.Data;
             change.value = false;
+            timer.Reset();
             ElMessage.success(t('message.saveSuccess'))
         }
         return

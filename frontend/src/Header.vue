@@ -315,7 +315,7 @@ const handleSelect = (index) => {
     height: 100%;
     display: flex;
     align-items: center;
-    padding: 0 10%;
+    padding: 0 7%;
 }
 .save-flag {
     color: var(--el-text-color-secondary);
