@@ -87,10 +87,12 @@ const handleChange = () => {
 const test = () => {
     const E = editorRef.value;
     const timer = TimerContext.getInstance();
-    console.log(timer.State())
+    timer.State()
+
+    E.commands.setLink({ href: "https://example.com" });
     // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
-    // console.log(E.getHTML())
-    // console.log(JSON.stringify(E.getJSON()));
+    console.log(E.getHTML())
+    console.log(JSON.stringify(E.getJSON()));
 
     // let data = E.getJSON();
     // E.chain().clearContent().setContent(data).run();

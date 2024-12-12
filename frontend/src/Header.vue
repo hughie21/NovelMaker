@@ -114,10 +114,28 @@ const menu = {
     }
 }
 
+function handleMouseMove(event) {
+    runtime.WindowIsMaximised().then(res => {
+        console.log(res);
+        maximised.value = res;
+    });
+}
+
+function handleMouseDown(event) {
+    document.addEventListener("mousemove", handleMouseMove);
+}
+
+function handleMouseUp(event) {
+    document.removeEventListener("mousemove", handleMouseMove);
+}
+
 onMounted(() => {
     runtime.WindowIsMaximised().then(res=> {
         maximised.value = res;
     })
+    const dragWindow = document.getElementById('dragWindow');
+    dragWindow.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
 })
 
 const handleMaximise = () => {
@@ -169,7 +187,7 @@ const handleSelect = (index) => {
 </script>
 
 <template>
-<div class="header_container" style="--wails-draggable:drag">
+<div class="header_container">
     <div class="header-left">
         <div class="header-icon">
             <img src="./assets/images/appicon.png" />
@@ -214,7 +232,7 @@ const handleSelect = (index) => {
             </el-sub-menu>
         </el-menu>
     </div>
-    <div class="header-center">
+    <div class="header-center" id="dragWindow" style="--wails-draggable:drag">
         
         <div class="header-title">
             <span class="save-flag" v-show="change">*</span>
@@ -329,6 +347,7 @@ const handleSelect = (index) => {
     white-space: nowrap;
     overflow: hidden;
     text-align: center;
+    cursor: default;
 }
 .header-right {
     width: 10%;

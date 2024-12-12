@@ -45,6 +45,8 @@ export default{
             row: "Row",
             column: "Column",
             insertTable: "Insert Table",
+            code: "Enter the programming language",
+            link: "Hyperlink",
         },
         help: {
             help: "Help"
@@ -145,6 +147,15 @@ export default{
             version: "Version",
             date: "Date",
             copyright: "Copyright",
+        },
+        link: {
+            title: "Insert the hyperlink",
+            link: "Link",
+            text: "Pls input the URL",
+            insert: "Insert",
+            cancel: "Cancel",
+            error: "The input does not match the current prefix format, please re-enter!",
+            prefix: "Link Prefix"
         }
     },
     message: {

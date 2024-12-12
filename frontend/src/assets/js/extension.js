@@ -11,7 +11,7 @@ import Image from "@tiptap/extension-image";
 import Heading from "@tiptap/extension-heading"
 import TextStyle from '@tiptap/extension-text-style'
 
- const TextStyleExtends = TextStyle.extend({
+const TextStyleExtends = TextStyle.extend({
     priority: 1000,
     addAttributes() {
         return {
@@ -479,7 +479,7 @@ export {
     CustomImage,
     CustomHeading,
     SearchSelBackground,
-    TextStyleExtends
+    TextStyleExtends,
 }
 
 export default {

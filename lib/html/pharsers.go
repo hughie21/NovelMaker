@@ -52,7 +52,37 @@ func splitStyle(style string) map[string]string {
 	return result
 }
 
-// Find the text node till the end of the tree
+func backward(node *AstElement, textNode *PMNode) {
+	s := NewStack()
+	s.Push(node.Parent)
+	for {
+		currentNode := s.Pop().(*AstElement)
+		if currentNode.Tag == "p" {
+			break
+		}
+		s.Push(currentNode.Parent)
+		switch currentNode.Tag {
+		case "span":
+			handleSpanTag(currentNode, textNode)
+		case "strong":
+			handleStrongTag(textNode)
+		case "em":
+			handleEmTag(textNode)
+		case "s":
+			handleSTag(textNode)
+		case "a":
+			handleATag(currentNode, textNode)
+		default:
+			continue
+		}
+	}
+}
+
+// This method is used to parse the text in the node
+// it will iterates through all the child nodes under the given node
+//
+// Whenever the type of a node is checked to be 3, the node is forward traversed
+// to its parent node, looking for other possible format-related nodes
 func FindTextTill(node *AstElement, parent *PMNode) {
 	s := NewStack()
 	s.Push(node)
@@ -62,94 +92,95 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 		}
 		node := s.Pop().(*AstElement)
 		if node.Type == 3 {
-			if node.Tag == "span" {
-				textStyleString, ok := node.Attrs["style"]
-				if !ok {
-					textNode := &PMNode{
-						Type: "text",
-						Text: strings.TrimSpace(html.UnescapeString(node.Text)),
-					}
-					parent.Content = append([]*PMNode{textNode}, parent.Content...)
-					continue
-				}
-				textStyle := splitStyle(html.UnescapeString(textStyleString))
-				var checks []bool
-				fontSize, ok := textStyle["font-size"]
-				checks = append(checks, ok)
-				fontColor, ok := textStyle["color"]
-				checks = append(checks, ok)
-				backgroundColor, ok := textStyle["background"]
-				checks = append(checks, ok)
-				fontFamily, ok := textStyle["font-family"]
-				checks = append(checks, ok)
-				if checks[0] && checks[1] && checks[2] && checks[3] {
-					textNode := &PMNode{
-						Type: "text",
-						Text: strings.TrimSpace(html.UnescapeString(node.Text)),
-						Mark: []*PMNode{
-							{
-								Type: "textStyle",
-								Attrs: map[string]interface{}{
-									"fontSize":        fontSize,
-									"fontColor":       fontColor,
-									"backgroundColor": backgroundColor,
-									"fontFamily":      fontFamily,
-								},
-							},
-						},
-					}
-					parent.Content = append([]*PMNode{textNode}, parent.Content...)
-					continue
-				}
-			} else if node.Tag == "strong" {
-				bold := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "bold",
-						},
-					},
-					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
-				}
-				parent.Content = append([]*PMNode{bold}, parent.Content...)
-				continue
-			} else if node.Tag == "em" {
-				italic := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "italic",
-						},
-					},
-					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
-				}
-				parent.Content = append([]*PMNode{italic}, parent.Content...)
-				continue
-			} else if node.Tag == "s" {
-				strike := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "strike",
-						},
-					},
-					Text: strings.TrimSpace(html.UnescapeString(node.Text)),
-				}
-				parent.Content = append([]*PMNode{strike}, parent.Content...)
-				continue
-			}
-
-			textNode := &PMNode{
+			textNode := PMNode{
 				Type: "text",
-				Text: strings.TrimSpace(html.UnescapeString(node.Text)),
+				Mark: []*PMNode{},
+				Text: "",
 			}
-			parent.Content = append([]*PMNode{textNode}, parent.Content...)
+			textNode.Text = html.UnescapeString(node.Text)
+			backward(node, &textNode)
+			parent.Content = append([]*PMNode{&textNode}, parent.Content...)
 			continue
 		}
 		for _, child := range node.Children {
 			s.Push(child)
 		}
 	}
+}
+
+func handleATag(node *AstElement, parent *PMNode) {
+	href, ok := node.Attrs["href"]
+	if !ok {
+		return
+	}
+	target, ok := node.Attrs["target"]
+	if !ok {
+		target = "_blank"
+	}
+	rel, ok := node.Attrs["rel"]
+	if !ok {
+		rel = "noopener noreferrer nofollow"
+	}
+	linkNode := &PMNode{
+		Type: "link",
+		Attrs: map[string]interface{}{
+			"href":   href,
+			"target": target,
+			"rel":    rel,
+			"class":  "",
+		},
+	}
+	parent.Mark = append([]*PMNode{linkNode}, parent.Mark...)
+}
+
+func handleSpanTag(node *AstElement, parent *PMNode) {
+	textStyleString, ok := node.Attrs["style"]
+	if !ok {
+		return
+	}
+	textStyle := splitStyle(html.UnescapeString(textStyleString))
+	var checks []bool
+	fontSize, ok := textStyle["font-size"]
+	checks = append(checks, ok)
+	fontColor, ok := textStyle["color"]
+	checks = append(checks, ok)
+	backgroundColor, ok := textStyle["background"]
+	checks = append(checks, ok)
+	fontFamily, ok := textStyle["font-family"]
+	checks = append(checks, ok)
+	if checks[0] && checks[1] && checks[2] && checks[3] {
+		markNode := &PMNode{
+			Type: "textStyle",
+			Attrs: map[string]interface{}{
+				"fontSize":        fontSize,
+				"fontColor":       fontColor,
+				"backgroundColor": backgroundColor,
+				"fontFamily":      fontFamily,
+			},
+		}
+		parent.Mark = append([]*PMNode{markNode}, parent.Mark...)
+	}
+}
+
+func handleStrongTag(parent *PMNode) {
+	bold := &PMNode{
+		Type: "bold",
+	}
+	parent.Mark = append([]*PMNode{bold}, parent.Mark...)
+}
+
+func handleEmTag(parent *PMNode) {
+	italic := &PMNode{
+		Type: "italic",
+	}
+	parent.Mark = append([]*PMNode{italic}, parent.Mark...)
+}
+
+func handleSTag(parent *PMNode) {
+	strike := &PMNode{
+		Type: "strike",
+	}
+	parent.Mark = append([]*PMNode{strike}, parent.Mark...)
 }
 
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {

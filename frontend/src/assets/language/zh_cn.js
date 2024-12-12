@@ -46,6 +46,8 @@ export default{
             row: "列",
             column: "行",
             insertTable: "插入表格",
+            code: "输入要插入的编程语言",
+            link: "超链接",
         },
         help: {
             help: "帮助"
@@ -146,6 +148,15 @@ export default{
             version: "版本",
             date: "日期",
             copyright: "版权",
+        },
+        link: {
+            title: "插入超链接",
+            link: "链接",
+            text: "请输入网址",
+            insert: "插入",
+            cancel: "取消",
+            error: "输入的内容不符合当前前缀格式，请重新输入!",
+            prefix: "链接前缀"
         }
     },
     message: {

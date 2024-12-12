@@ -88,11 +88,6 @@ func (c *ParserContext) Parse(node *AstElement) *PMNode {
 	if parser, ok := c.parsers[node.Tag]; ok {
 		return parser.Parse(node)
 	}
-	if node.Type == 3 {
-		if node.Tag == "span" || node.Tag == "p" {
-			return c.parsers["text"].Parse(node)
-		}
-	}
 	return nil
 }
 

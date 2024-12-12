@@ -93,8 +93,20 @@
     padding: 0;
 }
 
-.tiptap span.ProseMirror-selectednode img {
-    outline: 3px solid #6880f8;
+@keyframes blink-border {
+    0% {
+        border-right: 2px solid transparent;
+    }
+    50% {
+        border-right: 2px solid var(--cursor-color);
+    }
+    100% {
+        border-right: 2px solid transparent;
+    }
+}
+
+.tiptap div.ProseMirror-selectednode div img {
+    animation: blink-border 1.2s infinite;
 }
 
 .tiptap .image-container {

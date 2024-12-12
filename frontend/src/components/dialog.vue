@@ -13,6 +13,7 @@ import BookInfo from './dialog/bookinfo.vue';
 import Media from './dialog/media.vue';
 import Help from './dialog/help.vue';
 import Bubble from './dialog/bubble.vue';
+import Link from './dialog/link.vue';
 
 </script>
 
@@ -40,6 +41,9 @@ import Bubble from './dialog/bubble.vue';
 
     <!-- search bar -->
     <Lookup></Lookup>
+
+    <!-- Link dialog -->
+    <Link></Link>
 </template>
 
 <style>

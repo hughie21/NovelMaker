@@ -5,11 +5,13 @@ html {
 
 .dark {
     --icon-color: #e6e6e6;
+    --cursor-color: #c3c7c9b9;
 }
 
 .light {
     --icon-color: #212529;
     --el-bg-color: #fff;
+    --cursor-color: #3b3939ab;
 }
 
 body {

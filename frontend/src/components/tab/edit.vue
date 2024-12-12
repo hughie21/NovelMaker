@@ -9,7 +9,7 @@
 import { useI18n } from 'vue-i18n';
 import "../../assets/css/tab.css"
 import { ref, inject } from 'vue';
-import { editorRef, fontSizeVal, fontVal, headerVal, visio, fonts } from '../../assets/js/globals';
+import { editorRef, fontSizeVal, fontVal, headerVal, visio, fonts, isBold, isItalic, isStrike } from '../../assets/js/globals';
 import { rgbaToHex } from '../../assets/js/utils';
 
 const { t } = useI18n();
@@ -22,6 +22,7 @@ const rowNum = ref(3)
 const columnNum = ref(3)
 const sizes = []
 const btnNormalClass = inject("btnNormalClass");
+const programLang = ref('')
 
 for(var i = 12; i < 72; i+=2) {
     sizes.push({
@@ -141,6 +142,38 @@ const getSelectedText = () => {
     return text;
 }
 
+const handleSetBold = () => {
+    const E = editorRef.value;
+    E.chain().focus().toggleBold().run();
+    isBold.value = !isBold.value;
+}
+
+const handleSetItalic = () => {
+    const E = editorRef.value;
+    E.chain().focus().toggleItalic().run();
+    isItalic.value = !isItalic.value;
+}
+
+const handleSetStrike = () => {
+    const E = editorRef.value;
+    E.chain().focus().toggleStrike().run();
+    isStrike.value = !isStrike.value;
+}
+
+const handleInsetCodeBlock = () => {
+    const E = editorRef.value;
+    console.log(programLang.value)
+    E.chain().focus().setCodeBlock({language: programLang.value}).run();
+    visio.codeInsertVisible = false;
+}
+
+const handleCleanMarks = () => {
+    const E = editorRef.value;
+    E.chain().focus().unsetAllMarks().run()
+    isBold.value = false;
+    isItalic.value = false;
+    isStrike.value = false;
+}
 </script>
 
 <template>
@@ -188,7 +221,7 @@ const getSelectedText = () => {
                 </el-select>
                 <div style="display: flex; flex-direction:row; align-items: center; margin-left: 3px; margin-top: 5px">
                     <el-tooltip :content="t('toolBar.tooltip.bold')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="editorRef.chain().focus().toggleBold().run()">
+                        <el-button :class="{'selected-icon':isBold}" text size="small" @click="handleSetBold">
                             <i class="el-icon">
                                 <svg t="1724558936693" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4250" width="200" height="180"><path d="M385.692278 918.576916 390.80771 919.307658C421.012953 920.769221 443.423035 921.499963 458.03843 921.499963 545.73119 921.499963 609.551045 905.545019 649.499963 873.63458 689.448881 841.724219 709.423104 790.449073 709.423104 719.807724 709.423104 655.986846 690.66689 608.365568 653.153831 576.942316 615.640852 545.519065 559.372209 529.807675 484.346171 529.807675 462.422961 529.807675 444.153935 530.051308 429.538462 530.538496 414.922988 531.025605 400.307751 531.756426 385.692278 532.730801L385.692278 918.576916ZM386.423099 445.769255C390.320522 446.256443 395.192241 446.621775 401.038494 446.865408 406.884667 447.108962 415.410176 447.23074 426.615414 447.23074 504.5645 447.23074 561.929295 431.51935 598.711532 400.096177 635.49377 368.672926 653.884652 319.590085 653.884652 252.846159 653.884652 194.384345 636.833477 151.025822 602.730732 122.76925 568.628066 94.512679 516.256768 80.38463 445.615419 80.38463 433.922993 80.38463 415.410412 81.358927 390.076889 83.307678L385.692278 83.307678 386.423099 445.769255ZM78.769231 0 528.192276 0C638.295434 0 721.115136 19.608812 776.653824 58.82691 832.192591 98.045086 859.961502 156.62781 859.961502 234.576896 859.961502 293.525898 841.936108 342.852372 805.884613 382.557657 769.833118 422.26302 716.731156 451.371717 646.576916 469.884613 732.320926 471.346176 799.063828 493.268992 846.80767 535.653849 894.551513 578.038705 918.423079 636.499653 918.423079 711.038425 918.423079 805.551734 886.026004 878.018954 821.23075 928.442289 756.435574 978.865625 663.141612 1004.076898 541.346186 1004.076898L78.769231 1004.076898 78.769231 931.000005 167.19234 922.961526 191.307697 899.576911 191.307697 101.57694 167.19234 80.38463 78.769231 73.076894 78.769231 0Z" p-id="4251"></path></svg>
                             </i>
@@ -196,7 +229,7 @@ const getSelectedText = () => {
                     </el-tooltip>
                     
                     <el-tooltip :content="t('toolBar.tooltip.italic')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="editorRef.chain().focus().toggleItalic().run()">
+                        <el-button :class="{'selected-icon':isItalic}" text size="small" @click="handleSetItalic">
                             <i class="el-icon">
                                 <svg t="1724559086522" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5526" width="200" height="200"><path d="M896 64 896 128 768 128 448 896 576 896 576 960 128 960 128 896 256 896 576 128 448 128 448 64Z" p-id="5527"></path></svg>
                             </i>
@@ -204,7 +237,7 @@ const getSelectedText = () => {
                     </el-tooltip>
                     
                     <el-tooltip :content="t('toolBar.tooltip.strike')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="editorRef.chain().focus().toggleStrike().run()">
+                        <el-button :class="{'selected-icon':isStrike}" text size="small" @click="handleSetStrike">
                             <i class="el-icon">
                                 <svg t="1724559302042" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6660" width="200" height="200"><path d="M731.424 517.024c63.904 47.936 100.576 116.096 100.576 186.976s-36.672 139.04-100.576 186.976c-59.36 44.512-137.28 69.024-219.424 69.024s-160.064-24.512-219.424-69.024c-63.936-47.936-100.576-116.096-100.576-186.976l128 0c0 69.376 87.936 128 192 128s192-58.624 192-128c0-69.376-87.936-128-192-128-82.144 0-160.064-24.512-219.424-69.024-63.936-47.936-100.576-116.096-100.576-186.976s36.672-139.04 100.576-186.976c59.36-44.512 137.28-69.024 219.424-69.024s160.064 24.512 219.424 69.024c63.904 47.936 100.576 116.096 100.576 186.976l-128 0c0-69.376-87.936-128-192-128s-192 58.624-192 128c0 69.376 87.936 128 192 128 82.144 0 160.064 24.512 219.424 69.024zM0 512l1024 0 0 64-1024 0z" p-id="6661"></path></svg>
                             </i>
@@ -212,7 +245,7 @@ const getSelectedText = () => {
                     </el-tooltip>
                     
                     <el-tooltip :content="t('toolBar.tooltip.clean')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="editorRef.chain().focus().unsetAllMarks().run()">
+                        <el-button text size="small" @click="handleCleanMarks">
                             <i class="el-icon">
                                 <svg t="1724559411257" class="icon" viewBox="0 0 1152 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8509" width="200" height="200"><path d="M581.4 114.8L114.8 581.4c-50 50-50 131 0 181l160 160c24 24 56.6 37.4 90.6 37.4H1024c35.4 0 64-28.6 64-64s-28.6-64-64-64H775.8l261.4-261.2c50-50 50-131 0-181L762.6 114.8c-50-50-131-50-181 0z m13.4 717.2H365.2l-160-160 249.4-249.4 274.8 274.8-134.6 134.6z" p-id="8510"></path></svg>
                             </i>
@@ -271,8 +304,7 @@ const getSelectedText = () => {
                         :visible="visio.tableInsertVisible"
                     >
                         <template #reference>
-                            
-                                <el-button text size="small"  @click="visio.tableInsertVisible = true">
+                                <el-button text size="small"  @click="visio.tableInsertVisible = !visio.tableInsertVisible">
                                     <el-tooltip :content="t('toolBar.tooltip.table')" placement="bottom" effect='dark'>
                                     <i class="el-icon">
                                         <svg t="1725442515685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5148" width="200" height="200"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32z m-40 208H676V232h212v136z m0 224H676V432h212v160zM412 432h200v160H412V432z m200-64H412V232h200v136z m-476 64h212v160H136V432z m0-200h212v136H136V232z m0 424h212v136H136V656z m276 0h200v136H412V656z m476 136H676V656h212v136z" p-id="5149"></path></svg>
@@ -295,14 +327,28 @@ const getSelectedText = () => {
                             </div>
                         </div>
                     </el-popover>
-                    
-                    <el-tooltip :content="t('toolBar.tooltip.code')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="E.chain().focus().setCodeBlock().run()">
-                            <i class="el-icon">
-                                <svg t="1725442551522" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6148" width="200" height="200"><path d="M153.770667 517.558857l200.387047-197.241905L302.86019 268.190476 48.761905 518.290286l254.439619 243.614476 50.590476-52.833524-200.021333-191.512381zM658.285714 320.316952L709.583238 268.190476l254.098286 250.09981L709.241905 761.904762l-50.590476-52.833524 200.021333-191.512381L658.285714 320.316952z m-112.981333-86.186666L393.99619 785.554286l70.534096 19.358476 151.30819-551.399619-70.534095-19.358476z" p-id="6149"></path></svg>
-                            </i>
-                        </el-button>
-                    </el-tooltip>
+                    <el-popover placement="bottom" :width="200" trigger="click" :visible="visio.codeInsertVisible">
+                        <template #reference>
+                            <el-button text size="small" @click="visio.codeInsertVisible = !visio.codeInsertVisible">
+                                <el-tooltip :content="t('toolBar.tooltip.code')" placement="bottom" effect='dark'>
+                                    <i class="el-icon">
+                                        <svg t="1725442551522" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6148" width="200" height="200"><path d="M153.770667 517.558857l200.387047-197.241905L302.86019 268.190476 48.761905 518.290286l254.439619 243.614476 50.590476-52.833524-200.021333-191.512381zM658.285714 320.316952L709.583238 268.190476l254.098286 250.09981L709.241905 761.904762l-50.590476-52.833524 200.021333-191.512381L658.285714 320.316952z m-112.981333-86.186666L393.99619 785.554286l70.534096 19.358476 151.30819-551.399619-70.534095-19.358476z" p-id="6149"></path></svg>
+                                    </i>
+                                </el-tooltip>
+                            </el-button>
+                        </template>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <el-input
+                            style="width: 150px;border:none;"
+                            :placeholder="t('toolBar.edit.code')"
+                            clearable
+                            size="small"
+                            v-model="programLang"
+                            ></el-input>
+                            <el-button size="small" text @click="handleInsetCodeBlock">{{t("dialog.media.insert")}}</el-button>
+                        </div>
+                        
+                    </el-popover>
                     
                     <el-tooltip :content="t('toolBar.tooltip.orderlist')" placement="bottom" effect='dark'>
                         <el-button text size="small" @click="E.chain().focus().toggleOrderedList().run()">
@@ -331,6 +377,15 @@ const getSelectedText = () => {
                 {{$t('toolBar.edit.media')}}
             </span>
             <div class="division-border"></div>
+            <span class="btn-group">
+                <button :class="btnNormalClass" @click="visio.linkInsertVisible = true">
+                    <i class="el-icon">
+                        <svg t="1733985395557" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4272" width="200" height="200"><path d="M593.94368 715.648a10.688 10.688 0 0 0-14.976 0L424.21568 870.4c-71.68 71.68-192.576 79.232-271.68 0-79.232-79.232-71.616-200 0-271.616l154.752-154.752a10.688 10.688 0 0 0 0-15.04l-52.992-52.992a10.688 10.688 0 0 0-15.04 0L84.50368 530.688a287.872 287.872 0 0 0 0 407.488 288 288 0 0 0 407.488 0l154.752-154.752a10.688 10.688 0 0 0 0-15.04l-52.736-52.736z m344.384-631.168a288.256 288.256 0 0 1 0 407.616l-154.752 154.752a10.688 10.688 0 0 1-15.04 0l-52.992-52.992a10.688 10.688 0 0 1 0-15.104l154.752-154.688c71.68-71.68 79.232-192.448 0-271.68-79.104-79.232-200-71.68-271.68 0L443.92768 307.2a10.688 10.688 0 0 1-15.04 0l-52.864-52.864a10.688 10.688 0 0 1 0-15.04l154.88-154.752a287.872 287.872 0 0 1 407.424 0z m-296.32 240.896l52.672 52.736a10.688 10.688 0 0 1 0 15.04l-301.504 301.44a10.688 10.688 0 0 1-15.04 0l-52.736-52.672a10.688 10.688 0 0 1 0-15.04l301.632-301.504a10.688 10.688 0 0 1 15.04 0z" p-id="4273"></path></svg>
+                    </i>
+                </button>
+                {{$t('toolBar.edit.link')}}
+            </span>
+            <div class="division-border"></div>
             <span class="btn-group" style="width:40px; ">
                 <button class="el-button btn func_btn-big" @click="visio.settingVisible = true">
                     <i class="el-icon">
@@ -343,3 +398,9 @@ const getSelectedText = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.selected-icon{
+    background: radial-gradient(circle, rgb(47 137 231 / 30%) 55%, rgba(174, 177, 238, 0) 50%, rgba(148, 187, 233, 0) 60%);
+}
+</style>

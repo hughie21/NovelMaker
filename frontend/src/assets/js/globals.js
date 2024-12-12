@@ -16,6 +16,9 @@ const headerVal = ref(0);
 const fontVal = ref("Arial");
 const fonts = ref([])
 const fontSizeVal = ref("16px")
+const isBold = ref(false);
+const isItalic = ref(false);
+const isStrike = ref(false);
 
 // i18n
 const language_list = ref(lang);
@@ -33,6 +36,8 @@ const visio = reactive({
     tableInsertVisible: false,
     helpVisible: false,
     searchBarVisible: false,
+    codeInsertVisible: false,
+    linkInsertVisible: false,
 })
 const cover = reactive({
     isExist: false,
@@ -135,7 +140,10 @@ export {
     autoSave,
     generalSetting,
     windowSetting,
-    linuxSetting
+    linuxSetting,
+    isBold,
+    isItalic,
+    isStrike
 }
 
 export default{}

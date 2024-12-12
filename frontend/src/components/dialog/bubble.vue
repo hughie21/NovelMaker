@@ -16,7 +16,6 @@ const editor = editorRef;
 </script>
 
 <template>
-
 <!-- table -->
 <div id="tableMenu" style="display: none;">
     <div class="bubble-menu" style="flex-direction: row; width: 390px">
