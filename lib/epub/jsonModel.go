@@ -1,10 +1,7 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-8-2
-@LastEditors: Hughie
-@LastEditTime: 2024-08-7
-@Description: The definition of the json Format and the json marshal method
-*/
+// Description: Data structure definition for front-end and back-end data exchange
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
 
 package epub
 
@@ -25,7 +22,7 @@ type File struct {
 }
 
 type J_cover struct {
-	Name string `json:"id"`
+	Name string `json:"name"`
 	Data string `json:"data"`
 }
 
@@ -38,7 +35,6 @@ type J_MetaData struct {
 	Description  string   `json:"description"`
 	Publisher    string   `json:"publisher"`
 	Subject      []string `json:"subject"`
-	Date         string   `json:"date"`
 	Cover        J_cover  `json:"cover"`
 }
 

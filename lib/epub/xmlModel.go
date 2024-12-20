@@ -1,10 +1,7 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-8-2
-@LastEditors: Hughie
-@LastEditTime: 2024-08-7
-@Description: The definition of the xml Format
-*/
+// Description: Structure mapping for each xml file of epub file
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
 
 package epub
 

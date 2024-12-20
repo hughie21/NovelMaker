@@ -1,3 +1,7 @@
+// Description: Convert ast syntax tree to proseMirror scheme
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package html
 
 import (

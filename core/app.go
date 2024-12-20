@@ -5,10 +5,10 @@
 package core
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -19,8 +19,7 @@ import (
 	"github.com/hughie21/NovelMaker/lib/logging"
 	"github.com/hughie21/NovelMaker/lib/server"
 	"github.com/hughie21/NovelMaker/lib/utils"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"context"
 )
@@ -131,6 +130,22 @@ func (a *App) FileOpen() Message {
 	return Message
 }
 
+func (a *App) NewFile() Message {
+	var msg Message
+	err := os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	a.resourceFold = utils.GenerateHash([]byte(time.Now().String()))
+	os.Mkdir(filepath.Join(a.core.execPath, "resources", a.resourceFold), os.ModePerm)
+	msg.Code = 0
+	msg.Msg = "success"
+	return msg
+}
+
 func (a *App) DirectLoading() Message {
 	var msg Message
 	if a.core.Args == "" {
@@ -152,35 +167,26 @@ func (a *App) DirectLoading() Message {
 	return msg
 }
 
-func (a *App) FileImport() Message {
-	var Message Message
-	res := FileOpenDialog(a, "Text File", "*.md;*.txt")
-	if res == "" {
-		Message.Code = -1
-		Message.Msg = "cancel"
-		return Message
-	}
-	fp, err := os.Open(res)
-	if err != nil {
-		Message.Code = 1
-		Message.Msg = err.Error()
-		logger.Error(err.Error(), logging.RunFuncName())
-		return Message
-	}
-	defer fp.Close()
-	content, _ := io.ReadAll(fp)
-	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
-	)
-	var buf bytes.Buffer
-	if err := md.Convert(content, &buf); err != nil {
-		logger.Error(err.Error(), logging.RunFuncName())
-	}
-	Message.Code = 0
-	Message.Msg = "success"
-	Message.Data = buf.String()
-	return Message
-}
+// func (a *App) FileImport() Message {
+// 	var Message Message
+// 	res := FileOpenDialog(a, "Text File", "*.md;*.txt")
+// 	if res == "" {
+// 		Message.Code = -1
+// 		Message.Msg = "cancel"
+// 		return Message
+// 	}
+// 	returnData := a.core.agt.Exec("markdown", res)
+// 	if returnData.Err() != nil {
+// 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
+// 		Message.Code = 1
+// 		Message.Msg = returnData.Err().Error()
+// 		return Message
+// 	}
+// 	Message.Code = 0
+// 	Message.Msg = "success"
+// 	Message.Data = returnData.Data().(string)
+// 	return Message
+// }
 
 // corresponding to the "Save" button on the frontend
 func (a *App) FileSave(name string, rawJson string, skip bool) Message {
@@ -406,6 +412,15 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 	msg.Code = 0
 	msg.Msg = "success"
 	return msg
+}
+
+func (a *App) GetVersion() {
+	info := a.core.cm.GetInfo()
+	runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:    runtime.InfoDialog,
+		Title:   "NovelMaker",
+		Message: fmt.Sprintf("Version: %-10s\nCommit: %-10s\nBuild Time: %-10s\nGolang: %-10s\nWails: %-10s\nNodejs: %-10s\nCopyright: %-10s", info["version"], info["commit"], info["buildTime"], "v1.20.3", "v2.8.1", "22.11.0", "©2024 Chenxi Guan"),
+	})
 }
 
 func (a *App) ImageDownload(url string) Message {

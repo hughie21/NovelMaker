@@ -1,3 +1,7 @@
+// Description: Definition of the log file structure
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package logging
 
 import (

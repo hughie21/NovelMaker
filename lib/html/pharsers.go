@@ -1,3 +1,7 @@
+// Description: The parser corresponding to each tag
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package html
 
 import (
@@ -24,9 +28,8 @@ type (
 	ListParser struct {
 		Type string
 	}
-	TableParser struct{}
-	SVGParser   struct {
-		FoldName string
+	TableParser struct {
+		FoldName string // compatible to the image
 	}
 	BrParser        struct{}
 	CodeBlockParser struct{}
@@ -52,7 +55,40 @@ func splitStyle(style string) map[string]string {
 	return result
 }
 
-// Find the text node till the end of the tree
+func backward(node *AstElement, textNode *PMNode) {
+	s := NewStack()
+	s.Push(node.Parent)
+	for {
+		currentNode := s.Pop().(*AstElement)
+		if currentNode == nil {
+			break
+		}
+		if currentNode.Tag == "p" {
+			break
+		}
+		s.Push(currentNode.Parent)
+		switch currentNode.Tag {
+		case "span":
+			handleSpanTag(currentNode, textNode)
+		case "strong":
+			handleStrongTag(textNode)
+		case "em":
+			handleEmTag(textNode)
+		case "s":
+			handleSTag(textNode)
+		case "a":
+			handleATag(currentNode, textNode)
+		default:
+			continue
+		}
+	}
+}
+
+// This method is used to parse the text in the node
+// it will iterates through all the child nodes under the given node
+//
+// Whenever the type of a node is checked to be 3, the node is forward traversed
+// to its parent node, looking for other possible format-related nodes
 func FindTextTill(node *AstElement, parent *PMNode) {
 	s := NewStack()
 	s.Push(node)
@@ -62,95 +98,96 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 		}
 		node := s.Pop().(*AstElement)
 		if node.Type == 3 {
-			fmt.Println("Node text: ", node.Text)
-			if node.Tag == "span" {
-				textStyleString, ok := node.Attrs["style"]
-				if !ok {
-					textNode := &PMNode{
-						Type: "text",
-						Text: html.UnescapeString(node.Text),
-					}
-					parent.Content = append([]*PMNode{textNode}, parent.Content...)
-					continue
-				}
-				textStyle := splitStyle(html.UnescapeString(textStyleString))
-				var checks []bool
-				fontSize, ok := textStyle["font-size"]
-				checks = append(checks, ok)
-				fontColor, ok := textStyle["color"]
-				checks = append(checks, ok)
-				backgroundColor, ok := textStyle["background"]
-				checks = append(checks, ok)
-				fontFamily, ok := textStyle["font-family"]
-				checks = append(checks, ok)
-				if checks[0] && checks[1] && checks[2] && checks[3] {
-					textNode := &PMNode{
-						Type: "text",
-						Text: html.UnescapeString(node.Text),
-						Mark: []*PMNode{
-							{
-								Type: "textStyle",
-								Attrs: map[string]interface{}{
-									"fontSize":        fontSize,
-									"fontColor":       fontColor,
-									"backgroundColor": backgroundColor,
-									"fontFamily":      fontFamily,
-								},
-							},
-						},
-					}
-					parent.Content = append([]*PMNode{textNode}, parent.Content...)
-					continue
-				}
-			} else if node.Tag == "strong" {
-				bold := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "bold",
-						},
-					},
-					Text: html.UnescapeString(node.Text),
-				}
-				parent.Content = append([]*PMNode{bold}, parent.Content...)
-				continue
-			} else if node.Tag == "em" {
-				italic := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "italic",
-						},
-					},
-					Text: html.UnescapeString(node.Text),
-				}
-				parent.Content = append([]*PMNode{italic}, parent.Content...)
-				continue
-			} else if node.Tag == "s" {
-				strike := &PMNode{
-					Type: "text",
-					Mark: []*PMNode{
-						{
-							Type: "strike",
-						},
-					},
-					Text: html.UnescapeString(node.Text),
-				}
-				parent.Content = append([]*PMNode{strike}, parent.Content...)
-				continue
+			textNode := PMNode{
+				Type:    "text",
+				Mark:    []*PMNode{},
+				Content: []*PMNode{},
+				Text:    "",
 			}
-
-			textNode := &PMNode{
-				Type: "text",
-				Text: html.UnescapeString(node.Text),
-			}
-			parent.Content = append([]*PMNode{textNode}, parent.Content...)
+			textNode.Text = html.UnescapeString(node.Text)
+			backward(node, &textNode)
+			parent.Content = append([]*PMNode{&textNode}, parent.Content...)
 			continue
 		}
 		for _, child := range node.Children {
 			s.Push(child)
 		}
 	}
+}
+
+func handleATag(node *AstElement, parent *PMNode) {
+	href, ok := node.Attrs["href"]
+	if !ok {
+		return
+	}
+	target, ok := node.Attrs["target"]
+	if !ok {
+		target = "_blank"
+	}
+	rel, ok := node.Attrs["rel"]
+	if !ok {
+		rel = "noopener noreferrer nofollow"
+	}
+	linkNode := &PMNode{
+		Type: "link",
+		Attrs: map[string]interface{}{
+			"href":   href,
+			"target": target,
+			"rel":    rel,
+			"class":  "",
+		},
+	}
+	parent.Mark = append([]*PMNode{linkNode}, parent.Mark...)
+}
+
+func handleSpanTag(node *AstElement, parent *PMNode) {
+	textStyleString, ok := node.Attrs["style"]
+	if !ok {
+		return
+	}
+	textStyle := splitStyle(html.UnescapeString(textStyleString))
+	var checks []bool
+	fontSize, ok := textStyle["font-size"]
+	checks = append(checks, ok)
+	fontColor, ok := textStyle["color"]
+	checks = append(checks, ok)
+	backgroundColor, ok := textStyle["background"]
+	checks = append(checks, ok)
+	fontFamily, ok := textStyle["font-family"]
+	checks = append(checks, ok)
+	if checks[0] && checks[1] && checks[2] && checks[3] {
+		markNode := &PMNode{
+			Type: "textStyle",
+			Attrs: map[string]interface{}{
+				"fontSize":        fontSize,
+				"fontColor":       fontColor,
+				"backgroundColor": backgroundColor,
+				"fontFamily":      fontFamily,
+			},
+		}
+		parent.Mark = append([]*PMNode{markNode}, parent.Mark...)
+	}
+}
+
+func handleStrongTag(parent *PMNode) {
+	bold := &PMNode{
+		Type: "bold",
+	}
+	parent.Mark = append([]*PMNode{bold}, parent.Mark...)
+}
+
+func handleEmTag(parent *PMNode) {
+	italic := &PMNode{
+		Type: "italic",
+	}
+	parent.Mark = append([]*PMNode{italic}, parent.Mark...)
+}
+
+func handleSTag(parent *PMNode) {
+	strike := &PMNode{
+		Type: "strike",
+	}
+	parent.Mark = append([]*PMNode{strike}, parent.Mark...)
 }
 
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {
@@ -172,6 +209,10 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 		return nil
 	}
 	imageAttr := make(map[string]interface{})
+	if v, ok := node.Attrs["xlink:href"]; ok { // compatible to the svg
+		_, imageName := filepath.Split(v)
+		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
+	}
 	if v, ok := node.Attrs["src"]; ok {
 		_, imageName := filepath.Split(v)
 		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
@@ -193,7 +234,7 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 			if intV, _ := strconv.Atoi(width); intV > 500 {
 				width = "500"
 			}
-			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
+			imageAttr["style"] = widthReg.ReplaceAllString(style, fmt.Sprintf("width: %spx", width))
 		} else {
 			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
 		}
@@ -272,16 +313,29 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 				if child.Tag == "th" {
 					cellType = "tableHeader"
 				}
+				colwidth, ok := child.Attrs["colwidth"]
+				if !ok {
+					colwidth = ""
+				}
+				colspan, err := strconv.Atoi(child.Attrs["colspan"])
+				if err != nil {
+					colspan = 1
+				}
+				rowspan, err := strconv.Atoi(child.Attrs["rowspan"])
+				if err != nil {
+					rowspan = 1
+				}
 				tableCell := &PMNode{
 					Type: cellType,
 					Attrs: map[string]interface{}{
-						"colspan":  1,
-						"rowspan":  1,
-						"colwidth": "",
+						"colspan":  colspan,
+						"rowspan":  rowspan,
+						"colwidth": colwidth,
 					},
 					Content: []*PMNode{},
 				}
 				for _, grandChild := range child.Children {
+					fmt.Println(grandChild.Tag)
 					if grandChild.Tag == "p" {
 						paragraph := &PMNode{
 							Type:    "paragraph",
@@ -289,6 +343,19 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 						}
 						FindTextTill(grandChild, paragraph)
 						tableCell.Content = append(tableCell.Content, paragraph)
+					} else if grandChild.Tag == "br" {
+						br := &PMNode{
+							Type: "paragraph",
+						}
+						tableCell.Content = append(tableCell.Content, br)
+					} else if grandChild.Children[0].Tag == "img" {
+						imageParser := &ImageParser{
+							FoldName: p.FoldName,
+						}
+						image := imageParser.Parse(grandChild.Children[0])
+						if image != nil {
+							tableCell.Content = append(tableCell.Content, image)
+						}
 					}
 				}
 				parent.Content = append(parent.Content, tableCell)
@@ -323,51 +390,6 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 		}
 	}
 	return table
-}
-
-func (p *SVGParser) Parse(node *AstElement) *PMNode {
-	if node == nil {
-		return nil
-	}
-	imageAttr := make(map[string]interface{})
-	if v, ok := node.Attrs["xlink:href"]; ok { // compatible to the svg
-		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
-	}
-	if v, ok := node.Attrs["href"]; ok {
-		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
-	}
-	if v, ok := node.Attrs["alt"]; ok {
-		imageAttr["alt"] = v
-		imageAttr["title"] = v
-	} else {
-		imageAttr["alt"] = ""
-		imageAttr["title"] = ""
-	}
-
-	widthReg := regexp.MustCompile(`width:\s?(\d+)px`)
-	style, ok := node.Attrs["style"]
-	if ok {
-		matches := widthReg.FindStringSubmatch(style)
-		if len(matches) > 1 {
-			width := matches[1]
-			if intV, _ := strconv.Atoi(width); intV > 500 {
-				width = "500"
-			}
-			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
-		} else {
-			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
-		}
-	} else {
-		imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
-	}
-
-	image := &PMNode{
-		Type:  "image",
-		Attrs: imageAttr,
-	}
-	return image
 }
 
 func (p *BrParser) Parse(node *AstElement) *PMNode {

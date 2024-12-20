@@ -7,17 +7,20 @@
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted } from 'vue';
-import * as constant from '../assets/js/globals';
+// import * as constant from '../assets/js/globals';
+import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts  } from '../assets/js/globals';
 import { updateCatalog } from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import { CustomImage, CustomHeading, SearchSelBackground, TextStyleExtends } from '../assets/js/extension';
+import bold from "@tiptap/extension-bold"
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import Link from '@tiptap/extension-link'
 import { createLowlight, all } from 'lowlight'
 import '../assets/css/editor.css';
 
@@ -43,7 +46,15 @@ const editor = new Editor({
         CodeBlockLowlight.configure({
           lowlight,
         }),
-        StarterKit,
+        bold.configure({
+            HTMLAttributes: {
+                class: 'bold'     
+            }
+        }),
+        StarterKit.configure({
+            bold: false,
+            codeBlock: false,
+        }),
         CustomImage,
         CustomHeading,
         BubbleMenu.configure({
@@ -67,43 +78,63 @@ const editor = new Editor({
         SearchSelBackground.configure({
             types: ['textStyle'],
         }),
+        Link.configure({
+            openOnClick: false,
+            linkOnPaste: true,
+        })
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         updateCatalog();
-        constant.change.value = true;
+        change.value = true;
     }, 100),
     onSelectionUpdate: ({ editor }) => { // Synchronising editor content properties to tab option values
         for(var i = 1; i < 7; i++){
             if(editor.isActive('custom-heading', { level: i})){
-                constant.headerVal.value = i;
+                headerVal.value = i;
                 return;
             }
         }
-        if(editor.isActive('paragraph')){
-            constant.headerVal.value = 0;
-            constant.fontVal.value = "Arial";
-            constant.fontSizeVal.value = "16px";
+        if(editor.isActive('bold') && editor.isActive('paragraph')) {
+            isBold.value = true;
+        }else {
+            isBold.value = false;
         }
-        constant.fonts.value.forEach((v)=>{
+
+
+        if(editor.isActive('italic') && editor.isActive('paragraph')) {
+            isItalic.value = true;
+        }else {
+            isItalic.value = false;
+        }
+
+        if(editor.isActive('strike') && editor.isActive('paragraph')) {
+            isStrike.value = true;
+        }else {
+            isStrike.value = false;
+        }
+
+        if(editor.isActive('paragraph')){
+            headerVal.value = 0;
+            fontVal.value = "Arial";
+            fontSizeVal.value = "16px";
+        }
+        fonts.value.forEach((v)=>{
             if(editor.getAttributes("textStyle").fontFamily == v.value) {
-                constant.fontVal.value = v.value;
+                fontVal.value = v.value;
             }
         })
         const fontSize = editor.getAttributes("textStyle").fontSize;
         if(fontSize){
-            constant.fontSizeVal.value = fontSize;
+            fontSizeVal.value = fontSize;
         }
         return;
     }
 })
 
-const theme = constant.editTheme;
-const bookinfo = constant.bookInfo;
-
-const editorRef = constant.editorRef;
 editorRef.value = editor;
 
-onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt of it
+// Initialise the catelogue and add eventListener to the elemnt of it
+onMounted(()=>{ 
     const headerContainer = document.getElementById('header-container');
     headerContainer.addEventListener('mousedown', event  => {
         if (event.target.tagName !== 'LI') return
@@ -122,7 +153,7 @@ onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt 
 </script>
 
 <template>
-<div style="border: 1px solid #ccc; height:100%" :class="theme" id="editor-container">
+<div style="border: 1px solid #ccc; height:100%" :class="editTheme" id="editor-container">
     <div class="editor-box">
         <ul id="header-container"></ul>
         <editor-content class="editor-content" id="editor" :editor="editorRef" />

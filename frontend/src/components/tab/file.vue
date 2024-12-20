@@ -6,7 +6,7 @@
 @LastEditTime: 2024-11-1
 */
 import { useI18n } from 'vue-i18n';
-import { FileOpen, FileSave, FileImport, Base64Decode } from '../../../wailsjs/go/core/App.js'
+import { FileOpen, FileSave, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import { ref, reactive, inject, onMounted } from 'vue';
 import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting } from '../../assets/js/globals.js';
@@ -24,19 +24,21 @@ const btnDisabledClass = ref("el-button btn func_btn-big is-disabled");
 const timer = new TimerContext(t);
 
 onMounted(()=> {
+    // start the timer which will be used to save the file automatically
     timer.Start();
     console.log(timer.State())
 })
-
+ 
 const openFilePicker = () => {
     async function innerOpner(){
+        // open the file select dialog
         var res = await FileOpen().then((res) => {
             return res
         })
-        if(res.Code == 1){
+        if(res.Code == 1){ // failed to open the file
             ElMessage.error(t('message.openError'))
             return;
-        }else if (res.Code == -1){
+        }else if (res.Code == -1){ // cancel
             return;
         }
 
@@ -47,13 +49,17 @@ const openFilePicker = () => {
         })
 
         try{
+            // Escape some special characters into characters that can be parsed into JSON.
+            res.Data.replaceAll('\n', '\\n');
+            res.Data.replaceAll('\r', '\\r');
+            res.Data.replaceAll('\t', '\\t');
+            res.Data.replaceAll('"', "'");
             var rawData = JSON.parse(res.Data);
         }catch(e){
             loading.close();
             ElMessage.error(t('message.openError'))
             return;
         }
-
         rawData.metadata.creator = rawData.metadata.creator.join(',');
 
         rawData.metadata.contributors = rawData.metadata.contributors.join(',');
@@ -62,31 +68,39 @@ const openFilePicker = () => {
             try{
                 return JSON.parse(res);
             }catch{
+                // replace the image urls
+                // the image will store in the local server
                 let imageUrls = /..\/Images/g
                 res = res.replace(imageUrls, 'http://127.0.0.1:' + generalSetting.resPort)
                 return res;
             }
         });
 
+        // get the names of the images from the local server
         await getImageFiles();
 
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
-        console.log(JSON.stringify(rawData.content))
         E.commands.setContent(rawData.content);
         
+        // update the catalog
         updateCatalog();
-        bookInfo.content = E.getJSON();
+
+        // load the cover image to the frontend
         initCover();
         loading.close();
         change.value = false;
         currentSave.value = res.Msg;
         title.value = res.Msg;
+
+        // reset the timer
         timer.Reset();
     }
     function innerCallBack(action){
         if(action == 'confirm'){
+            // delay the open file dialog in case both save file dialog
+            // and the open file dialog are opened at the same time
             saveFilePicker(true).then(()=> {
                 setTimeout(()=>{
                     innerOpner();
@@ -99,6 +113,10 @@ const openFilePicker = () => {
             return;
         }
     }
+
+    // check if the file has been saved
+    // if not, ask the user to save the file
+    // if the user choose to save the file, save the file and then open the file
     if(change.value){
         ElMessageBox.confirm(t('message.saveWarning'),t('message.warning'), {
             confirmButtonText: t('message.confirm'),
@@ -113,12 +131,18 @@ const openFilePicker = () => {
     
 }
 
+// param saveAs: whether to save the file as a new file
 const saveFilePicker = async (saveAs) => {
+    // Deep copy the data
     let tempData = JSON.parse(JSON.stringify(bookInfo));
     const editor = editorRef.value;
     tempData.content = editor.getHTML();
+
+    // load the image file's name and data to the data.resources
     await setImage(tempData);
 
+    // Conversion of headings into special data structures for 
+    // subsequent processing
     const headers = [] 
     editor.$nodes('custom-heading').forEach(h => {
         headers.push({
@@ -126,23 +150,32 @@ const saveFilePicker = async (saveAs) => {
             text: h.textContent
         })
     })
+
+    // change it to the TOC xml format
     const Toc =  new TocGenerator(headers)
     const res = Toc.process()
+
     tempData.toc = res;
     tempData.metadata.creator = tempData.metadata.creator.split(',');
     tempData.metadata.contributors = tempData.metadata.contributors.split(',');
-    const doc = new DOMParser().parseFromString(tempData.content, 'text/html')
-    let titles = doc.querySelectorAll("h1, h2, h3, h4, h5")
+
+    // Update the ids of all headers so that the epub's table of contents 
+    // corresponds to the headers within the article
+    const doc = new DOMParser().parseFromString(editor.getHTML(), 'text/html')
+    let titles = doc.querySelectorAll("h1, h2, h3, h4, h5, h6")
     titles.forEach((e, i) => {
         e.id = "guide_signal_" + (i+1);
     })
-    tempData.content = normalizeHTML(editor.getHTML());
-    const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)\/(.*)\//g;
-    tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
+
+    // Normalize html tags to conform to the xhtml specification
+    tempData.content = normalizeHTML(doc.body.innerHTML);
+    tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>"); // Handling empty paragraphs
     tempData.content = tempData.content.replaceAll(" ", "");
     tempData.content = tempData.content.replaceAll('"', "'");
     let name = bookInfo.metadata.title;
 
+    // If the user has already opened the file, it will be saved directly 
+    // to that path without asking the user
     if (currentSave.value !== "" && !saveAs) {
         FileSave(currentSave.value, (()=>{
             return JSON.stringify(tempData)
@@ -185,22 +218,35 @@ const saveFilePicker = async (saveAs) => {
     })
 }
 
-const importFilePicker = async () => {
-    var res = await FileImport().then((res) => {
-        return res
-    })
-    if(res.Code == 1){
-        ElMessage.error(t('message.openError'))
-        return;
-    }else if (res.Code == -1){
-        return;
-    }
-    const E = editorRef.value;
-    let content = res.Data;
-
-    E.commands.setContent(content, true);
-    ElMessage.success(t('message.importSuccess'));
-}
+// const importFilePicker = async () => {
+//     let loading = ElLoading.service({
+//         lock: true,
+//         text: t('message.loadingMessage'),
+//         background: 'rgba(0, 0, 0, 0.7)',
+//     })
+//     var res = await FileImport().then((res) => {
+//         return res
+//     })
+//     if(res.Code == 1){
+//         loading.close();
+//         ElMessage.error(t('message.openError'))
+//         return;
+//     }else if (res.Code == -1){
+//         loading.close();
+//         return;
+//     }
+//     const E = editorRef.value;
+//     try{
+//         var content = JSON.parse(res.Data);
+//         console.log(content)
+//         E.commands.insertContent(content);
+//     }catch(e){
+//         loading.close();
+//         ElMessage.error(t('message.importError'))
+//         return;
+//     }
+//     ElMessage.success(t('message.importSuccess'));
+// }
 
 const handleNew = ()=> {
     function innerCallBack(action){
@@ -231,6 +277,8 @@ const handleNew = ()=> {
             callback: innerCallBack
         })
         return;
+    }else {
+        resetState(); // clear the editor and the bookinfo data
     }
 }
 
@@ -286,14 +334,14 @@ const openFileInfo = ()=> {
                 <span>{{$t('toolBar.file.new')}}</span>
             </span>
             <div class="division-border"></div>
-            <span style=" width:50px; " class="btn-group">
+            <!-- <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="importFilePicker" id="btn-open">
                     <i class="el-icon">
                         <svg t="1717816393836" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8897" width="200" height="200"><path d="M921.6 450.133333c-6.4-8.533333-14.933333-12.8-25.6-12.8h-10.666667V341.333333c0-40.533333-34.133333-74.666667-74.666666-74.666666H514.133333c-4.266667 0-6.4-2.133333-8.533333-4.266667l-38.4-66.133333c-12.8-21.333333-38.4-36.266667-64-36.266667H170.666667c-40.533333 0-74.666667 34.133333-74.666667 74.666667v597.333333c0 6.4 2.133333 12.8 6.4 19.2 6.4 8.533333 14.933333 12.8 25.6 12.8h640c12.8 0 25.6-8.533333 29.866667-21.333333l128-362.666667c4.266667-10.666667 2.133333-21.333333-4.266667-29.866667zM170.666667 224h232.533333c4.266667 0 6.4 2.133333 8.533333 4.266667l38.4 66.133333c12.8 21.333333 38.4 36.266667 64 36.266667H810.666667c6.4 0 10.666667 4.266667 10.666666 10.666666v96H256c-12.8 0-25.6 8.533333-29.866667 21.333334l-66.133333 185.6V234.666667c0-6.4 4.266667-10.666667 10.666667-10.666667z m573.866666 576H172.8l104.533333-298.666667h571.733334l-104.533334 298.666667z" p-id="8898"></path></svg>
                     </i>
                 </button>
                 <span>{{$t('toolBar.file.import')}}</span>
-            </span>
+            </span> -->
             <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="openFilePicker" id="btn-open">
                     <i class="el-icon">
@@ -302,7 +350,6 @@ const openFileInfo = ()=> {
                 </button>
                 <span>{{$t('toolBar.file.open')}}</span>
             </span>
-            <div class="division-border"></div>
             <span class="btn-group" style="width:50px;">
                 <button @click="saveFilePicker(false)" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-save">
                     <i class="el-icon">
@@ -329,7 +376,7 @@ const openFileInfo = ()=> {
             </span> -->
             <div class="division-border"></div>
             <span class="btn-group" style="width:80px;">
-                <button @click="openFileInfo" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file">
+                <button @click="openFileInfo" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-file-info">
                     <i class="el-icon">
                         <svg t="1717677749278" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7239" width="200" height="200"><path d="M688 312v-48c0-4.4-3.6-8-8-8H296c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h384c4.4 0 8-3.6 8-8zM296 400c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8h184c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H296zM672 516c-119.3 0-216 96.7-216 216s96.7 216 216 216 216-96.7 216-216-96.7-216-216-216z m107.5 323.5C750.8 868.2 712.6 884 672 884s-78.8-15.8-107.5-44.5C535.8 810.8 520 772.6 520 732s15.8-78.8 44.5-107.5C593.2 595.8 631.4 580 672 580s78.8 15.8 107.5 44.5C808.2 653.2 824 691.4 824 732s-15.8 78.8-44.5 107.5z" p-id="7240"></path><path d="M672 812m-32 0a32 32 0 1 0 64 0 32 32 0 1 0-64 0Z" p-id="7241"></path><path d="M652 748h40c4.4 0 8-3.6 8-8V628c0-4.4-3.6-8-8-8h-40c-4.4 0-8 3.6-8 8v112c0 4.4 3.6 8 8 8z" p-id="7242"></path><path d="M440 852H208V148h560v344c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V108c0-17.7-14.3-32-32-32H168c-17.7 0-32 14.3-32 32v784c0 17.7 14.3 32 32 32h272c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z" p-id="7243"></path></svg>
                     </i>

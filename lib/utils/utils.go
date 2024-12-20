@@ -1,3 +1,7 @@
+// Description: Project's public functions and constants
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package utils
 
 import (
@@ -6,10 +10,12 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/hughie21/NovelMaker/lib/html"
+	"golang.org/x/exp/rand"
 )
 
 func GetFileData(path string) []byte {
@@ -45,9 +51,43 @@ func PathExists(path string) bool {
 	return err == nil || os.IsExist(err)
 }
 
+func RandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset)-1)]
+	}
+	return string(b)
+}
+
 func Contains(arr []string, target string) bool {
 	str := strings.Join(arr, " ")
 	return strings.Contains(str, target)
+}
+
+func NormalizeHTML(html string) string {
+	// change the tag name to lowercase
+	html = regexp.MustCompile(`<\/?([A-Z][A-Z0-9]*)\b[^>]*>`).ReplaceAllStringFunc(html, func(match string) string {
+		return strings.ToLower(match)
+	})
+
+	// makesure the self-closing tags are closed properly
+	selfClosingTags := map[string]bool{
+		"area": true, "base": true, "br": true, "col": true, "embed": true, "hr": true, "img": true, "input": true, "link": true, "meta": true, "param": true, "source": true, "track": true, "wbr": true,
+	}
+	html = regexp.MustCompile(`<([a-z]+)([^>]*)\/?>`).ReplaceAllStringFunc(html, func(match string) string {
+		re := regexp.MustCompile(`<([a-z]+)([^>]*)\/?>`)
+		submatches := re.FindStringSubmatch(match)
+		tagName := submatches[1]
+		attributes := submatches[2]
+		if selfClosingTags[tagName] {
+			return `<` + tagName + attributes + `></` + tagName + `>`
+		} else {
+			return match
+		}
+	})
+
+	return html
 }
 
 var FileSuffix = map[string]string{

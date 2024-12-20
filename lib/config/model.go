@@ -1,6 +1,13 @@
+// Description: Structure mapping to configuration files
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
 package config
 
 type Config struct {
+	Version        string               `yaml:"version"`
+	BuildTime      string               `yaml:"buildTime"`
+	Commit         string               `yaml:"commit"`
 	Appearance     AppearanceConfig     `yaml:"appearance"`
 	Window         WindowConfig         `yaml:"window"`
 	Linux          LinuxConfig          `yaml:"linux"`

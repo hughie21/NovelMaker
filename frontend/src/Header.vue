@@ -70,17 +70,14 @@ const menu = {
     open : () => {
         document.getElementById('btn-open').click();
     },
-    import : () => {
-        document.getElementById('btn-import').click();
-    },
+    // import : () => {
+    //     document.getElementById('btn-import').click();
+    // },
     save : () => {
         document.getElementById('btn-save').click();
     },
     saveAs : () => {
         document.getElementById('btn-save-as').click();
-    },
-    export : () => {
-        document.getElementById('btn-export').click();
     },
     lookUp : () => {
         document.getElementById('btn-lookup').click();
@@ -109,15 +106,36 @@ const menu = {
     selectAll : () => {
         E.chain().focus().selectAll().run();
     },
+    help: () => {
+        document.getElementById('btn-help').click();
+    },
     about : () => {
         document.getElementById('btn-about').click();
     }
+}
+
+function handleMouseMove(event) {
+    runtime.WindowIsMaximised().then(res => {
+        console.log(res);
+        maximised.value = res;
+    });
+}
+
+function handleMouseDown(event) {
+    document.addEventListener("mousemove", handleMouseMove);
+}
+
+function handleMouseUp(event) {
+    document.removeEventListener("mousemove", handleMouseMove);
 }
 
 onMounted(() => {
     runtime.WindowIsMaximised().then(res=> {
         maximised.value = res;
     })
+    const dragWindow = document.getElementById('dragWindow');
+    dragWindow.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
 })
 
 const handleMaximise = () => {
@@ -164,13 +182,12 @@ const handleClose = () => {
 }
 
 const handleSelect = (index) => {
-    // console.log(index);
     menu[index]();
 }
 </script>
 
 <template>
-<div class="header_container" style="--wails-draggable:drag">
+<div class="header_container">
     <div class="header-left">
         <div class="header-icon">
             <img src="./assets/images/appicon.png" />
@@ -190,10 +207,10 @@ const handleSelect = (index) => {
                 <template #title>{{t("header.file")}}</template>
                 <el-menu-item index="new"><span class="sub-menu-item">{{t("header.new")}}<span class="sub-menu-shortcut">Ctrl+N</span></span></el-menu-item>
                 <el-menu-item index="open"><span class="sub-menu-item">{{t("header.open")}}<span class="sub-menu-shortcut">Ctrl+O</span></span></el-menu-item>
-                <el-menu-item index="import"><span class="sub-menu-item seperator">{{t("header.import")}}<span class="sub-menu-shortcut">Ctrl+Shift+O</span></span></el-menu-item>
+                <!-- <el-menu-item index="import"><span class="sub-menu-item seperator">{{t("header.import")}}<span class="sub-menu-shortcut">Ctrl+Shift+O</span></span></el-menu-item> -->
                 <el-menu-item index="save"><span class="sub-menu-item">{{t("header.save")}}<span class="sub-menu-shortcut">Ctrl+S</span></span></el-menu-item>
                 <el-menu-item index="saveAs"><span class="sub-menu-item">{{t("header.saveAs")}}<span class="sub-menu-shortcut">Ctrl+Shift+S</span></span></el-menu-item>
-                <el-menu-item index="export"><span class="sub-menu-item seperator">{{t("header.export")}}<span class="sub-menu-shortcut">Ctrl+E</span></span></el-menu-item>
+                <!-- <el-menu-item index="export"><span class="sub-menu-item seperator">{{t("header.export")}}<span class="sub-menu-shortcut">Ctrl+E</span></span></el-menu-item> -->
                 <el-menu-item index="lookUp"><span class="sub-menu-item">{{t("header.lookUp")}}<span class="sub-menu-shortcut">Ctrl+F</span></span></el-menu-item>
                 <el-menu-item index="replace"><span class="sub-menu-item seperator">{{t("header.replace")}}<span class="sub-menu-shortcut">Ctrl+H</span></span></el-menu-item>
                 <el-menu-item index="exit"><span class="sub-menu-item">{{t("header.exit")}}<span class="sub-menu-shortcut"></span></span></el-menu-item>
@@ -211,11 +228,12 @@ const handleSelect = (index) => {
             <!-- Help -->
             <el-sub-menu index="help">
                 <template #title>{{t("header.help")}}</template>
+                <el-menu-item index="help"><span class="sub-menu-item">{{t("header.help")}}<span class="sub-menu-shortcut"></span></span></el-menu-item>
                 <el-menu-item index="about"><span class="sub-menu-item">{{t("header.about")}}<span class="sub-menu-shortcut"></span></span></el-menu-item>
             </el-sub-menu>
         </el-menu>
     </div>
-    <div class="header-center">
+    <div class="header-center" id="dragWindow" style="--wails-draggable:drag">
         
         <div class="header-title">
             <span class="save-flag" v-show="change">*</span>
@@ -330,6 +348,7 @@ const handleSelect = (index) => {
     white-space: nowrap;
     overflow: hidden;
     text-align: center;
+    cursor: default;
 }
 .header-right {
     width: 10%;

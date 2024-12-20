@@ -17,6 +17,7 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 var lastClick = ref("");
+// Click on the image, show the border
 const handleSelected = (event) => {
     var elem = $(event.target);
     if(lastClick.value != "") {

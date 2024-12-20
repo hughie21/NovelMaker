@@ -1,3 +1,8 @@
+// Description: The epub reading program
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
+
 package epub
 
 import (
@@ -9,6 +14,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/hughie21/NovelMaker/lib/html"
@@ -162,6 +168,16 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 		r.MetaData.Contributers = append(r.MetaData.Contributers, ContributorElement.Text())
 	}
 
+	DescriptionELem := packageDoc.FindElement("//dc:description")
+	if DescriptionELem != nil {
+		r.MetaData.Description = strings.Trim(strconv.Quote(DescriptionELem.Text()), `"`)
+	}
+
+	TagElements := packageDoc.FindElements("//dc:subject")
+	for _, TagElement := range TagElements {
+		r.MetaData.Subject = append(r.MetaData.Subject, TagElement.Text())
+	}
+
 	metaPath, err := etree.CompilePath("//meta[@name='cover']")
 	if err != nil {
 		return err
@@ -250,10 +266,12 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 				"h6": &html.HeaderParser{
 					Level: 6,
 				},
-				"p":     &html.TextParser{},
-				"span":  &html.TextParser{},
-				"table": &html.TableParser{},
-				"image": &html.SVGParser{
+				"p":    &html.TextParser{},
+				"span": &html.TextParser{},
+				"table": &html.TableParser{
+					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+				},
+				"image": &html.ImageParser{
 					FoldName: utils.GenerateHash([]byte(r.targetPath)),
 				},
 				"br": &html.BrParser{},

@@ -8,13 +8,15 @@
 */
 
 import { ref, onMounted, provide} from 'vue';
-import { editorRef, fonts } from '../assets/js/globals';
+import { bookInfo, editorRef, fonts } from '../assets/js/globals';
 import { TimerContext } from '../assets/js/utils';
 import fileTab from '../components/tab/file.vue'
 import editTab from '../components/tab/edit.vue'
 import helpTab from '../components/tab/help.vue'
 import "../assets/css/tab.css"
 
+// Get the list of fonts present in the system
+// If it is not available, the default font is used
 async function getFonts() {
     if(!("queryLocalFonts" in window)){
         return [
@@ -65,6 +67,7 @@ const btnNormalClass = ref('el-button btn func_btn-big');
 
 provide("btnNormalClass", btnNormalClass);
 
+// When the upper tab is collapsed, the height of the lower editor needs to be changed as well.
 const judgeHeight = () => {
     var tabHeight = document.querySelector('.tab-container').offsetHeight;
     var totalHeight = window.innerHeight;
@@ -86,13 +89,15 @@ const handleChange = () => {
 
 const test = () => {
     const E = editorRef.value;
-    const timer = TimerContext.getInstance();
-    console.log(timer.State())
-    // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
-    // console.log(E.getHTML())
-    // console.log(JSON.stringify(E.getJSON()));
+    // const timer = TimerContext.getInstance();
+    // timer.State()
 
-    // let data = E.getJSON();
+    // E.commands.setLink({ href: "https://example.com" });
+    // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
+    // console.log(JSON.stringify(E.getJSON()));
+    
+    let data = E.getJSON();
+    console.log(data);
     // E.chain().clearContent().setContent(data).run();
 
     // console.log(printStack());

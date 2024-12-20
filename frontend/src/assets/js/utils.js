@@ -2,11 +2,11 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-11-1
+@LastEditTime: 2024-12-20
 @Description: This is the public methods for the whole program.
 */
 
-import {Base64Decode, GetStaticResources, DirectLoading, FileSave, GetImageData } from "../../../wailsjs/go/core/App.js"
+import {Base64Decode, GetStaticResources, DirectLoading, FileSave, GetImageData, NewFile } from "../../../wailsjs/go/core/App.js"
 import { ElMessage, ElLoading } from 'element-plus'
 import {
     editorRef,
@@ -43,6 +43,10 @@ const arrayRemove = (array, id) => {
     }
 }
 
+const deepClone = (obj) => {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 const arrayEquel = (arr1, arr2) => {
     if(arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index])){
         return true;
@@ -69,7 +73,17 @@ const normalizeHTML = (html) => {
     return html;
 }
 
-const resetState = () => {
+const resetState = async () => {
+    let ok = await NewFile().then((res)=> {
+        if(res.Code == 1) {
+            ElMessage.error(t("message.error"), res.Msg);
+            return false;
+        }else {
+            return true;
+        }
+    })
+    if(!ok) return;
+    getImageFiles();
     bookInfo.metadata = {
         title: "Untitle",
         creator: "",
@@ -89,7 +103,7 @@ const resetState = () => {
     bookInfo.resources = [];
     bookInfo.toc = [];
     const editor = editorRef.value;
-    editor.chain().clearContent().run();
+    editor.chain().setContent("", true).run();
     change.value = false;
     title.value = "Untitle";
     currentSave.value = "";
@@ -189,11 +203,12 @@ class TocGenerator {
     constructor(headers) {
         this.count = 1;
         this.weight = {
-            "header1": 5,
-            "header2": 4,
-            "header3": 3,
-            "header4": 2,
-            "header5": 1
+            "header1": 6,
+            "header2": 5,
+            "header3": 4,
+            "header4": 3,
+            "header5": 2,
+            "header6": 1
         }
         this.generateTempData(headers);
     }
@@ -442,7 +457,8 @@ export {
     updateCatalog,
     TimerContext,
     setImage,
-    normalizeHTML
+    normalizeHTML,
+    deepClone
 }
 
 export default {

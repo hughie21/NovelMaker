@@ -1,10 +1,7 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-10-14
-@LastEditors: Hughie
-@LastEditTime: 2024-11-1
-@Description: This is the program that get the right execution path of the program when go build or run
-*/
+// Description: This is the program that get the right execution path of the program when go build or run
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 
 package utils
 

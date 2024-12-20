@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-9-21
 @LastEditors: Hughie
-@LastEditTime: 2024-09-25
+@LastEditTime: 2024-12-20
 @Description: This is the extension for the tiptap.
 */
 
@@ -11,7 +11,7 @@ import Image from "@tiptap/extension-image";
 import Heading from "@tiptap/extension-heading"
 import TextStyle from '@tiptap/extension-text-style'
 
- const TextStyleExtends = TextStyle.extend({
+const TextStyleExtends = TextStyle.extend({
     priority: 1000,
     addAttributes() {
         return {
@@ -68,7 +68,7 @@ import TextStyle from '@tiptap/extension-text-style'
     }
  })
 
-
+// this is a extension for the search selection background
 const SearchSelBackground = TextStyle.extend({
     priority: 1000,
     name: 'seach-select-background',
@@ -132,6 +132,8 @@ const CustomHeading = Heading.extend({
         var level = hasLevel
             ? node.attrs.level
             : this.options.levels[0];
+        // this is a random id for the heading
+        // but this id will not be used in the exported epub file
         let uuid = new Date().getTime().toString(36) + Math.random().toString(36).slice(2,9);
         HTMLAttributes.id = `tap-heading-${uuid}`;
         return [`h${level}`, HTMLAttributes, 0 ];
@@ -417,9 +419,7 @@ const CustomImage = Image.extend({
     },
     renderHTML({ HTMLAttributes }) {
         return ['div', {style: 'display: flex; padding: 5px 0;'}, 
-            ['div', {style: `${HTMLAttributes.style}`},
-                ['img', {src: HTMLAttributes.src, style: `${HTMLAttributes.style}`}]
-            ]
+            ['img', {src: HTMLAttributes.src, style: `${HTMLAttributes.style}`}]
         ];
     },
     parseHTML() {
@@ -479,7 +479,7 @@ export {
     CustomImage,
     CustomHeading,
     SearchSelBackground,
-    TextStyleExtends
+    TextStyleExtends,
 }
 
 export default {

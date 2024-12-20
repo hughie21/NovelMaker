@@ -13,7 +13,6 @@ export default{
         import: "导入",
         save: "保存",
         saveAs: "另存为",
-        export: "导出",
         lookUp: "查找",
         replace: "替换",
         exit: "退出",
@@ -34,7 +33,6 @@ export default{
             import: "导入",
             save: "保存",
             saveAs: "另存为",
-            export: "导出",
             fileInfo: "书籍信息",
             close: "关闭",
             lookUp: "查找",
@@ -46,9 +44,12 @@ export default{
             row: "列",
             column: "行",
             insertTable: "插入表格",
+            code: "输入要插入的编程语言",
+            link: "超链接",
         },
         help: {
-            help: "帮助"
+            help: "帮助",
+            about: "关于"
         },
         tooltip: {
             copy: "复制",
@@ -74,6 +75,46 @@ export default{
         deleteRow: "删除行",
         deleteColumn: "删除列",
         deleteTable: "删除表格",
+    },
+    tour: {
+        next: "下一步",
+        previous: "上一步",
+        step1: {
+            title: "欢迎使用NovelMaker!",
+            content: "你可以在此区域编辑你的书籍"
+        },
+        step2: {
+            title: "新建",
+            content: "你可以新建一个书籍"
+        },
+        step3: {
+            title: "打开书籍",
+            content: "你可以打开一个已有的书籍"
+        },
+        step4: {
+            title: "保存书籍",
+            content: "你可以保存你的书籍"
+        },
+        step5: {
+            title: "修改书籍信息",
+            content: "你可以在这里修改书籍的信息"
+        },
+        step6: {
+            title: "编辑区域",
+            content: "你可以在这里编辑字体的大小、颜色和样式等"
+        },
+        step7: {
+            title: "插入图片",
+            content: "你可以在这里插入图片"
+        },
+        step8: {
+            title: "设置",
+            content: "你可以在这里设置软件的一些参数"
+        },
+        step9: {
+            title: "最后",
+            content: "祝你使用愉快！"
+        }
     },
     dialog: {
         confirm: "确认",
@@ -123,6 +164,8 @@ export default{
             description: "简介",
             subject: "标签",
             language: "语言",
+            requireMessage: "书名不能为空",
+            illegalMessage: "输入内容包含非法字符，如 \" 或 \\\\",
         },
         media: {
             title: "媒体管理",
@@ -146,6 +189,15 @@ export default{
             version: "版本",
             date: "日期",
             copyright: "版权",
+        },
+        link: {
+            title: "插入超链接",
+            link: "链接",
+            text: "请输入网址",
+            insert: "插入",
+            cancel: "取消",
+            error: "输入的内容不符合当前前缀格式，请重新输入!",
+            prefix: "链接前缀"
         }
     },
     message: {
@@ -172,5 +224,6 @@ export default{
         importSuccess: "导入成功",
         importError: "导入失败",
         loadingMessage: "解析中...",
+        bookinfoSaveError: "请检查输入内容"
     }
 }
