@@ -1,8 +1,12 @@
+// Description: Chnage the html string to the ast tree
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
+
 package html
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -25,7 +29,7 @@ var (
 	endTag            = regexp.MustCompile(`^<\/` + qnameCapture + `[^>]*>`)
 	attribute         = regexp.MustCompile(`^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>` + "`" + `]+)))?`)
 	startTagClose     = regexp.MustCompile(`^\s*(\/?)>`)
-	uselessCharacters = regexp.MustCompile(`(\n+(\t+)?|\n|\t+)`)
+	uselessCharacters = regexp.MustCompile(`>(\s*\n\s*|\s*\t\s*)<`)
 )
 
 type HTMLParser struct {
@@ -166,8 +170,7 @@ func LoadHTML(html []byte) (*AstElement, error) {
 	bodyDoc.SetRoot(body.Copy())
 	rawText, _ := bodyDoc.WriteToBytes()
 	parser := NewHTMLParser()
-	rawText = uselessCharacters.ReplaceAll(rawText, []byte{})
-	fmt.Println(string(rawText))
+	rawText = uselessCharacters.ReplaceAll(rawText, []byte("><"))
 	ast := parser.parserHTML(string(rawText))
 	return ast, nil
 }

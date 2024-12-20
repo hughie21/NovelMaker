@@ -42,6 +42,10 @@ export function GetStaticResources() {
   return window['go']['core']['App']['GetStaticResources']();
 }
 
+export function GetVersion() {
+  return window['go']['core']['App']['GetVersion']();
+}
+
 export function ImageDownload(arg1) {
   return window['go']['core']['App']['ImageDownload'](arg1);
 }
@@ -52,6 +56,10 @@ export function ImageUpload() {
 
 export function LoadImage(arg1) {
   return window['go']['core']['App']['LoadImage'](arg1);
+}
+
+export function NewFile() {
+  return window['go']['core']['App']['NewFile']();
 }
 
 export function OpenImage() {

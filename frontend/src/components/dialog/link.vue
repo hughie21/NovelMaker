@@ -1,4 +1,11 @@
 <script setup>
+/* 
+@Author: Hughie
+@CreateTime: 2024-10-9
+@LastEditors: Hughie
+@LastEditTime: 2024-12-20
+@Description: Hyperlink insertion popup
+*/
 import { editorRef, visio } from '../../assets/js/globals.js';
 import { useI18n } from 'vue-i18n';
 import { ref } from 'vue';
@@ -25,17 +32,6 @@ const checkEmail = (text) => {
     }
     const emailReg = /\b([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g
     if (!emailReg.test(text)) {
-        return false;
-    }
-    return true;
-}
-
-const checkPhone = (text) => {
-    if (text === '') {
-        return false;
-    }
-    const phoneReg = /\b\d+\b/g
-    if (!phoneReg.test(text)) {
         return false;
     }
     return true;

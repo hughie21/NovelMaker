@@ -98,6 +98,7 @@ Section
 
     File /oname=$INSTDIR\config.yaml "..\..\..\config.yaml"
     File /oname=$INSTDIR\style\style.css "..\..\..\style\style.css"
+    File /oname=$INSTDIR\LICENSE "..\..\..\LICENSE"
     
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"

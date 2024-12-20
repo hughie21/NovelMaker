@@ -13,7 +13,6 @@ export default{
         import: "Import",
         save: "Save",
         saveAs: "Save As",
-        export: "Export",
         lookUp: "Look up",
         replace: "Replace",
         exit: "Exit",
@@ -34,7 +33,6 @@ export default{
             import: "Import",
             save: "Save",
             saveAs: "Save As",
-            export: "Export",
             fileInfo: "Book info",
             lookUp: "Look up",
         },
@@ -49,7 +47,8 @@ export default{
             link: "Hyperlink",
         },
         help: {
-            help: "Help"
+            help: "Help",
+            about: "About"
         },
         tooltip: {
             copy: "Copy",
@@ -75,6 +74,46 @@ export default{
         deleteRow: "Delete Row",
         deleteColumn: "Delete Column",
         deleteTable: "Delete Table",
+    },
+    tour: {
+        next: "Next",
+        previous: "Previous",
+        step1: {
+            title: "Welcome to the NovelMaker!",
+            content: "Here you can write your own book!"
+        },
+        step2: {
+            title: "New Books",
+            content: "You can create a new book by clicking the new button"
+        },
+        step3: {
+            title: "Open Books",
+            content: "You can open a book by clicking the open button"
+        },
+        step4: {
+            title: "Save Books",
+            content: "You can save your book by clicking the save button"
+        },
+        step5: {
+            title: "Modify the Book Metadata",
+            content: "You can modify the book metadata by clicking the book info button"
+        },
+        step6: {
+            title: "Edit Tab",
+            content: "You can change the font size, font style, and font color in this tab"
+        },
+        step7: {
+            title: "Insert Image",
+            content: "You can uplaod or insert an image by clicking the image button"
+        },
+        setp8: {
+            title: "Setting",
+            content: "You can change the setting by clicking the setting button"
+        },
+        step9: {
+            title: "Here we go!",
+            content: "Feel free to use the software!"
+        }
     },
     dialog: {
         confirm: "Confirm",
@@ -124,6 +163,8 @@ export default{
             description: "Description",
             subject: "Subject",
             language: "Language",
+            requireMessage: "The title of the book is required",
+            illegalMessage: "The input contains illegal characters, like \" or \\\\",
         },
         media: {
             title: "Media manager",
@@ -182,5 +223,6 @@ export default{
         importSuccess: "Import success",
         importError: "Import error",
         loadingMessage: "Loading...",
+        bookinfoSaveError: "Please check the input"
     }
 }

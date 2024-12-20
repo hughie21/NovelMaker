@@ -133,7 +133,8 @@ const editor = new Editor({
 
 editorRef.value = editor;
 
-onMounted(()=>{ // Initialise the catelogue and add eventListener to the elemnt of it
+// Initialise the catelogue and add eventListener to the elemnt of it
+onMounted(()=>{ 
     const headerContainer = document.getElementById('header-container');
     headerContainer.addEventListener('mousedown', event  => {
         if (event.target.tagName !== 'LI') return

@@ -17,12 +17,15 @@ import { languages as langs } from '../../assets/js/i18n';
 
 const { t, locale } = useI18n();
 
+// if the setting is changed
 const changeFlag = ref(false);
 
 const activeBlock = ref([]);
 
+// load the timer
 const timer = TimerContext.getInstance(t);
 
+// init the config
 const initConfig = async () => {
     function handleError(res) {
         if(res.Code == -1) {
@@ -38,6 +41,7 @@ const initConfig = async () => {
         }
     }
 
+    // get the config that store from the application's core
     let size = await GetConfig("Appearance", "DefaultOpen").then(res => {
         if(handleError(res)){
             return res.Data;

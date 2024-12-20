@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-10-31
 @LastEditors: Hughie
-@LastEditTime: 2024-11-1
+@LastEditTime: 2024-12-10
 @Description: This is the public variables and constant of the program.
 */
 
@@ -34,10 +34,11 @@ const visio = reactive({
     settingVisible: false,
     mediaVisible: false,
     tableInsertVisible: false,
-    helpVisible: false,
+    aboutVisible: false,
     searchBarVisible: false,
     codeInsertVisible: false,
     linkInsertVisible: false,
+    tourVsisible: false,
 })
 const cover = reactive({
     isExist: false,
@@ -55,7 +56,6 @@ const bookInfo = reactive({
         description: "",
         publisher: "",
         subject: [],
-        date: "",
         cover: {
             name: "",
             data: ""
@@ -66,6 +66,7 @@ const bookInfo = reactive({
     toc: []
 })
 
+// pulic variables
 const change = ref(false);
 const title = ref("Untitle");
 
@@ -99,6 +100,7 @@ const fileSuffix = {
     "m4r": "audio/x-ms-m4r"
 }
 
+// setting
 const autoSave = ref({
     isAutoSave: true,
     autoSaveTime: 60

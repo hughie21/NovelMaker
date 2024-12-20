@@ -6,12 +6,14 @@ html {
 .dark {
     --icon-color: #e6e6e6;
     --cursor-color: #c3c7c9b9;
+    --mask-color: #409eff5c
 }
 
 .light {
     --icon-color: #212529;
     --el-bg-color: #fff;
     --cursor-color: #3b3939ab;
+    --mask-color: #43444466
 }
 
 body {

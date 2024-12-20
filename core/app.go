@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"github.com/hughie21/NovelMaker/lib/logging"
 	"github.com/hughie21/NovelMaker/lib/server"
 	"github.com/hughie21/NovelMaker/lib/utils"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"context"
 )
@@ -126,6 +128,22 @@ func (a *App) FileOpen() Message {
 	Message.Msg = res
 	Message.Data = returnData.Data().(string)
 	return Message
+}
+
+func (a *App) NewFile() Message {
+	var msg Message
+	err := os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	a.resourceFold = utils.GenerateHash([]byte(time.Now().String()))
+	os.Mkdir(filepath.Join(a.core.execPath, "resources", a.resourceFold), os.ModePerm)
+	msg.Code = 0
+	msg.Msg = "success"
+	return msg
 }
 
 func (a *App) DirectLoading() Message {
@@ -394,6 +412,15 @@ func (a *App) SetConfig(sector string, key string, value string) Message {
 	msg.Code = 0
 	msg.Msg = "success"
 	return msg
+}
+
+func (a *App) GetVersion() {
+	info := a.core.cm.GetInfo()
+	runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:    runtime.InfoDialog,
+		Title:   "NovelMaker",
+		Message: fmt.Sprintf("Version: %-10s\nCommit: %-10s\nBuild Time: %-10s\nGolang: %-10s\nWails: %-10s\nNodejs: %-10s\nCopyright: %-10s", info["version"], info["commit"], info["buildTime"], "v1.20.3", "v2.8.1", "22.11.0", "©2024 Chenxi Guan"),
+	})
 }
 
 func (a *App) ImageDownload(url string) Message {

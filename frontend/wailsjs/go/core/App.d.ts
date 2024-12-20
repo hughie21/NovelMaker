@@ -22,11 +22,15 @@ export function GetImageData(arg1:string):Promise<core.Message>;
 
 export function GetStaticResources():Promise<core.Message>;
 
+export function GetVersion():Promise<void>;
+
 export function ImageDownload(arg1:string):Promise<core.Message>;
 
 export function ImageUpload():Promise<core.ImageFIle>;
 
 export function LoadImage(arg1:string):Promise<core.Message>;
+
+export function NewFile():Promise<core.Message>;
 
 export function OpenImage():Promise<core.Message>;
 

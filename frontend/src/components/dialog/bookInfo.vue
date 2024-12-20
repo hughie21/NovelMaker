@@ -6,21 +6,105 @@
 @LastEditTime: 2024-10-15
 @Description: This the diaglog that allow user to editor the bookinfo.
 */
-import {  arrayRemove, initCover  } from '../../assets/js/utils';
+import {  arrayRemove, initCover, deepClone  } from '../../assets/js/utils.js';
 import { visio, change, cover, language_list as languages, bookInfo } from '../../assets/js/globals.js';
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Delete, Plus, ZoomIn } from '@element-plus/icons-vue'
 import { OpenImage } from '../../../wailsjs/go/core/App.js'
-
+import { ElMessage } from 'element-plus';
 const { t } = useI18n();
-const bookinfo = bookInfo;
+
+// deep copy the metadata from the booinfo
+const metadata = reactive(deepClone(bookInfo.metadata));
+// the cover image
 const dialogImageUrl = ref('');
 const dialogVisible = ref(false);
 const inputValue = ref('');
 const inputVisible = ref(false);
 const InputRef = ref();
+const formRef = ref();
+const illegalCharRegex = /[\"|\\]/;
+// Calibration rules: the title can not be empty and can not contain illegal characters like " and \
+const rules = reactive({
+    title: [
+        { required: true, message: t('dialog.info.requireMessage'), trigger: 'blur' },
+        {validator: (rule, value, callback) => {
+            if (illegalCharRegex.test(value)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+        }, trigger: 'blur'},
+    ],
+    identifier: [
+        {validator: (rule, value, callback)=> {
+            if (illegalCharRegex.test(value)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+
+        }, trigger: 'blur'}
+    ],
+    publisher: [
+        {validator: (rule, value, callback)=> {
+            if (illegalCharRegex.test(value)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+
+        }, trigger: 'blur'}
+    ],
+    author: [
+        {validator: (rule, value, callback)=> {
+            if (illegalCharRegex.test(metadata.creator)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+
+        }, trigger: 'blur'}
+    ],
+    contributors: [
+        {validator: (rule, value, callback)=> {
+            if (illegalCharRegex.test(value)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+
+        }, trigger: 'blur'}
+    ],
+    description: [
+        {validator: (rule, value, callback)=> {
+            if (illegalCharRegex.test(value)) {
+                callback(new Error(t('dialog.info.illegalMessage')));
+            } else {
+                callback();
+            }
+
+        }, trigger: 'blur'}
+    ],
+    subject: [
+        {validator: (rule, value, callback)=> {
+            metadata.subject.forEach((item) => {
+                if (illegalCharRegex.test(item)) {
+                    return callback(new Error(t('dialog.info.illegalMessage')));
+                }
+            })
+            callback();
+        }, trigger: 'blur'}
+    ]
+})
+
 initCover();
+
+// Monitor changes to raw data such as new or open files
+watch(bookInfo, (newVal, oldVal) => {
+    Object.assign(metadata, deepClone(newVal.metadata));
+})
 
 const handlePictureCardPreview = (file) => {
   dialogImageUrl.value = "data:image/jpg;base64," + file;
@@ -28,7 +112,7 @@ const handlePictureCardPreview = (file) => {
 }
 
 const handleClose = (tag)=>{
-    bookinfo.metadata.subject.splice(bookinfo.metadata.subject.indexOf(tag), 1);
+    metadata.subject.splice(metadata.subject.indexOf(tag), 1);
 }
 const showInput = ()=>{
     inputVisible.value = true;
@@ -39,7 +123,7 @@ const showInput = ()=>{
 
 const handleInputConfirm = () => {
   if (inputValue.value) {
-    bookinfo.metadata.subject.push(inputValue.value);
+    metadata.subject.push(inputValue.value);
   }
   inputVisible.value = false;
   inputValue.value = '';
@@ -48,7 +132,7 @@ const handleInputConfirm = () => {
 const handleRemove = () => {
     bookInfo.metadata.cover.name = "";
     bookInfo.metadata.cover.data = "";
-    arrayRemove(bookinfo.resources, "cover.jpg");
+    arrayRemove(bookInfo.resources, "cover.jpg");
     initCover();
 }
 
@@ -56,39 +140,63 @@ const uploadCover = async () => {
     var coverData = await OpenImage().then((res)=>{
        return res.Data;
     });
-    bookinfo.metadata.cover.name = "cover.jpg";
-    bookinfo.metadata.cover.data = coverData;
+    bookInfo.metadata.cover.name = "cover.jpg";
+    bookInfo.metadata.cover.data = coverData;
     initCover();
 }
-const handleBookInfo = () => {
-    visio.bookInfoVisible = false;
+const handleBookInfo = (formEl) => {
+    if (!formEl) return;
+    formEl.validate((valid) => {
+        if (valid) {
+            let temp = deepClone(metadata);
+            console.log(temp);
+            bookInfo.metadata.title = temp.title;
+            bookInfo.metadata.identifier = temp.identifier;
+            bookInfo.metadata.contributors = temp.contributors;
+            bookInfo.metadata.description = temp.description;
+            bookInfo.metadata.subject = temp.subject;
+            bookInfo.metadata.language = temp.language;
+            bookInfo.metadata.publisher = temp.publisher;
+            bookInfo.metadata.creator = temp.creator;
+            visio.bookInfoVisible = false;
+        }else {
+            ElMessage.error(t('message.bookinfoSaveError'));
+            return;
+        }
+    })
+    console.log("pass")
 }
+
 </script>
 
 <template>
     <el-dialog
     v-model="visio.bookInfoVisible"
     :title="t('dialog.info.title')"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
     width="500"
     >
         <el-form
         label-position="top"
         label-width="auto"
-        :model="bookinfo.metadata"
+        :model="metadata"
+        ref="formRef"
         style="max-width: 600px"
+        :rules="rules"
         @input="()=>{change = true}"
         >
-            <el-form-item :label="t('dialog.info.name')">
-                <el-input v-model="bookinfo.metadata.title" />
+            <el-form-item :label="t('dialog.info.name')" prop="title">
+                <el-input v-model="metadata.title" />
             </el-form-item>
-            <el-form-item :label="t('dialog.info.identifier')">
-                <el-input v-model="bookinfo.metadata.identifier" />
+            <el-form-item :label="t('dialog.info.identifier')"  prop="identifier">
+                <el-input v-model="metadata.identifier" />
             </el-form-item>
-            <el-form-item :label="t('dialog.info.publisher')">
-                <el-input v-model="bookinfo.metadata.publisher" />
+            <el-form-item :label="t('dialog.info.publisher')" prop="publisher">
+                <el-input v-model="metadata.publisher" />
             </el-form-item>
-            <el-form-item :label="t('dialog.info.author')">
-                <el-input v-model="bookinfo.metadata.creator" />
+            <el-form-item :label="t('dialog.info.author')" prop="author">
+                <el-input v-model="metadata.creator" />
             </el-form-item>
             <el-form-item :label="t('dialog.info.cover')">
                 <div v-if="cover.isExist" class="image-preview_form">
@@ -113,19 +221,19 @@ const handleBookInfo = () => {
                     <img w-full :src="dialogImageUrl" alt="Preview Image" />
                 </el-dialog>
             </el-form-item>
-            <el-form-item :label="t('dialog.info.contributer')">
-                <el-input v-model="bookinfo.metadata.contributors" />
+            <el-form-item :label="t('dialog.info.contributer')" prop="contributors">
+                <el-input v-model="metadata.contributors" />
             </el-form-item>
-            <el-form-item :label="t('dialog.info.description')">
+            <el-form-item :label="t('dialog.info.description')" prop="description">
                 <el-input 
-                v-model="bookinfo.metadata.description" 
+                v-model="metadata.description" 
                 type="textarea"
                 :rows="3"/>
             </el-form-item>
-            <el-form-item :label="t('dialog.info.subject')">
+            <el-form-item :label="t('dialog.info.subject')" prop="subject">
                 <div class="flex gap-2">
                     <el-tag
-                    v-for="tag in bookinfo.metadata.subject"
+                    v-for="tag in metadata.subject"
                     :key="tag"
                     closable
                     :disable-transitions="false"
@@ -149,7 +257,7 @@ const handleBookInfo = () => {
             </el-form-item>
             <el-form-item :label="t('dialog.info.language')">
                 <el-select
-                v-model="bookinfo.metadata.language"
+                v-model="metadata.language"
                 :placeholder="t('dialog.info.language')"
                 size="large"
                 style="width: 240px"
@@ -166,7 +274,7 @@ const handleBookInfo = () => {
         <template #footer>
             <div class="dialog-footer">
               <!-- <el-button @click="visio.bookInfoVisible = false">{{$t('dialog.cancel')}}</el-button> -->
-              <el-button type="primary" @click="handleBookInfo">
+              <el-button type="primary" @click="handleBookInfo(formRef)">
                 {{$t('dialog.confirm')}}
               </el-button>
             </div>

@@ -1,3 +1,7 @@
+// Description: Program-configured controller, which is used to manage the configuration of the program.
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
 package config
 
 import (
@@ -73,6 +77,15 @@ func (cm *ConfigManager) SaveConfig() error {
 	}
 
 	return nil
+}
+
+func (cm *ConfigManager) GetInfo() map[string]string {
+	info := map[string]string{
+		"version":   cm.config.Version,
+		"buildTime": cm.config.BuildTime,
+		"commit":    cm.config.Commit,
+	}
+	return info
 }
 
 func (cm *ConfigManager) GetConfig() *Config {

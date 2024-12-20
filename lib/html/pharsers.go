@@ -1,3 +1,7 @@
+// Description: The parser corresponding to each tag
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package html
 
 import (
@@ -24,9 +28,8 @@ type (
 	ListParser struct {
 		Type string
 	}
-	TableParser struct{}
-	SVGParser   struct {
-		FoldName string
+	TableParser struct {
+		FoldName string // compatible to the image
 	}
 	BrParser        struct{}
 	CodeBlockParser struct{}
@@ -57,6 +60,9 @@ func backward(node *AstElement, textNode *PMNode) {
 	s.Push(node.Parent)
 	for {
 		currentNode := s.Pop().(*AstElement)
+		if currentNode == nil {
+			break
+		}
 		if currentNode.Tag == "p" {
 			break
 		}
@@ -93,9 +99,10 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 		node := s.Pop().(*AstElement)
 		if node.Type == 3 {
 			textNode := PMNode{
-				Type: "text",
-				Mark: []*PMNode{},
-				Text: "",
+				Type:    "text",
+				Mark:    []*PMNode{},
+				Content: []*PMNode{},
+				Text:    "",
 			}
 			textNode.Text = html.UnescapeString(node.Text)
 			backward(node, &textNode)
@@ -202,6 +209,10 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 		return nil
 	}
 	imageAttr := make(map[string]interface{})
+	if v, ok := node.Attrs["xlink:href"]; ok { // compatible to the svg
+		_, imageName := filepath.Split(v)
+		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
+	}
 	if v, ok := node.Attrs["src"]; ok {
 		_, imageName := filepath.Split(v)
 		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
@@ -223,7 +234,7 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 			if intV, _ := strconv.Atoi(width); intV > 500 {
 				width = "500"
 			}
-			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
+			imageAttr["style"] = widthReg.ReplaceAllString(style, fmt.Sprintf("width: %spx", width))
 		} else {
 			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
 		}
@@ -302,16 +313,29 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 				if child.Tag == "th" {
 					cellType = "tableHeader"
 				}
+				colwidth, ok := child.Attrs["colwidth"]
+				if !ok {
+					colwidth = ""
+				}
+				colspan, err := strconv.Atoi(child.Attrs["colspan"])
+				if err != nil {
+					colspan = 1
+				}
+				rowspan, err := strconv.Atoi(child.Attrs["rowspan"])
+				if err != nil {
+					rowspan = 1
+				}
 				tableCell := &PMNode{
 					Type: cellType,
 					Attrs: map[string]interface{}{
-						"colspan":  1,
-						"rowspan":  1,
-						"colwidth": "",
+						"colspan":  colspan,
+						"rowspan":  rowspan,
+						"colwidth": colwidth,
 					},
 					Content: []*PMNode{},
 				}
 				for _, grandChild := range child.Children {
+					fmt.Println(grandChild.Tag)
 					if grandChild.Tag == "p" {
 						paragraph := &PMNode{
 							Type:    "paragraph",
@@ -319,6 +343,19 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 						}
 						FindTextTill(grandChild, paragraph)
 						tableCell.Content = append(tableCell.Content, paragraph)
+					} else if grandChild.Tag == "br" {
+						br := &PMNode{
+							Type: "paragraph",
+						}
+						tableCell.Content = append(tableCell.Content, br)
+					} else if grandChild.Children[0].Tag == "img" {
+						imageParser := &ImageParser{
+							FoldName: p.FoldName,
+						}
+						image := imageParser.Parse(grandChild.Children[0])
+						if image != nil {
+							tableCell.Content = append(tableCell.Content, image)
+						}
 					}
 				}
 				parent.Content = append(parent.Content, tableCell)
@@ -353,51 +390,6 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 		}
 	}
 	return table
-}
-
-func (p *SVGParser) Parse(node *AstElement) *PMNode {
-	if node == nil {
-		return nil
-	}
-	imageAttr := make(map[string]interface{})
-	if v, ok := node.Attrs["xlink:href"]; ok { // compatible to the svg
-		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
-	}
-	if v, ok := node.Attrs["href"]; ok {
-		_, imageName := filepath.Split(v)
-		imageAttr["src"] = fmt.Sprintf("http://127.0.0.1:7288/%s/%s", p.FoldName, imageName)
-	}
-	if v, ok := node.Attrs["alt"]; ok {
-		imageAttr["alt"] = v
-		imageAttr["title"] = v
-	} else {
-		imageAttr["alt"] = ""
-		imageAttr["title"] = ""
-	}
-
-	widthReg := regexp.MustCompile(`width:\s?(\d+)px`)
-	style, ok := node.Attrs["style"]
-	if ok {
-		matches := widthReg.FindStringSubmatch(style)
-		if len(matches) > 1 {
-			width := matches[1]
-			if intV, _ := strconv.Atoi(width); intV > 500 {
-				width = "500"
-			}
-			imageAttr["style"] = fmt.Sprintf("width: %spx; height: auto; cursor: pointer;", width)
-		} else {
-			imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
-		}
-	} else {
-		imageAttr["style"] = "width: 300px; height: auto; cursor: pointer;"
-	}
-
-	image := &PMNode{
-		Type:  "image",
-		Attrs: imageAttr,
-	}
-	return image
 }
 
 func (p *BrParser) Parse(node *AstElement) *PMNode {

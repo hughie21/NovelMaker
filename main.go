@@ -1,10 +1,7 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-7-5
-@LastEditors: Hughie
-@LastEditTime: 2024-10-18
-@Description: The entry of the program
-*/
+// Description: This main entrance of the program.
+// Author: Hughie21
+// Date: 2024-12-16
+// license that can be found in the LICENSE file.
 
 package main
 

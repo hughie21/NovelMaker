@@ -1,3 +1,7 @@
+// Description: Project's public functions and constants
+// Author: Hughie21
+// Date: 2024-12-20
+// license that can be found in the LICENSE file.
 package utils
 
 import (
@@ -11,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/hughie21/NovelMaker/lib/html"
+	"golang.org/x/exp/rand"
 )
 
 func GetFileData(path string) []byte {
@@ -44,6 +49,15 @@ func CombineMap(m1, m2 map[string]html.TagParser) map[string]html.TagParser {
 func PathExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil || os.IsExist(err)
+}
+
+func RandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset)-1)]
+	}
+	return string(b)
 }
 
 func Contains(arr []string, target string) bool {

@@ -1,10 +1,7 @@
-/*
-@Author: Hughie
-@CreateTime: 2024-8-2
-@LastEditors: Hughie
-@LastEditTime: 2024-08-7
-@Description: Transform the Json format to the xml format and write to the epub file
-*/
+// Description: The epub writing program
+// Author: Hughie21
+// Date: 2024-11-29
+// license that can be found in the LICENSE file.
 
 package epub
 
@@ -16,6 +13,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
+	"time"
 
 	"github.com/hughie21/NovelMaker/lib/utils"
 )
@@ -111,7 +110,6 @@ func (w *Writer) formPackage() error {
 			Description:  w.JsonData.MetaData.Description,
 			Publisher:    w.JsonData.MetaData.Publisher,
 			Subject:      []DCSubject{},
-			Date:         w.JsonData.MetaData.Date,
 			Metas:        []MetaNode{},
 		},
 		Manifest: ManifestNode{
@@ -144,35 +142,31 @@ func (w *Writer) formPackage() error {
 	}
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
 		Property: "dcterms:modified",
-		Value:    w.JsonData.MetaData.Date,
+		Value:    time.Now().Format("2006-01-02T15:04:05Z"),
 	})
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
-		Property: "rendition:layout",
-		Value:    "pre-paginated",
+		Property: "rendition:flow",
+		Value:    "auto",
 	})
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
 		Property: "rendition:orientation",
 		Value:    "auto",
 	})
-	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
-		Name:  "generator",
-		Value: "NovelMaker",
-	})
 	for _, creator := range w.JsonData.MetaData.Creator {
 		content.Metadata.Creators = append(content.Metadata.Creators, DCCreator{
-			Id:    "id-" + creator,
+			Id:    "id-" + creator + utils.RandomString(5),
 			Value: creator,
 		})
 	}
 	for _, contributor := range w.JsonData.MetaData.Contributers {
 		content.Metadata.Contributors = append(content.Metadata.Contributors, DCContributor{
-			Id:    "id-" + contributor,
+			Id:    "id-" + contributor + utils.RandomString(5),
 			Value: contributor,
 		})
 	}
 	for _, subject := range w.JsonData.MetaData.Subject {
 		content.Metadata.Subject = append(content.Metadata.Subject, DCSubject{
-			Id:    "id-" + subject,
+			Id:    "id-" + subject + utils.RandomString(5),
 			Value: subject,
 		})
 	}
@@ -238,16 +232,12 @@ func (w *Writer) formNav() error {
 }
 
 func (w *Writer) formText() error {
+	imagePathRegex := regexp.MustCompile(`http(s)?://127.0.0.1:(\d+)/[0-9a-z]+/`)
 	text := XhtmlHTML{
 		Xmlns: "http://www.w3.org/1999/xhtml",
 		Lang:  "en",
 		Header: XhtmlHead{
 			Title: w.JsonData.MetaData.Title,
-			Meta: []MetaNode{
-				{
-					Content: "text/html; charset=utf-8",
-				},
-			},
 			Link: []Link{
 				{
 					Href: "../Styles/style.css",
@@ -257,7 +247,7 @@ func (w *Writer) formText() error {
 			},
 		},
 		Body: XhtmlBody{
-			Section: w.JsonData.Content,
+			Section: imagePathRegex.ReplaceAllString(w.JsonData.Content, "../Images/"),
 		},
 	}
 	b, _ := xml.MarshalIndent(text, "", "  ")
