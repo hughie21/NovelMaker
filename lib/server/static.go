@@ -33,10 +33,12 @@ var extensionToContentType = map[string]string{
 	".jpg":  "image/jpeg",
 }
 
+// Determine if an element exists in a slice
 func InSlice(itmes []string, item string) bool {
 	return sort.SearchStrings(itmes, item) < len(itmes)
 }
 
+// Exception handling
 func ErrorHandler(e error, w http.ResponseWriter) {
 	if e != nil {
 		logger.Fatal(e.Error(), logging.RunFuncName())
@@ -44,6 +46,7 @@ func ErrorHandler(e error, w http.ResponseWriter) {
 	}
 }
 
+// Print Catalog Information
 func DirList(w http.ResponseWriter, r *http.Request, f http.File, parentDir string) {
 	dirs, err := f.Readdir(-1)
 	if err != nil {
@@ -70,6 +73,7 @@ func DirList(w http.ResponseWriter, r *http.Request, f http.File, parentDir stri
 	io.WriteString(w, string(rawJson))
 }
 
+// Static resource handler
 func ResourceHandler(execPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ResourcePath := filepath.Join(execPath, "resources")
@@ -107,6 +111,7 @@ func ResourceHandler(execPath string) http.HandlerFunc {
 	}
 }
 
+// Start the static resource service
 func StaticSevice(port string, execPath string, log *logging.Log) {
 	logger = log
 	logger.Info("Static resource service started", logging.RunFuncName())

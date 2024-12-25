@@ -142,7 +142,7 @@ func Marshal(obj interface{}) string {
 }
 
 // deal with the normal field
-func (this *marshal) parse(v reflect.Value) string {
+func (that *marshal) parse(v reflect.Value) string {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -158,19 +158,19 @@ func (this *marshal) parse(v reflect.Value) string {
 	case reflect.Bool:
 		return strconv.FormatBool(v.Bool())
 	case reflect.Struct:
-		return this.parseStruct(v, v.Type())
+		return that.parseStruct(v, v.Type())
 	case reflect.Map:
-		return this.parseMap(v, v.Type())
+		return that.parseMap(v, v.Type())
 	case reflect.Slice:
-		return this.parseSlice(v, v.Type())
+		return that.parseSlice(v, v.Type())
 	case reflect.Interface:
-		return this.parse(reflect.ValueOf(v.Interface()))
+		return that.parse(reflect.ValueOf(v.Interface()))
 	}
 	return "null"
 }
 
 // deal with the struct
-func (this *marshal) parseStruct(v reflect.Value, t reflect.Type) string {
+func (that *marshal) parseStruct(v reflect.Value, t reflect.Type) string {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -190,27 +190,27 @@ func (this *marshal) parseStruct(v reflect.Value, t reflect.Type) string {
 		if fieldName == "-" {
 			continue
 		}
-		str[i] = `"` + fieldName + `":` + this.parse(value)
+		str[i] = `"` + fieldName + `":` + that.parse(value)
 	}
 	return "{" + strings.Join(str, ",") + "}"
 }
 
 // deal with the slice
-func (this *marshal) parseSlice(v reflect.Value, t reflect.Type) string {
+func (that *marshal) parseSlice(v reflect.Value, _ reflect.Type) string {
 	var str = make([]string, v.Len())
 	for i := 0; i < v.Len(); i++ {
-		str[i] = this.parse(v.Index(i))
+		str[i] = that.parse(v.Index(i))
 	}
 	return `[` + strings.Join(str, ",") + "]"
 }
 
 // deal with the map
-func (this *marshal) parseMap(v reflect.Value, t reflect.Type) string {
+func (that *marshal) parseMap(v reflect.Value, _ reflect.Type) string {
 	var str = make([]string, v.Len())
 	m := v.MapRange()
 	var i int
 	for m.Next() {
-		str[i] = `"` + m.Key().String() + `":` + this.parse(m.Value())
+		str[i] = `"` + m.Key().String() + `":` + that.parse(m.Value())
 		i++
 	}
 	return "{" + strings.Join(str, ",") + "}"

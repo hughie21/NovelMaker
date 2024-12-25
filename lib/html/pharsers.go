@@ -35,6 +35,7 @@ type (
 	CodeBlockParser struct{}
 )
 
+// parse the style string to a map
 func splitStyle(style string) map[string]string {
 	result := make(map[string]string)
 	for _, item := range strings.Split(style, ";") {
@@ -55,6 +56,7 @@ func splitStyle(style string) map[string]string {
 	return result
 }
 
+// backward traversal of the ast tree
 func backward(node *AstElement, textNode *PMNode) {
 	s := NewStack()
 	s.Push(node.Parent)
@@ -115,6 +117,7 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 	}
 }
 
+// dealing with the tag <a>
 func handleATag(node *AstElement, parent *PMNode) {
 	href, ok := node.Attrs["href"]
 	if !ok {
@@ -140,35 +143,42 @@ func handleATag(node *AstElement, parent *PMNode) {
 	parent.Mark = append([]*PMNode{linkNode}, parent.Mark...)
 }
 
+// dealing with the tag <span>
 func handleSpanTag(node *AstElement, parent *PMNode) {
 	textStyleString, ok := node.Attrs["style"]
 	if !ok {
 		return
 	}
 	textStyle := splitStyle(html.UnescapeString(textStyleString))
-	var checks []bool
 	fontSize, ok := textStyle["font-size"]
-	checks = append(checks, ok)
-	fontColor, ok := textStyle["color"]
-	checks = append(checks, ok)
-	backgroundColor, ok := textStyle["background"]
-	checks = append(checks, ok)
-	fontFamily, ok := textStyle["font-family"]
-	checks = append(checks, ok)
-	if checks[0] && checks[1] && checks[2] && checks[3] {
-		markNode := &PMNode{
-			Type: "textStyle",
-			Attrs: map[string]interface{}{
-				"fontSize":        fontSize,
-				"fontColor":       fontColor,
-				"backgroundColor": backgroundColor,
-				"fontFamily":      fontFamily,
-			},
-		}
-		parent.Mark = append([]*PMNode{markNode}, parent.Mark...)
+	if !ok {
+		fontSize = "1rem"
 	}
+	fontColor, ok := textStyle["color"]
+	if !ok {
+		fontColor = "#000000"
+	}
+	backgroundColor, ok := textStyle["background"]
+	if !ok {
+		backgroundColor = "transparent"
+	}
+	fontFamily, ok := textStyle["font-family"]
+	if !ok {
+		fontFamily = "sans-serif"
+	}
+	markNode := &PMNode{
+		Type: "textStyle",
+		Attrs: map[string]interface{}{
+			"fontSize":        fontSize,
+			"fontColor":       fontColor,
+			"backgroundColor": backgroundColor,
+			"fontFamily":      fontFamily,
+		},
+	}
+	parent.Mark = append([]*PMNode{markNode}, parent.Mark...)
 }
 
+// dealing with the tag <strong>
 func handleStrongTag(parent *PMNode) {
 	bold := &PMNode{
 		Type: "bold",
@@ -176,6 +186,7 @@ func handleStrongTag(parent *PMNode) {
 	parent.Mark = append([]*PMNode{bold}, parent.Mark...)
 }
 
+// dealing with the tag <em>
 func handleEmTag(parent *PMNode) {
 	italic := &PMNode{
 		Type: "italic",
@@ -183,6 +194,7 @@ func handleEmTag(parent *PMNode) {
 	parent.Mark = append([]*PMNode{italic}, parent.Mark...)
 }
 
+// dealing with the tag <s>
 func handleSTag(parent *PMNode) {
 	strike := &PMNode{
 		Type: "strike",
@@ -190,6 +202,7 @@ func handleSTag(parent *PMNode) {
 	parent.Mark = append([]*PMNode{strike}, parent.Mark...)
 }
 
+// Parse the tag <h1> to <h6>
 func (p *HeaderParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
@@ -204,6 +217,7 @@ func (p *HeaderParser) Parse(node *AstElement) *PMNode {
 	return heading
 }
 
+// Parse the tag <img> or <image>
 func (p *ImageParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
@@ -249,6 +263,7 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 	return image
 }
 
+// Parse the tag <p>
 func (p *TextParser) Parse(node *AstElement) *PMNode {
 	paragraph := &PMNode{
 		Type:    "paragraph",
@@ -260,6 +275,7 @@ func (p *TextParser) Parse(node *AstElement) *PMNode {
 	return paragraph
 }
 
+// Parse the tag <ul> or <ol>
 func (p *ListParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
@@ -296,6 +312,7 @@ func (p *ListParser) Parse(node *AstElement) *PMNode {
 	return bulletList
 }
 
+// Parse the tag <table>
 func (p *TableParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
@@ -335,7 +352,6 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 					Content: []*PMNode{},
 				}
 				for _, grandChild := range child.Children {
-					fmt.Println(grandChild.Tag)
 					if grandChild.Tag == "p" {
 						paragraph := &PMNode{
 							Type:    "paragraph",
@@ -348,7 +364,7 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 							Type: "paragraph",
 						}
 						tableCell.Content = append(tableCell.Content, br)
-					} else if grandChild.Children[0].Tag == "img" {
+					} else if grandChild.Children[0].Tag == "img" { // if the cell contains an image
 						imageParser := &ImageParser{
 							FoldName: p.FoldName,
 						}
@@ -392,6 +408,7 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 	return table
 }
 
+// Parse the tag <br>
 func (p *BrParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil
@@ -402,6 +419,7 @@ func (p *BrParser) Parse(node *AstElement) *PMNode {
 	return br
 }
 
+// Parse the tag <pre>
 func (p *CodeBlockParser) Parse(node *AstElement) *PMNode {
 	if node == nil {
 		return nil

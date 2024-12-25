@@ -13,6 +13,7 @@ import (
 	"github.com/beevik/etree"
 )
 
+// the ast tree nodes
 type AstElement struct {
 	Tag      string
 	Type     int
@@ -32,15 +33,21 @@ var (
 	uselessCharacters = regexp.MustCompile(`>(\s*\n\s*|\s*\t\s*)<`)
 )
 
+// HTMLParser is a struct that contains the root element of the AST tree
+// and a stack to keep track of the current element being processed.
 type HTMLParser struct {
-	root  *AstElement
+	// root element of the AST tree
+	root *AstElement
+	// stack to keep track of the current element being processed
 	stack []*AstElement
 }
 
+// NewHTMLParser creates a new HTMLParser object and returns a pointer to it.
 func NewHTMLParser() *HTMLParser {
 	return &HTMLParser{}
 }
 
+// createAstElement creates a new AstElement object with the given tag name, attributes, and parent element.
 func (p *HTMLParser) createAstElement(tagName string, attrs map[string]string, parent *AstElement) *AstElement {
 	return &AstElement{
 		Tag:      tagName,
@@ -52,6 +59,7 @@ func (p *HTMLParser) createAstElement(tagName string, attrs map[string]string, p
 	}
 }
 
+// Iterate through the characters to find the label that matches the start flag
 func (p *HTMLParser) start(tagName string, attributes map[string]string, unary bool) {
 	var parent *AstElement
 	if len(p.stack) > 0 {
@@ -69,6 +77,7 @@ func (p *HTMLParser) start(tagName string, attributes map[string]string, unary b
 	}
 }
 
+// Match End tag
 func (p *HTMLParser) end(tagName string) {
 	last := p.stack[len(p.stack)-1]
 	p.stack = p.stack[:len(p.stack)-1]
@@ -77,10 +86,13 @@ func (p *HTMLParser) end(tagName string) {
 	}
 }
 
+// Handling text between tags
 func (p *HTMLParser) chars(text string) {
 	// text = strings.TrimSpace(text)
 	// text = strings.ReplaceAll(text, "\n", "")
 	// text = uselessCharacters.ReplaceAllString(text, "")
+	re := regexp.MustCompile(`&nbsp;|&ensp;|&emsp;|&thinsp;|&zwnj;|&zwj;|&lrm;|&rlm;`)
+	text = re.ReplaceAllString(text, "")
 	var parent *AstElement
 	if len(p.stack) > 0 {
 		parent = p.stack[len(p.stack)-1]
@@ -96,6 +108,19 @@ func (p *HTMLParser) chars(text string) {
 	}
 }
 
+// parserHTML parses the given HTML string and returns an AstElement object.
+//
+// The main flow of this method is as follows:
+//
+//  1. Define an inner function, advance, that advances the parsing of the HTML string.
+//  2. Define an inner function, parseStartTag, that parses the start tag and returns the tag name, attributes, and whether it is a single tag.
+//  3. In the main loop, check to see if the length of the HTML string is greater than zero.
+//  4. If the HTML string starts with “<”, try to parse the start tag.
+//     - If parsing is successful, call the p.start method to process the start tag and continue to the next loop.
+//     - If parsing fails, try to parse the end tag.
+//     - If parsing succeeds, call p.end to process the end tag and advance the parsing process.
+//  5. If the HTML string does not begin with “<”, extract the text and call the p.chars method to process it.
+//  6. At the end of the loop, return the parsed root element, p.root.
 func (p *HTMLParser) parserHTML(html string) *AstElement {
 	advance := func(length int) {
 		html = html[length:]
@@ -157,6 +182,7 @@ func (p *HTMLParser) parserHTML(html string) *AstElement {
 	return p.root
 }
 
+// LoadHTML loads the given HTML byte slice and returns an AstElement object.
 func LoadHTML(html []byte) (*AstElement, error) {
 	textDoc := etree.NewDocument()
 	if err := textDoc.ReadFromBytes(html); err != nil {

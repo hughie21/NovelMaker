@@ -12,6 +12,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
+// SystemMssage is a struct that contains the system information
 type SystemMssage struct {
 	OS     string
 	Kernel string
@@ -19,6 +20,7 @@ type SystemMssage struct {
 	Memory uint64
 }
 
+// NewSystem creates a new SystemMssage object and returns a pointer to it.
 func NewSystem() *SystemMssage {
 	hostInfo, _ := host.Info()
 	cpuinfo, _ := cpu.Info()
@@ -31,6 +33,7 @@ func NewSystem() *SystemMssage {
 	}
 }
 
+// Output system information
 func (s *SystemMssage) String() string {
 	return fmt.Sprintf(`
 ===================System Information====================
@@ -42,6 +45,7 @@ Memory: %d
 	`, s.OS, s.Kernel, s.CPU, s.Memory)
 }
 
+// Get the log level of the system information
 func (s *SystemMssage) getLevel() Level {
 	return InfoLevel
 }

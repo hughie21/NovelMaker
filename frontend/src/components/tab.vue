@@ -86,30 +86,10 @@ const handleChange = () => {
         judgeHeight();
     }, 300)
 }
-
-const test = () => {
-    const E = editorRef.value;
-    // const timer = TimerContext.getInstance();
-    // timer.State()
-
-    // E.commands.setLink({ href: "https://example.com" });
-    // E.commands.insertContent('<img src="http://127.0.0.1:7288/0164b793d2f9252d.jpg"/>');
-    // console.log(JSON.stringify(E.getJSON()));
-    
-    let data = E.getJSON();
-    console.log(data);
-    // E.chain().clearContent().setContent(data).run();
-
-    // console.log(printStack());
-    // console.log(change.value);
-    
-    // var data = JSON.parse('{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"dawda"}]},{"type":"image","attrs":{"alt":"b882997817cfad8d.jpg","pos":"left","src":"http://127.0.0.1:7288/b882997817cfad8d.jpg","title":"b882997817cfad8d.jpg","zoom":"10"}}]}')
-    // E.commands.setContent(data)
-}
 </script>
 
 <template>
-<button id="testing" @click="test" style="display: none;"></button>
+<!-- <button id="testing" @click="test" style="display: none;"></button> -->
 <el-tabs type="border-card">
     <el-collapse v-model="activeNames" @change="handleChange">
         <el-collapse-item name="1" id="tab-collapse">

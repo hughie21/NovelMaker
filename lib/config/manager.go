@@ -27,6 +27,7 @@ var (
 	once          *sync.Once
 )
 
+// constructor for ConfigManager, which is used to initialize the ConfigManager instance
 func NewConfigManager(path string) *ConfigManager {
 	if once == nil {
 		once = &sync.Once{}
@@ -40,6 +41,7 @@ func NewConfigManager(path string) *ConfigManager {
 	return configManager
 }
 
+// LoadConfig is used to load the configuration file
 func (cm *ConfigManager) LoadConfig() error {
 	fp, err := os.ReadFile(filepath.Join(cm.path, "config.yaml"))
 	if err != nil {
@@ -57,6 +59,7 @@ func (cm *ConfigManager) LoadConfig() error {
 	return nil
 }
 
+// save the conifguration file
 func (cm *ConfigManager) SaveConfig() error {
 	fp, err := os.Create(filepath.Join(cm.path, "config.yaml"))
 	if err != nil {
@@ -79,6 +82,7 @@ func (cm *ConfigManager) SaveConfig() error {
 	return nil
 }
 
+// get the information of the about page
 func (cm *ConfigManager) GetInfo() map[string]string {
 	info := map[string]string{
 		"version":   cm.config.Version,
@@ -88,10 +92,14 @@ func (cm *ConfigManager) GetInfo() map[string]string {
 	return info
 }
 
+// get the configuration of the program
 func (cm *ConfigManager) GetConfig() *Config {
 	return cm.config
 }
 
+// This method is the one that interacts with the front-end,
+// which can't read Go's structs directly, so it's queried by
+// passing in the key name
 func (cm *ConfigManager) GetConfigByKey(section string, key string) (string, error) {
 	v := reflect.ValueOf(cm.config).Elem().FieldByName(section)
 	if !v.IsValid() {
@@ -115,6 +123,7 @@ func (cm *ConfigManager) GetConfigByKey(section string, key string) (string, err
 	}
 }
 
+// Set the configuration of the program by the key, value pair
 func (cm *ConfigManager) SetConfig(sector string, key string, value string) error {
 	v := reflect.ValueOf(cm.config).Elem().FieldByName(sector)
 	if !v.IsValid() {

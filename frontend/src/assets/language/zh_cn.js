@@ -152,6 +152,43 @@ export default{
             always: "常驻",
             autoSave: "自动保存",
             autoSaveTime: "自动保存间隔",
+            epubSaving: "EPUB保存配置",
+            textDirec: {
+                title: "文本方向",
+                ltr: "从左到右",
+                rtl: "从右到左",
+                auto: "自动"
+            },
+            layout: {
+                title: "内容布局",
+                reflow: "流式布局",
+                prePaginated: "预分页"
+            },
+            flow: {
+                title: "内容溢出",
+                paginated: "动态分页",
+                scrolledContinuous: "整体滚动",
+                scrolledDoc: "分节滚动",
+                auto: "自动"
+            },
+            spread: {
+                title: "双页显示",
+                none: "无",
+                landscape: "横向",
+                portrait: "纵向",
+                both: "同时",
+                auto: "自动"
+            },
+            orientation: {
+                title: "页面方向",
+                auto: "自动",
+                landscape: "横向",
+                portrait: "纵向"
+            },
+            proportions: {
+                title: "展示比例",
+                auto: "自动"
+            }
         },
         info: {
             title: "书籍信息",
@@ -220,6 +257,7 @@ export default{
         saveWarning: "您有未保存的编辑，是否保存？",
         saveSuccess: "保存成功",
         saveError: "保存失败",
+        openInfo: "请注意，打开非本软件生成EPUB文件可能会丢失部分特殊的格式。",
         openError: "无法打开指定文件",
         importSuccess: "导入成功",
         importError: "导入失败",

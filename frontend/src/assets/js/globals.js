@@ -39,6 +39,7 @@ const visio = reactive({
     codeInsertVisible: false,
     linkInsertVisible: false,
     tourVsisible: false,
+    saveConfigVisible: true,
 })
 const cover = reactive({
     isExist: false,
@@ -59,7 +60,8 @@ const bookInfo = reactive({
         cover: {
             name: "",
             data: ""
-        }
+        },
+        meta: {}
     },
     content: "",
     resources: [],
@@ -120,6 +122,14 @@ const windowSetting = reactive({
 const linuxSetting = reactive({
     GPUPolicy: "auto"
 })
+const epubSaving = reactive({
+    textDirection: "",
+    layout: "",
+    flow: "",
+    spread: "",
+    orientation: "",
+    proportions: ""
+})
 
 export {
     editorRef,
@@ -145,7 +155,8 @@ export {
     linuxSetting,
     isBold,
     isItalic,
-    isStrike
+    isStrike,
+    epubSaving
 }
 
 export default{}
