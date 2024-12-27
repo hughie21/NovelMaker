@@ -1,14 +1,31 @@
-<div style="display:flex;justify-content:center;align-item:center;">
-    <div>
-        <img src="./appicon.png" style="height:300px;width:300px">
-    </div>
-</div>
-<div style="display:flex;justify-content:center;">
-    <p style="font-size:1.2em;font-weight:bold">Novel Maker - A text editor to make the EPUB</p>
-</div>
-<div style="display:flex;justify-content: center;width:100%;flex-direction:row">
-    <a href="./README.md" style="margin-right: 2em">English</a>
-    <a href="./README_zh.md" style="margin-right: 2em">简体中文</a>
+<p align="center" style="text-align: center">
+    <img src="./appicon.png" style="width:40%">
+</p>
+<p align="center">
+    A rich text editor for the EPUB.
+    <br/>
+    <br/>
+    <a href="https://github.com/hughie21/NovelMaker/blob/master/LICENSE">
+        <img alt="GitHub" src="https://img.shields.io/github/license/hughie21/NovelMaker"/>
+    </a> 
+    <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker?ref=badge_shield&issueType=license" alt="FOSSA Status">
+        <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker.svg?type=shield&issueType=license"/>
+    </a>
+    <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker?ref=badge_shield&issueType=security" alt="FOSSA Status">
+        <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fhughie21%2FNovelMaker.svg?type=shield&issueType=security"/>
+    </a>
+    <a href="https://github.com/hughie21/NovelMaker/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/hughie21/NovelMaker"/>
+    </a>
+    <a href="https://github.com/hughie21/NovelMaker/issues">
+        <img alt="GitHub issues" src="https://img.shields.io/github/issues/hughie21/NovelMaker"/>
+    </a>
+</p>
+
+<div align="center">
+
+[English](README.md) | [简体中文](README_zh.md)
+
 </div>
 
 ## Introduce
@@ -20,29 +37,18 @@ here: https://wails.io/docs/reference/project-config.
 
 ## Feature
 - Rich Text Editor with Modern Interface
-- Support the markdown
-- Can export to the EPUB file
+- Support the markdown grammer
+- Can edite epub files
 - Multi-Language Support
-
-## Future Roadmap
-### v1
-- Mathematical Formulas
-- Custom EPUB Style
-- Preview Mode
-
-### v2
-- EPUB v3 Support
-- EPUB Import 
 
 ## Requiremnet
 ### Running
 |Environment|Version|
 |---|---|
-|System|Window 10 or 11|
-|Webview2|130.x or upper|
+|OS|Window 10 or 11|
 |GPU|Whatever can open the browser|
 |CPU|Whatever can run the browser|
-|Memory|The more the best|
+|Memory|16G or more|
 
 ### Develop
 |Environment|Version|

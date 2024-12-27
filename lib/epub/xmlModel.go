@@ -109,6 +109,7 @@ type SpineNode struct {
 type PackageNode struct {
 	XMLName    xml.Name     `xml:"package"`
 	Xmlns      string       `xml:"xmlns,attr"`
+	Dir        string       `xml:"dir,attr,omitempty"`
 	DC         string       `xml:"xmlns:dc,attr,omitempty"`      // dc: http://purl.org/dc/elements/1.1/
 	DCTerm     string       `xml:"xmlns:dcterms,attr,omitempty"` // dcterms: http://purl.org/dc/terms/
 	Identifier string       `xml:"unique-identifier,attr"`

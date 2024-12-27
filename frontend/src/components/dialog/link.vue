@@ -42,7 +42,12 @@ const handleInsertLink = () => {
     var urlText = '';
     switch (prefix.value) {
         case "0":
-            urlText = `http://${url.value}`
+            let httpReg = /http(s)?:\/\//g
+            if(httpReg.test(url.value)) {
+                urlText = url.value
+            } else {
+                urlText = `http://${url.value}`
+            }
             if(!checkUrl(urlText)) {
                 ElMessageBox.alert(t('dialog.link.error'), t('message.error'), {
                     confirmButtonText: t('message.confirm'),
@@ -52,7 +57,11 @@ const handleInsertLink = () => {
             E.commands.setLink({ href: urlText });
             break;
         case "1":
-            urlText = `https://${url.value}`
+            if(httpReg.test(url.value)) {
+                urlText = url.value
+            } else {
+                urlText = `http://${url.value}`
+            }
             if(!checkUrl(urlText)) {
                 ElMessageBox.alert(t('dialog.link.error'), t('message.error'), {
                     confirmButtonText: t('message.confirm'),
@@ -62,7 +71,12 @@ const handleInsertLink = () => {
             E.commands.setLink({ href: urlText });
             break;
         case "2":
-            urlText = `ftp://${url.value}`
+            let ftpReg = /ftp:\/\//g
+            if(ftpReg.test(url.value)) {
+                urlText = url.value
+            } else {
+                urlText = `ftp://${url.value}`
+            }
             if(!checkUrl(urlText)) {
                 ElMessageBox.alert(t('dialog.link.error'), t('message.error'), {
                     confirmButtonText: t('message.confirm'),
@@ -72,7 +86,12 @@ const handleInsertLink = () => {
             E.commands.setLink({ href: urlText });
             break;
         case "3":
-            urlText = `mailto:${url.value}`
+            let mailtoReg = /mailto:/g
+            if(mailtoReg.test(url.value)) {
+                urlText = url.value
+            } else {
+                urlText = `mailto:${url.value}`
+            }
             if(!checkEmail(url.value)) {
                 ElMessageBox.alert(t('dialog.link.error'), t('message.error'), {
                     confirmButtonText: t('message.confirm'),

@@ -17,6 +17,7 @@ import (
 	"github.com/hughie21/NovelMaker/lib/utils"
 )
 
+// Returns the name of the currently running function and its line number
 func RunFuncName() string {
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -26,6 +27,7 @@ func RunFuncName() string {
 	return fmt.Sprintf("%s:%d | %s", file, line, f.Name())
 }
 
+// Print Log in string format
 func (message LogMessage) String() string {
 	timeFormat := message.Time.Format("2006-01-02 15:04:05")
 	var str_level string
@@ -44,19 +46,23 @@ func (message LogMessage) String() string {
 	return fmt.Sprintf("%s [%s] %s -> %s \n", timeFormat, str_level, message.FuncName, message.Message)
 }
 
+// Get the log level
 func (messgae LogMessage) getLevel() Level {
 	return messgae.Level
 }
 
+// Returns front-end stack information
 func (message TraceMessage) String() string {
 	timeFormat := message.Time.Format("2006-01-02 15:04:05")
 	return fmt.Sprintf("%s [TRACE] %s \n↳%s\n", timeFormat, message.Message, message.Stack)
 }
 
+// Get the log level of the front-end stack
 func (message TraceMessage) getLevel() Level {
 	return ErrorLevel
 }
 
+// Output log to file
 func (fl *FileLogger) Print(message string) error {
 	f, err := os.OpenFile(fl.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
@@ -67,6 +73,7 @@ func (fl *FileLogger) Print(message string) error {
 	return nil
 }
 
+// Create a new log
 func NewLog(level Level, file bool, expired int) *Log {
 	if once == nil {
 		once = &sync.Once{}
@@ -83,14 +90,12 @@ func NewLog(level Level, file bool, expired int) *Log {
 	return Logger
 }
 
+// Set the log level
 func (l *Log) SetLevel(level Level) {
 	l.Level = level
 }
 
-func (l *Log) Expired() {
-
-}
-
+// Set the name of the file to be output
 func (l *Log) SetFileLogger(filename string) {
 	if !utils.PathExists(filename) {
 		fs, err := os.Create(filename)
@@ -104,10 +109,12 @@ func (l *Log) SetFileLogger(filename string) {
 	l.FileLogger.Filename = filename
 }
 
+// Add the log message
 func (l *Log) AddLogMessage(logMessage Message) {
 	l.Message = append(l.Message, logMessage)
 }
 
+// Catching front-end errors
 func (l *Log) Trace(message string, stack string) {
 	if message != "" {
 		l.AddLogMessage(TraceMessage{
@@ -118,6 +125,7 @@ func (l *Log) Trace(message string, stack string) {
 	}
 }
 
+// Info Level
 func (l *Log) Info(message string, funcName string) {
 	if message != "" {
 		l.AddLogMessage(LogMessage{
@@ -129,6 +137,7 @@ func (l *Log) Info(message string, funcName string) {
 	}
 }
 
+// Warning Level
 func (l *Log) Warning(message string, funcName string) {
 	if message != "" {
 		l.AddLogMessage(LogMessage{
@@ -140,6 +149,7 @@ func (l *Log) Warning(message string, funcName string) {
 	}
 }
 
+// Debug Level
 func (l *Log) Debug(message string, funcName string) {
 	if message != "" {
 		l.AddLogMessage(LogMessage{
@@ -151,6 +161,7 @@ func (l *Log) Debug(message string, funcName string) {
 	}
 }
 
+// Fatal Level
 func (l *Log) Fatal(message string, funcName string) {
 	if message != "" {
 		l.AddLogMessage(LogMessage{
@@ -162,6 +173,7 @@ func (l *Log) Fatal(message string, funcName string) {
 	}
 }
 
+// Error Level
 func (l *Log) Error(message string, funcName string) {
 	if message != "" {
 		l.AddLogMessage(LogMessage{
@@ -173,6 +185,7 @@ func (l *Log) Error(message string, funcName string) {
 	}
 }
 
+// Checking the expiration date of the log file
 func (l *Log) expired(rootpath string) error {
 	expireTime := l.FileLogger.expired // days
 	expireDuration := time.Duration(expireTime) * 24 * time.Hour
@@ -199,6 +212,7 @@ func (l *Log) expired(rootpath string) error {
 	return err
 }
 
+// Output all log messages
 func (l *Log) LogOutPut(rootpath string) error {
 	err := l.expired(rootpath)
 	if err != nil {

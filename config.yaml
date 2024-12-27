@@ -1,4 +1,3 @@
-# Description: Configuration file for the application
 version: 1.0.0.20241215_beta
 buildTime: 2024/12/15
 commit: 12efa4c8b95ef4b1926d60a4489b381e3a94ecbc
@@ -7,7 +6,7 @@ appearance:
   width: 1024
   height: 768
 window:
-  GPUAccelerate: true
+  GPUAccelerate: false
   webviewUserData: ""
 linux:
   windowTransparent: false
@@ -19,7 +18,7 @@ staticResource:
   - .jpeg
   - .png
   - .gif
-  - .bmp
+  - .svg
   deleteCache: true
 log:
   enable: true
@@ -31,4 +30,11 @@ core:
   maxTask: 5
   timeout: 120
   autoSave: false
-  autoSaveInterval: 60
+  autoSaveInterval: 30
+epubSaving:
+  textDir: auto
+  layout: pre-paginated
+  flow: auto
+  spread: auto
+  orientation: auto
+  proportions: width=1200, height=600

@@ -70,6 +70,7 @@ func (s *Stack) Push(value interface{}) {
 	s.length++
 }
 
+// Create a new proseMirror node
 func NewPMNode() *PMNode {
 	return &PMNode{
 		Type:    "",
@@ -78,16 +79,19 @@ func NewPMNode() *PMNode {
 	}
 }
 
+// Create a new parser context
 func NewParserContext() *ParserContext {
 	return &ParserContext{
 		parsers: make(map[string]TagParser),
 	}
 }
 
+// Register a tag parser
 func (c *ParserContext) Register(tag string, parser TagParser) {
 	c.parsers[tag] = parser
 }
 
+// call the parser to parse the node
 func (c *ParserContext) Parse(node *AstElement) *PMNode {
 	if parser, ok := c.parsers[node.Tag]; ok {
 		return parser.Parse(node)
@@ -95,6 +99,10 @@ func (c *ParserContext) Parse(node *AstElement) *PMNode {
 	return nil
 }
 
+// Convert ast syntax tree to proseMirror scheme
+//
+// Traverse the ast tree using a depth-first algorithm, and when the tag matches
+// a predefined rule, call its parser to parse it
 func ConvertIntoProseMirrorScheme(root *AstElement, Parsers map[string]TagParser) *PMNode {
 	doc := &PMNode{
 		Type:    "doc",

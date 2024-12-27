@@ -19,6 +19,7 @@ import (
 	"github.com/hughie21/NovelMaker/lib/utils"
 )
 
+// The struct that store the content of each file
 type XMLData struct {
 	Container []byte
 	Package   []byte
@@ -26,14 +27,22 @@ type XMLData struct {
 	Text      []byte
 }
 
+// The epub writer struct
 type Writer struct {
-	JsonData   JsonData
-	tempDir    string
-	XMLData    XMLData
-	Media      []File
+	// The JsonData struct that store the content of the epub
+	JsonData JsonData
+
+	// The temp fold that store the content of the epub
+	tempDir string
+	// the byte content of the epub
+	XMLData XMLData
+	// the media content of the epub
+	Media []File
+	// the output path of the epub
 	targetPath string
 }
 
+// Convert the J_nav struct to NavLi struct
 func convertNav(point J_nav, depth int) NavLi {
 	navLi := NavLi{
 		A: NavA{
@@ -56,12 +65,14 @@ func convertNav(point J_nav, depth int) NavLi {
 	return navLi
 }
 
+// Write the byte content to the file
 func WriteToFile(content []byte, FilePath string) {
 	fs, _ := os.OpenFile(FilePath, os.O_RDWR|os.O_CREATE, 0766)
 	fs.Write(content)
 	fs.Close()
 }
 
+// constructor of the Writer struct
 func NewWriter(targetPath string, tempDir string, jsonData *JsonData) *Writer {
 	_, name := filepath.Split(targetPath)
 	r := &Writer{
@@ -72,6 +83,7 @@ func NewWriter(targetPath string, tempDir string, jsonData *JsonData) *Writer {
 	return r
 }
 
+// form the container.xml file
 func (w *Writer) formContainer() error {
 	container := Container{
 		Xmls:    "urn:oasis:names:tc:opendocument:xmlns:container",
@@ -95,6 +107,7 @@ func (w *Writer) formPackage() error {
 	content := PackageNode{
 		Xmlns:      "http://www.idpf.org/2007/opf",
 		DC:         "http://purl.org/dc/elements/1.1/",
+		Dir:        w.JsonData.MetaData.Meta.TextDir,
 		DCTerm:     "http://purl.org/dc/terms/",
 		Identifier: "BookId",
 		Version:    "3.0",
@@ -140,17 +153,31 @@ func (w *Writer) formPackage() error {
 			},
 		},
 	}
+	// if the layout is reflowable, add the flow property
+	// if the layout is pre-paginated, add the viewport property
+	// but the pre-paginated and the flow property can't exist at the same time
+	layout := w.JsonData.MetaData.Meta.Layout
+	if layout == "reflowable" {
+		content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+			Property: "rendition:flow",
+			Value:    w.JsonData.MetaData.Meta.Flow,
+		})
+	}
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
 		Property: "dcterms:modified",
 		Value:    time.Now().Format("2006-01-02T15:04:05Z"),
 	})
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
-		Property: "rendition:flow",
-		Value:    "auto",
+		Property: "rendition:layout",
+		Value:    layout,
+	})
+	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
+		Property: "rendition:spread",
+		Value:    w.JsonData.MetaData.Meta.Spread,
 	})
 	content.Metadata.Metas = append(content.Metadata.Metas, MetaNode{
 		Property: "rendition:orientation",
-		Value:    "auto",
+		Value:    w.JsonData.MetaData.Meta.Orientation,
 	})
 	for _, creator := range w.JsonData.MetaData.Creator {
 		content.Metadata.Creators = append(content.Metadata.Creators, DCCreator{
@@ -192,6 +219,7 @@ func (w *Writer) formPackage() error {
 	return nil
 }
 
+// form the nav.xhtml file
 func (w *Writer) formNav() error {
 	root := `<?xml version="1.0" encoding="utf-8"?>
 	<!DOCTYPE html>
@@ -231,8 +259,13 @@ func (w *Writer) formNav() error {
 	return nil
 }
 
+// form the text.xhtml file
 func (w *Writer) formText() error {
+	// replace the image path to the local path
 	imagePathRegex := regexp.MustCompile(`http(s)?://127.0.0.1:(\d+)/[0-9a-z]+/`)
+	// remove illegal characters
+	illegalCharRegex := regexp.MustCompile(`&nbsp;|&ensp;|&emsp;|&thinsp;|&zwnj;|&zwj;|&lrm;|&rlm;`)
+	w.JsonData.Content = illegalCharRegex.ReplaceAllString(w.JsonData.Content, " ")
 	text := XhtmlHTML{
 		Xmlns: "http://www.w3.org/1999/xhtml",
 		Lang:  "en",
@@ -250,11 +283,22 @@ func (w *Writer) formText() error {
 			Section: imagePathRegex.ReplaceAllString(w.JsonData.Content, "../Images/"),
 		},
 	}
+	if w.JsonData.MetaData.Meta.Layout == "pre-paginated" {
+		viewport := w.JsonData.MetaData.Meta.Proportions
+		if viewport == "auto" {
+			viewport = "width=device-width, height=device-height"
+		}
+		text.Header.Meta = append(text.Header.Meta, MetaNode{
+			Name:    "viewport",
+			Content: viewport,
+		})
+	}
 	b, _ := xml.MarshalIndent(text, "", "  ")
 	w.XMLData.Text = b
 	return nil
 }
 
+// move the images of the imagehost back to the epub
 func (w *Writer) loadMedia() error {
 	for _, item := range w.JsonData.Resources {
 		if utils.Contains(Image, item.Type) {
@@ -268,6 +312,7 @@ func (w *Writer) loadMedia() error {
 	return nil
 }
 
+// form all the required files to the temp fold
 func (w *Writer) toTemp() error {
 	FoldName := w.tempDir
 	var err error
@@ -312,6 +357,7 @@ func (w *Writer) toTemp() error {
 	return nil
 }
 
+// write the content
 func (w *Writer) Write() error {
 	err := w.formPackage()
 	if err != nil {

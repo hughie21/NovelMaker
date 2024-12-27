@@ -24,6 +24,13 @@ const (
 	DebugLevel
 )
 
+// Message interface
+//
+// The Message interface is used to define the methods that must be implemented by the message types.
+//
+// The String() method returns the message as a string.
+//
+// The getLevel() method returns the log level of the message.
 type Message interface {
 	String() string
 	getLevel() Level

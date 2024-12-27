@@ -39,6 +39,7 @@ const handleOpenAbout = () => {
                 </button>
                 {{$t('toolBar.help.about')}}
             </span>
+            <div class="division-border"></div>
         </div>
     </div>
 </template>

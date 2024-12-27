@@ -34,15 +34,24 @@ var (
 *
  */
 
+// the file structure that contains the name, data and type of the file
 type Reader struct {
+	// the json data of the epub file
 	JsonData
-	Package      *etree.Document
-	Images       []File
-	tempDir      string
-	targetPath   string
+
+	// the etree document of the text content
+	Package *etree.Document
+	// Images in the epub file
+	Images []File
+	// the temporary directory of the epub file
+	tempDir string
+	// the input path of the epub file
+	targetPath string
+	// imagehost path
 	resourcePath string
 }
 
+// constructor method for the Reader strcut
 func NewReader(targetPath string, tempDir string) (*Reader, error) {
 	if !utils.PathExists(targetPath) {
 		return nil, errors.New("File does not exist")
@@ -60,6 +69,9 @@ func NewReader(targetPath string, tempDir string) (*Reader, error) {
 	return r, nil
 }
 
+// Check if the file is a valid epub file
+// META-INF and mimetype must exist
+// mimetype must be application/epub+zip
 func (r *Reader) checkEpub() error {
 	if !utils.PathExists(filepath.Join(r.tempDir, "META-INF")) {
 		return errors.New("META-INF not found")
@@ -109,6 +121,7 @@ func (r *Reader) Read() error {
 	return nil
 }
 
+// Move the images in the epub temporary file to imagehost
 func (r *Reader) moveImage() error {
 	if !utils.PathExists(r.resourcePath) {
 		err := os.Mkdir(r.resourcePath, os.ModePerm)
@@ -127,10 +140,14 @@ func (r *Reader) moveImage() error {
 	return nil
 }
 
+// Pharse the epub xhtml file based
+// on the parsers that defined on lib/html
+// or the extra parsers that passed in
 func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	// Pharse package document
 	packageDoc := r.Package
 
+	// Pharse metadata
 	idElem := packageDoc.FindElement("//dc:identifier")
 	if idElem != nil {
 		r.MetaData.Identifier = idElem.Text()
@@ -178,6 +195,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 		r.MetaData.Subject = append(r.MetaData.Subject, TagElement.Text())
 	}
 
+	// Pharse cover image
 	metaPath, err := etree.CompilePath("//meta[@name='cover']")
 	if err != nil {
 		return err
@@ -201,6 +219,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 
 	manifestTextId := make(map[string]string)
 
+	// Pharse resources that are images and text
 	for _, item := range packageDoc.FindElements("//manifest/item") {
 		itemId := item.SelectAttrValue("id", "")
 		itemHref := item.SelectAttrValue("href", "")
@@ -230,6 +249,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 		}
 	}
 
+	// change the content of the epub to proseMirror scheme
 	textNode := html.PMNode{
 		Type:    "doc",
 		Content: []*html.PMNode{},
@@ -244,7 +264,8 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 			if err != nil {
 				return err
 			}
-			currentNode := html.ConvertIntoProseMirrorScheme(ast, utils.CombineMap(extension, map[string]html.TagParser{
+			parsers := make(map[string]html.TagParser)
+			parsers = utils.CombineMap(extension, map[string]html.TagParser{
 				"img": &html.ImageParser{
 					FoldName: utils.GenerateHash([]byte(r.targetPath)),
 				},
@@ -269,7 +290,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 				"p":    &html.TextParser{},
 				"span": &html.TextParser{},
 				"table": &html.TableParser{
-					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+					Parsers: &parsers,
 				},
 				"image": &html.ImageParser{
 					FoldName: utils.GenerateHash([]byte(r.targetPath)),
@@ -282,7 +303,8 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 					Type: "bulletList",
 				},
 				"code": &html.CodeBlockParser{},
-			}))
+			})
+			currentNode := html.ConvertIntoProseMirrorScheme(ast, parsers)
 			textNode.Content = append(textNode.Content, currentNode.Content...)
 		}
 	}
@@ -298,11 +320,13 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	return nil
 }
 
+// Close the reader and remove the temporary directory
 func (r *Reader) Close() error {
 	currentPath := filepath.Join(r.tempDir, "..")
 	return os.RemoveAll(currentPath)
 }
 
+// Dezip the epub file to the temporary directory
 func Dezip(path string, tempDir string) error {
 	archive, err := zip.OpenReader(path)
 	if err != nil {

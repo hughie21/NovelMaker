@@ -7,15 +7,116 @@
 @Description: This is the dialog allow user to set up the config.
 */
 
-import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting } from '../../assets/js/globals';
+import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting, epubLayout } from '../../assets/js/globals';
 import { TimerContext } from '../../assets/js/utils';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElNotification } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus';
 import { GetConfig, SetConfig } from '../../../wailsjs/go/core/App';
 import { languages as langs } from '../../assets/js/i18n';
 
 const { t, locale } = useI18n();
+
+const textDirect = computed(()=>[
+    {
+        value: 'ltr',
+        label: t('dialog.setting.textDirec.ltr')
+    },
+    {
+        value: 'rtl',
+        label: t('dialog.setting.textDirec.rtl')
+    },
+    {
+        value: 'auto',
+        label: t('dialog.setting.textDirec.auto')
+    }
+])
+const layout = computed(()=>[
+    {
+        value: "reflowable",
+        label: t('dialog.setting.layout.reflow')
+    },
+    {
+        value: "pre-paginated",
+        label: t('dialog.setting.layout.prePaginated')
+    }
+])
+const flow = computed(()=>[
+    {
+        value: "paginated",
+        label: t('dialog.setting.flow.paginated')
+    },
+    {
+        value: "scrolled-continuous",
+        label: t('dialog.setting.flow.scrolledContinuous')
+    },
+    {
+        value: "scrolled-doc",
+        label: t('dialog.setting.flow.scrolledDoc')
+    },
+    {
+        value: "auto",
+        label: t('dialog.setting.flow.auto')
+    }
+])
+const spread = computed(()=>[
+    {
+        value: "auto",
+        label: t('dialog.setting.spread.auto')
+    },
+    {
+        value: "landscape",
+        label: t('dialog.setting.spread.landscape')
+    },
+    {
+        value: "portrait",
+        label: t('dialog.setting.spread.portrait')
+    },
+    {
+        value: "both",
+        label: t('dialog.setting.spread.both')
+    },
+    {
+        value: "none",
+        label: t('dialog.setting.spread.none')
+    }
+])
+const orientation = computed(()=>[
+    {
+        value: "auto",
+        label: t('dialog.setting.orientation.auto')
+    },
+    {
+        value: "landscape",
+        label: t('dialog.setting.orientation.landscape')
+    },
+    {
+        value: "portrait",
+        label: t('dialog.setting.orientation.portrait')
+    }
+])
+const proportions = computed(()=>[
+    {
+        value: "width=1200, height=600",
+        label: "2:1"
+    },
+    {
+        value: "width=1200, height=800",
+        label: "3:2"
+    },
+    {
+        value: "width=1200, height=900",
+        label: "4:3"
+    },
+    {
+        value: "width=1200, height=1200",
+        label: "1:1"
+    },
+    {
+        value: "width=device-width, height=device-height",
+        label: t('dialog.setting.proportions.auto')
+    }
+])
 
 // if the setting is changed
 const changeFlag = ref(false);
@@ -62,6 +163,36 @@ const initConfig = async () => {
             return res.Data;
         }
     });
+    let textDir = await GetConfig("Epub", "TextDir").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    let layout = await GetConfig("Epub", "Layout").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    let flow = await GetConfig("Epub", "Flow").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    let spread = await GetConfig("Epub", "Spread").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    let orientation = await GetConfig("Epub", "Orientation").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
+    let proportions = await GetConfig("Epub", "Proportions").then(res => {
+        if(handleError(res)){
+            return res.Data;
+        }
+    });
     autoSave.value.isAutoSave = await GetConfig("Core", "AutoSave").then(res => {
         if(handleError(res)){
             return res.Data == "true" ? true : false;
@@ -74,6 +205,12 @@ const initConfig = async () => {
     });
     generalSetting.windowSize = size;
     generalSetting.resPort = parseInt(port, 10);
+    epubLayout.textDirection = textDir;
+    epubLayout.layout = layout;
+    epubLayout.flow = flow;
+    epubLayout.spread = spread;
+    epubLayout.orientation = orientation;
+    epubLayout.proportions = proportions;
     windowSetting.GPU = windowGPU == "true" ? true : false;
     linuxSetting.GPUPolicy = linuxGPU;
     timer.Start();
@@ -136,6 +273,12 @@ const handleSaveConfig = async () => {
     flag = await saveConfig("Linux", "GPUStrategy", linuxSetting.GPUPolicy);
     flag = await saveConfig("Core", "AutoSaveInterval", autoSave.value.autoSaveTime.toString());
     flag = await saveConfig("Core", "AutoSave", autoSave.value.isAutoSave === true ? "true" : "false");
+    flag = await saveConfig("Epub", "TextDir", epubLayout.textDirection);
+    flag = await saveConfig("Epub", "Layout", epubLayout.layout);
+    flag = await saveConfig("Epub", "Flow", epubLayout.flow);
+    flag = await saveConfig("Epub", "Spread", epubLayout.spread);
+    flag = await saveConfig("Epub", "Orientation", epubLayout.orientation);
+    flag = await saveConfig("Epub", "Proportions", epubLayout.proportions);
     if (flag && changeFlag.value) {
         ElNotification({
             title: t('message.saveSuccess'),
@@ -189,7 +332,7 @@ const handleSaveConfig = async () => {
                     />
                     </el-select>
                 </el-form-item>
-                <el-form-item :label="t('dialog.setting.windowSize')">
+                <el-form-item :label="t('dialog.setting.windowSize')" prop="windowSize">
                     <el-select
                     @change="changeFlag = true"
                     v-model="generalSetting.windowSize"
@@ -204,11 +347,10 @@ const handleSaveConfig = async () => {
                     </el-select>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.autoSave')">
-                    <el-switch @change="changeFlag = true" v-model="autoSave.isAutoSave"></el-switch>
+                    <el-switch v-model="autoSave.isAutoSave"></el-switch>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.autoSaveTime')">
                     <el-select
-                    @change="changeFlag = true"
                     v-model="autoSave.autoSaveTime"
                     style="width: 240px"
                     :disabled="!autoSave.isAutoSave"
@@ -222,7 +364,100 @@ const handleSaveConfig = async () => {
                     </el-select>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.resPort')">
-                    <el-input v-model="generalSetting.resPort" style="width: 240px"></el-input>
+                    <el-input @change="changeFlag = true" v-model="generalSetting.resPort" style="width: 240px"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-collapse-item>
+        <el-collapse-item :title="t('dialog.setting.epubSaving')" name="4">
+            <el-form :model="epubLayout"
+            label-position="left"
+            label-width="auto"
+            style="max-width: 400px">
+                <el-form-item :label="t('dialog.setting.textDirec.title')">
+                    <el-select
+                        v-model="epubLayout.textDirection"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in textDirect"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.layout.title')">
+                    <el-select
+                        v-model="epubLayout.layout"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in layout"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.flow.title')">
+                    <el-select
+                        v-model="epubLayout.flow"
+                        :disabled="epubLayout.layout !== 'reflowable'"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in flow"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.spread.title')">
+                    <el-select
+                        v-model="epubLayout.spread"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in spread"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.orientation.title')">
+                    <el-select
+                        v-model="epubLayout.orientation"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in orientation"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
+                </el-form-item>
+                <el-form-item :label="t('dialog.setting.proportions.title')">
+                    <el-select
+                        v-model="epubLayout.proportions"
+                        :disabled="epubLayout.layout !== 'pre-paginated'"
+                        placeholder="Select"
+                        style="width: 240px"
+                    >
+                        <el-option
+                            v-for="item in proportions"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        />
+                    </el-select>
                 </el-form-item>
             </el-form>
         </el-collapse-item>
