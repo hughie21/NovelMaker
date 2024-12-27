@@ -182,7 +182,7 @@ onMounted(()=>{
 }
 
 #header-container li {
-    color: var(--w-e-textarea-color);
+    color: var(--el-text-color-regular);
     margin: 10px 0;
     cursor: pointer;
 }
