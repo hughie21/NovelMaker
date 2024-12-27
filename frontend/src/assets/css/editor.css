@@ -23,36 +23,46 @@
 .tiptap h1 {
     font-size: 2.6rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap h2 {
     font-size: 2.2rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap h3 {
     font-size: 1.85rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap h4 {
     font-size: 1.55rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap h5 {
     font-size: 1.32rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap h6 {
     font-size: 1.2rem;
     margin: 1.5rem 0 1rem;
+    color: var(--el-text-color-primary);
 }
 
 .tiptap ul,ol {
     padding: 0 1rem;
     margin: 1.25rem 1rem 1.25rem 0.4rem;
+}
+
+.tiptap ul,ol li::marker {
+    color: var(--el-text-color-regular);
 }
 
 .tiptap ul,ol li p {
