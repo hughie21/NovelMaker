@@ -40,9 +40,9 @@ const checkEmail = (text) => {
 const handleInsertLink = () => {
     const E = editorRef.value;
     var urlText = '';
+    var httpReg = /http(s)?:\/\//g
     switch (prefix.value) {
         case "0":
-            let httpReg = /http(s)?:\/\//g
             if(httpReg.test(url.value)) {
                 urlText = url.value
             } else {

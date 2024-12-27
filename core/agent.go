@@ -15,8 +15,6 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
-
-	"github.com/hughie21/NovelMaker/lib/utils"
 )
 
 const (
@@ -63,7 +61,7 @@ func NewAgent(size int, timeout time.Duration) *Agent {
 	agt := Agent{
 		plugins: make(map[string]Pluginer),
 	}
-	tmpDir := filepath.Join(utils.GetCurrentAbPath(), "tmp")
+	tmpDir := filepath.Join(currentPath, "tmp")
 	reader := NewEpubReader(tmpDir)
 	writer := NewEpubWriter(tmpDir)
 

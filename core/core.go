@@ -7,6 +7,7 @@ package core
 import (
 	"embed"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -22,9 +23,10 @@ import (
 )
 
 var (
-	core   *Core
-	once   *sync.Once
-	logger *logging.Log
+	core        *Core
+	once        *sync.Once
+	logger      *logging.Log
+	currentPath string
 )
 
 type Core struct {
@@ -48,7 +50,17 @@ func NewCore() *Core {
 }
 
 func (c *Core) Init(assets embed.FS, app *App) *options.App {
-	c.execPath = utils.GetCurrentAbPath()
+	// The args is the path of the epub file which is used to open the file directly.
+	ArgsLength := len(os.Args)
+	if ArgsLength > 1 {
+		c.Args = os.Args[1]
+		c.execPath = filepath.Dir(os.Args[0])
+		currentPath = c.execPath
+	} else {
+		c.Args = ""
+		c.execPath = utils.GetCurrentAbPath()
+		currentPath = c.execPath
+	}
 	c.cm = config.NewConfigManager(c.execPath)
 	err := c.cm.LoadConfig()
 	if err != nil {
@@ -57,13 +69,6 @@ func (c *Core) Init(assets embed.FS, app *App) *options.App {
 	c.config = c.cm.GetConfig()
 	c.agt = NewAgent(c.config.Core.MaxTask, time.Duration(c.config.Core.Timeout))
 
-	// The args is the path of the epub file which is used to open the file directly.
-	ArgsLength := len(os.Args)
-	if ArgsLength > 1 {
-		c.Args = os.Args[1]
-	} else {
-		c.Args = ""
-	}
 	logLevel := map[int]logging.Level{
 		1: logging.InfoLevel,
 		2: logging.WarnLevel,
