@@ -1,6 +1,6 @@
-version: 1.0.0.20241215_beta
-buildTime: 2024/12/15
-commit: 12efa4c8b95ef4b1926d60a4489b381e3a94ecbc
+version: 1.0.0.20241227_beta
+buildTime: 2024/12/27
+commit: 6d30a331c3d9afcddfc56988606e0d805775e477
 appearance:
   defaultOpen: maximised
   width: 1024
