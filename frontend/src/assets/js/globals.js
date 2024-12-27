@@ -122,7 +122,7 @@ const windowSetting = reactive({
 const linuxSetting = reactive({
     GPUPolicy: "auto"
 })
-const epubSaving = reactive({
+const epubLayout = reactive({
     textDirection: "",
     layout: "",
     flow: "",
@@ -156,7 +156,7 @@ export {
     isBold,
     isItalic,
     isStrike,
-    epubSaving
+    epubLayout
 }
 
 export default{}

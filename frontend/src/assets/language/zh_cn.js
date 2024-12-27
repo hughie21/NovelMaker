@@ -152,7 +152,7 @@ export default{
             always: "常驻",
             autoSave: "自动保存",
             autoSaveTime: "自动保存间隔",
-            epubSaving: "EPUB保存配置",
+            epubSaving: "EPUB版面配置",
             textDirec: {
                 title: "文本方向",
                 ltr: "从左到右",

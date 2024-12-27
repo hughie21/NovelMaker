@@ -264,7 +264,8 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 			if err != nil {
 				return err
 			}
-			currentNode := html.ConvertIntoProseMirrorScheme(ast, utils.CombineMap(extension, map[string]html.TagParser{
+			parsers := make(map[string]html.TagParser)
+			parsers = utils.CombineMap(extension, map[string]html.TagParser{
 				"img": &html.ImageParser{
 					FoldName: utils.GenerateHash([]byte(r.targetPath)),
 				},
@@ -289,7 +290,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 				"p":    &html.TextParser{},
 				"span": &html.TextParser{},
 				"table": &html.TableParser{
-					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+					Parsers: &parsers,
 				},
 				"image": &html.ImageParser{
 					FoldName: utils.GenerateHash([]byte(r.targetPath)),
@@ -302,7 +303,8 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 					Type: "bulletList",
 				},
 				"code": &html.CodeBlockParser{},
-			}))
+			})
+			currentNode := html.ConvertIntoProseMirrorScheme(ast, parsers)
 			textNode.Content = append(textNode.Content, currentNode.Content...)
 		}
 	}

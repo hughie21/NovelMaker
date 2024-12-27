@@ -6,8 +6,7 @@
 @LastEditTime: 2024-10-10
 @Description: This is the dialog allow user to look up or replace.
 */
-
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { lookupSession,searchKey, replaceKey, resultCount, currentPointer, searchOption} from "../../assets/js/lookup"
 import { useI18n } from 'vue-i18n';
 import { visio, editorRef } from '../../assets/js/globals.js';
@@ -47,27 +46,17 @@ const handleLookupClose = () => {
 }
 
 const handleReplace = () => {
-    if(replaceKey.value == "") {
-        return
-    }
     const E = editorRef.value;
     lookupSession.replace(E, replaceKey.value)
 }
 
-const handleReplaceAll = () => {
-    if(replaceKey.value == "") {
-        return
-    }
+const handleReplaceAll = async () => {
     const E = editorRef.value;
-    while(true) {
-        if(lookupSession.replace(E, replaceKey.value)) {
-            break;
-        }
-    }
+    await lookupSession.replaceAll(E, replaceKey.value)
 }
 
 const handleOptionChange = (option) => {
-    searchOption[option] = !searchOption[option];
+    searchOption.value[option] = !searchOption.value[option];
     lookupSession.lookup(editorRef.value, searchKey.value);
 }
 
@@ -75,6 +64,11 @@ setTimeout(()=>{
     document.getElementById('lookupBar').addEventListener('keydown', (e)=>{
         if(e.key == "Enter") {
             handleNextResult();
+        }
+    })
+    document.getElementById('replaceBar').addEventListener('keydown', (e)=>{
+        if(e.key == "Enter") {
+            handleReplace();
         }
     })
 }, 1000)
@@ -101,14 +95,14 @@ setTimeout(()=>{
                 <el-input style="width: 180px" id="lookupBar" size="small" v-model="searchKey" @input="handleLookup" :placeholder="t('dialog.search.lookUp')" />
                 <div class="bar-inset">
                     <el-tooltip :content="t('dialog.search.caseSensitive')"  placement="bottom" effect='dark'>
-                        <button :class="'search-bar-button ' + (searchOption.caseSensitive ? 'search-bar-button-active' : '')" @click="searchOption.caseSensitive = !searchOption.caseSensitive; lookupSession.lookup(editorRef ,searchKey)">
+                        <button :class="'search-bar-button ' + (searchOption.caseSensitive ? 'search-bar-button-active' : '')" @click="handleOptionChange('caseSensitive')">
                             <i class="el-icon" style="width: 1.4em">
                                 <svg t="1727515146209" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4756" width="200" height="200"><path d="M240.8704 250.31168H338.9952l217.6 552.41216H464.01024l-53.01248-142.35648H168.07424l-53.01248 142.35648H23.2704l217.6-552.41216z m-46.68416 340.42368h190.69952l-93.37344-249.9072h-3.16416l-94.1568 249.9072zM813.66016 391.89504c60.13952 0 104.448 14.69952 132.93568 44.10368 24.5248 25.52832 37.18656 62.6688 37.18656 111.4112v255.31392H906.24v-56.4736a169.58976 169.58976 0 0 1-59.3408 47.96416c-26.9056 12.38016-58.55744 19.34336-94.95552 19.34336-42.73152 0-75.96544-10.83392-99.70176-31.72352-26.112-20.8896-38.77376-47.96928-38.77376-81.23392 0-44.8768 18.2016-79.6928 54.59968-103.68 33.2288-23.20896 80.70656-34.816 140.84608-36.36224l91.78624-2.31936v-16.24576c0-55.7056-30.85824-83.5584-92.57984-83.5584-26.112 0-47.47264 4.63872-63.29856 13.9264-18.9952 10.8288-30.86336 27.07968-35.6096 49.5104l-83.08224-6.9632c8.704-43.32032 30.85824-75.81696 65.67424-95.93344 30.06976-18.57024 71.2192-27.07968 121.856-27.07968z m87.04 225.92l-86.2464 2.31936c-76.75392 1.54624-114.7392 27.8528-114.7392 77.36832 0 15.47264 6.33344 27.8528 19.78368 37.9136 12.66176 10.05568 30.06976 15.47264 51.43552 15.47264 35.60448 0 65.67424-10.83392 90.99264-31.72352 25.32352-20.8896 38.77376-47.19616 38.77376-78.14144v-23.20896z" p-id="4757"></path></svg>
                             </i>
                         </button>
                     </el-tooltip>
                     <el-tooltip :content="t('dialog.search.wholeWord')" placement="bottom" effect='dark'>
-                        <button :class="'search-bar-button ' + (searchOption.wholeWord ? 'search-bar-button-active' : '')" @click="searchOption.wholeWord = !searchOption.wholeWord; lookupSession.lookup(editorRef, searchKey)">
+                        <button :class="'search-bar-button ' + (searchOption.wholeWord ? 'search-bar-button-active' : '')" @click="handleOptionChange('wholeWord')">
                             <i class="el-icon" style="width: 1.4em">
                                 <svg t="1727534219133" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5408" width="200" height="200"><path d="M870.4 814.08H153.6a128 128 0 0 1-128-128V500.736a25.6 25.6 0 0 1 51.2 0v185.344A76.8 76.8 0 0 0 153.6 762.88h716.8a76.8 76.8 0 0 0 76.8-76.8V500.736a25.6 25.6 0 0 1 51.2 0v185.344a128 128 0 0 1-128 128z" p-id="5409"></path><path d="M466.944 625.152H409.6v-36.352a102.4 102.4 0 0 1-91.648 43.52 127.488 127.488 0 0 1-102.4-45.056 166.912 166.912 0 0 1-36.864-111.616 175.616 175.616 0 0 1 40.448-120.32 125.952 125.952 0 0 1 98.816-44.544A128.512 128.512 0 0 1 409.6 339.456v-22.528h57.344z m-196.608-68.608a70.656 70.656 0 0 0 58.368 34.304 81.408 81.408 0 0 0 57.856-22.528 51.2 51.2 0 0 0 18.944-37.888V406.528a51.2 51.2 0 0 0-19.968-37.888 81.408 81.408 0 0 0-55.296-16.896 71.168 71.168 0 0 0-58.88 34.816 144.384 144.384 0 0 0-24.576 84.48 148.48 148.48 0 0 0 23.552 85.504zM614.4 348.672a128.512 128.512 0 0 1 97.28-33.792 118.272 118.272 0 0 1 90.624 43.52 166.4 166.4 0 0 1 40.448 116.736 168.448 168.448 0 0 1-40.96 119.296 120.32 120.32 0 0 1-91.136 39.424 153.6 153.6 0 0 1-102.4-32.768v27.136h-61.44V209.92H614.4v138.752z m0 70.656a422.4 422.4 0 0 0 0 113.664 67.072 67.072 0 0 0 17.408 36.352 85.504 85.504 0 0 0 64.512 23.04 71.68 71.68 0 0 0 59.392-35.328 145.92 145.92 0 0 0 22.528-82.944 132.608 132.608 0 0 0-24.576-83.968A74.752 74.752 0 0 0 690.688 358.4a77.824 77.824 0 0 0-58.88 23.04 69.632 69.632 0 0 0-17.408 37.888z" p-id="5410"></path></svg>
                             </i>
@@ -144,7 +138,7 @@ setTimeout(()=>{
                 </div>
             </div>
             <div class="replace-bar-input" v-show="switchRef">
-                <el-input style="width: 180px" size="small" v-model="replaceKey" :placeholder="t('dialog.search.replace')" />
+                <el-input style="width: 180px" size="small" v-model="replaceKey" id="replaceBar" :placeholder="t('dialog.search.replace')" />
                 <div class="replace-options">
                     <el-tooltip :content="t('dialog.search.replace')" placement="bottom" effect='dark'>
                         <button class="search-bar-button" @click="handleReplace">

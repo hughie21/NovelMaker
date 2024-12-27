@@ -30,7 +30,7 @@ core:
   maxTask: 5
   timeout: 120
   autoSave: false
-  autoSaveInterval: 60
+  autoSaveInterval: 30
 epubSaving:
   textDir: auto
   layout: pre-paginated

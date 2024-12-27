@@ -151,7 +151,7 @@ export default{
             always: "Always",
             autoSave: "Auto Save",
             autoSaveTime: "Auto Save Time",
-            epubSaving: "EPUB Save Config",
+            epubSaving: "EPUB Layout Config",
             textDirec: {
                 title: "Text Direction",
                 ltr: "Left to Right",

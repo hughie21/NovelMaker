@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading, ElNotification } from 'element-plus'
 import { ref, reactive, inject, onMounted } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting, epubSaving } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting, epubLayout } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, TimerContext, setImage, normalizeHTML } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -26,7 +26,7 @@ const timer = new TimerContext(t);
 onMounted(()=> {
     // start the timer which will be used to save the file automatically
     timer.Start();
-    console.log(timer.State())
+    timer.State()
 })
  
 const openFilePicker = () => {
@@ -179,7 +179,7 @@ const saveFilePicker = async (saveAs) => {
     tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>"); // Handling empty paragraphs
     tempData.content = tempData.content.replaceAll(" ", "");
     tempData.content = tempData.content.replaceAll('"', "'");
-    tempData.metadata.meta = JSON.parse(JSON.stringify(epubSaving));
+    tempData.metadata.meta = JSON.parse(JSON.stringify(epubLayout));
     let name = bookInfo.metadata.title;
 
     // If the user has already opened the file, it will be saved directly 

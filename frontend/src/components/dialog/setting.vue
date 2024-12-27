@@ -7,7 +7,7 @@
 @Description: This is the dialog allow user to set up the config.
 */
 
-import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting, epubSaving } from '../../assets/js/globals';
+import { visio, editTheme, editLang, autoSave, generalSetting, linuxSetting, windowSetting, epubLayout } from '../../assets/js/globals';
 import { TimerContext } from '../../assets/js/utils';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -205,12 +205,12 @@ const initConfig = async () => {
     });
     generalSetting.windowSize = size;
     generalSetting.resPort = parseInt(port, 10);
-    epubSaving.textDirection = textDir;
-    epubSaving.layout = layout;
-    epubSaving.flow = flow;
-    epubSaving.spread = spread;
-    epubSaving.orientation = orientation;
-    epubSaving.proportions = proportions;
+    epubLayout.textDirection = textDir;
+    epubLayout.layout = layout;
+    epubLayout.flow = flow;
+    epubLayout.spread = spread;
+    epubLayout.orientation = orientation;
+    epubLayout.proportions = proportions;
     windowSetting.GPU = windowGPU == "true" ? true : false;
     linuxSetting.GPUPolicy = linuxGPU;
     timer.Start();
@@ -273,12 +273,12 @@ const handleSaveConfig = async () => {
     flag = await saveConfig("Linux", "GPUStrategy", linuxSetting.GPUPolicy);
     flag = await saveConfig("Core", "AutoSaveInterval", autoSave.value.autoSaveTime.toString());
     flag = await saveConfig("Core", "AutoSave", autoSave.value.isAutoSave === true ? "true" : "false");
-    flag = await saveConfig("Epub", "TextDir", epubSaving.textDirection);
-    flag = await saveConfig("Epub", "Layout", epubSaving.layout);
-    flag = await saveConfig("Epub", "Flow", epubSaving.flow);
-    flag = await saveConfig("Epub", "Spread", epubSaving.spread);
-    flag = await saveConfig("Epub", "Orientation", epubSaving.orientation);
-    flag = await saveConfig("Epub", "Proportions", epubSaving.proportions);
+    flag = await saveConfig("Epub", "TextDir", epubLayout.textDirection);
+    flag = await saveConfig("Epub", "Layout", epubLayout.layout);
+    flag = await saveConfig("Epub", "Flow", epubLayout.flow);
+    flag = await saveConfig("Epub", "Spread", epubLayout.spread);
+    flag = await saveConfig("Epub", "Orientation", epubLayout.orientation);
+    flag = await saveConfig("Epub", "Proportions", epubLayout.proportions);
     if (flag && changeFlag.value) {
         ElNotification({
             title: t('message.saveSuccess'),
@@ -347,11 +347,10 @@ const handleSaveConfig = async () => {
                     </el-select>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.autoSave')">
-                    <el-switch @change="changeFlag = true" v-model="autoSave.isAutoSave"></el-switch>
+                    <el-switch v-model="autoSave.isAutoSave"></el-switch>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.autoSaveTime')">
                     <el-select
-                    @change="changeFlag = true"
                     v-model="autoSave.autoSaveTime"
                     style="width: 240px"
                     :disabled="!autoSave.isAutoSave"
@@ -365,18 +364,18 @@ const handleSaveConfig = async () => {
                     </el-select>
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.resPort')">
-                    <el-input v-model="generalSetting.resPort" style="width: 240px"></el-input>
+                    <el-input @change="changeFlag = true" v-model="generalSetting.resPort" style="width: 240px"></el-input>
                 </el-form-item>
             </el-form>
         </el-collapse-item>
         <el-collapse-item :title="t('dialog.setting.epubSaving')" name="4">
-            <el-form :model="epubSaving"
+            <el-form :model="epubLayout"
             label-position="left"
             label-width="auto"
             style="max-width: 400px">
                 <el-form-item :label="t('dialog.setting.textDirec.title')">
                     <el-select
-                        v-model="epubSaving.textDirection"
+                        v-model="epubLayout.textDirection"
                         placeholder="Select"
                         style="width: 240px"
                     >
@@ -390,7 +389,7 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.layout.title')">
                     <el-select
-                        v-model="epubSaving.layout"
+                        v-model="epubLayout.layout"
                         placeholder="Select"
                         style="width: 240px"
                     >
@@ -404,8 +403,8 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.flow.title')">
                     <el-select
-                        v-model="epubSaving.flow"
-                        :disabled="epubSaving.layout !== 'reflowable'"
+                        v-model="epubLayout.flow"
+                        :disabled="epubLayout.layout !== 'reflowable'"
                         placeholder="Select"
                         style="width: 240px"
                     >
@@ -419,7 +418,7 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.spread.title')">
                     <el-select
-                        v-model="epubSaving.spread"
+                        v-model="epubLayout.spread"
                         placeholder="Select"
                         style="width: 240px"
                     >
@@ -433,7 +432,7 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.orientation.title')">
                     <el-select
-                        v-model="epubSaving.orientation"
+                        v-model="epubLayout.orientation"
                         placeholder="Select"
                         style="width: 240px"
                     >
@@ -447,8 +446,8 @@ const handleSaveConfig = async () => {
                 </el-form-item>
                 <el-form-item :label="t('dialog.setting.proportions.title')">
                     <el-select
-                        v-model="epubSaving.proportions"
-                        :disabled="epubSaving.layout !== 'pre-paginated'"
+                        v-model="epubLayout.proportions"
+                        :disabled="epubLayout.layout !== 'pre-paginated'"
                         placeholder="Select"
                         style="width: 240px"
                     >

@@ -17,7 +17,8 @@ import {
     title,
     currentSave,
     autoSave,
-    fileSuffix
+    fileSuffix,
+    epubLayout
 } from "./globals.js"
 
 
@@ -329,9 +330,10 @@ const setImage = async (book) => {
     }));
 }
 
-
+// Timer context for auto save
 class TimerContext {
     constructor(t) {
+        // singleton
         if (TimerContext.instance) {
             return TimerContext.instance;
         }
@@ -342,15 +344,17 @@ class TimerContext {
         this.currentTime = null;
         TimerContext.instance = this;
     }
-
+    // save the data
     async save() {
         if (autoSave.value.isAutoSave == false && currentSave.value == "") return;
+
         let tempData = JSON.parse(JSON.stringify(bookInfo));
         if(editorRef.value == null) {
             return;
         }
         const editor = editorRef.value;
         tempData.content = editor.getHTML();
+
         await setImage(tempData);
 
         const headers = [];
@@ -360,26 +364,25 @@ class TimerContext {
                 text: h.textContent
             });
         });
+
         const Toc = new TocGenerator(headers);
         const res = Toc.process();
+
         tempData.toc = res;
         tempData.metadata.creator = tempData.metadata.creator.split(',');
         tempData.metadata.contributors = tempData.metadata.contributors.split(',');
-        const doc = new DOMParser().parseFromString(tempData.content, 'text/html');
-        let titles = doc.querySelectorAll("h1, h2, h3, h4, h5");
+
+        const doc = new DOMParser().parseFromString(editor.getHTML(), 'text/html')
+        let titles = doc.querySelectorAll("h1, h2, h3, h4, h5, h6")
         titles.forEach((e, i) => {
-            e.id = "guide_signal_" + (i + 1);
-        });
-        tempData.content = doc.body.innerHTML;
-        const regex_image = /<img(.*?)>/g;
-        const regex_url = /http(s)?:\/\/127.0.0.1:(\d+)/g;
-        tempData.content = normalizeHTML(tempData.content);
+            e.id = "guide_signal_" + (i+1);
+        })
+
+        tempData.content = normalizeHTML(doc.body.innerHTML);
         tempData.content = tempData.content.replaceAll("<p></p>", "<br></br>");
         tempData.content = tempData.content.replaceAll(" ", "");
-        tempData.content = tempData.content.replace(regex_image, (match, p1) => {
-            return `<img${p1.replace(regex_url, "../Images")}/>`;
-        });
         tempData.content = tempData.content.replaceAll('"', "'");
+        tempData.metadata.meta = JSON.parse(JSON.stringify(epubLayout));
 
         FileSave(currentSave.value, (() => {
             return JSON.stringify(tempData);

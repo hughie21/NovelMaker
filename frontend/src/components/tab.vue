@@ -8,7 +8,7 @@
 */
 
 import { ref, onMounted, provide} from 'vue';
-import { bookInfo, editorRef, fonts } from '../assets/js/globals';
+import { fonts } from '../assets/js/globals';
 import { TimerContext } from '../assets/js/utils';
 import fileTab from '../components/tab/file.vue'
 import editTab from '../components/tab/edit.vue'
@@ -86,10 +86,15 @@ const handleChange = () => {
         judgeHeight();
     }, 300)
 }
+
+const test = () => {
+    const timer = TimerContext.getInstance();
+    timer.State()
+}
 </script>
 
 <template>
-<!-- <button id="testing" @click="test" style="display: none;"></button> -->
+<button id="testing" @click="test" style="display: none;"></button>
 <el-tabs type="border-card">
     <el-collapse v-model="activeNames" @change="handleChange">
         <el-collapse-item name="1" id="tab-collapse">

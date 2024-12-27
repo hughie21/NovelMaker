@@ -29,7 +29,7 @@ type (
 		Type string
 	}
 	TableParser struct {
-		FoldName string // compatible to the image
+		Parsers *map[string]TagParser
 	}
 	BrParser        struct{}
 	CodeBlockParser struct{}
@@ -321,6 +321,10 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 		Type:    "table",
 		Content: []*PMNode{},
 	}
+	context := NewParserContext()
+	for tag, parser := range *p.Parsers {
+		context.Register(tag, parser)
+	}
 
 	// parse the table cells
 	sf := func(node *AstElement, parent *PMNode) {
@@ -351,30 +355,27 @@ func (p *TableParser) Parse(node *AstElement) *PMNode {
 					},
 					Content: []*PMNode{},
 				}
-				for _, grandChild := range child.Children {
-					if grandChild.Tag == "p" {
-						paragraph := &PMNode{
-							Type:    "paragraph",
-							Content: []*PMNode{},
-						}
-						FindTextTill(grandChild, paragraph)
-						tableCell.Content = append(tableCell.Content, paragraph)
-					} else if grandChild.Tag == "br" {
-						br := &PMNode{
-							Type: "paragraph",
-						}
-						tableCell.Content = append(tableCell.Content, br)
-					} else if grandChild.Children[0].Tag == "img" { // if the cell contains an image
-						imageParser := &ImageParser{
-							FoldName: p.FoldName,
-						}
-						image := imageParser.Parse(grandChild.Children[0])
-						if image != nil {
-							tableCell.Content = append(tableCell.Content, image)
-						}
+				s := NewStack()
+				s.Push(child)
+				for {
+					if s.Len() == 0 {
+						break
+					}
+					grandChild := s.Pop().(*AstElement)
+					if grandChild.Type == 3 {
+						continue
+					}
+					fmt.Println(grandChild.Tag)
+					res := context.Parse(grandChild)
+					if res != nil {
+						tableCell.Content = append([]*PMNode{res}, tableCell.Content...)
+					}
+					for _, grandGrandChild := range grandChild.Children {
+						s.Push(grandGrandChild)
 					}
 				}
 				parent.Content = append(parent.Content, tableCell)
+				continue
 			}
 		}
 	}
