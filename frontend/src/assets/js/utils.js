@@ -103,6 +103,7 @@ const resetState = async () => {
     bookInfo.content = "";
     bookInfo.resources = [];
     bookInfo.toc = [];
+    initCover();
     const editor = editorRef.value;
     editor.chain().setContent("", true).run();
     change.value = false;
