@@ -33,7 +33,7 @@ core:
   autoSaveInterval: 30
 epubSaving:
   textDir: auto
-  layout: pre-paginated
+  layout: reflowable
   flow: auto
   spread: auto
   orientation: auto

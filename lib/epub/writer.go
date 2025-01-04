@@ -262,7 +262,7 @@ func (w *Writer) formNav() error {
 // form the text.xhtml file
 func (w *Writer) formText() error {
 	// replace the image path to the local path
-	imagePathRegex := regexp.MustCompile(`http(s)?://127.0.0.1:(\d+)/[0-9a-z]+/`)
+	imagePathRegex := regexp.MustCompile(`http(s)?://127.0.0.1:(\d+)/(\\[0-9a-z]+\\|[0-9a-z]+/)`)
 	// remove illegal characters
 	illegalCharRegex := regexp.MustCompile(`&nbsp;|&ensp;|&emsp;|&thinsp;|&zwnj;|&zwj;|&lrm;|&rlm;`)
 	w.JsonData.Content = illegalCharRegex.ReplaceAllString(w.JsonData.Content, " ")

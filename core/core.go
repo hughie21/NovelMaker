@@ -8,6 +8,7 @@ import (
 	"embed"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -53,7 +54,7 @@ func (c *Core) Init(assets embed.FS, app *App) *options.App {
 	// The args is the path of the epub file which is used to open the file directly.
 	ArgsLength := len(os.Args)
 	if ArgsLength > 1 {
-		c.Args = os.Args[1]
+		c.Args = strings.Join(os.Args[1:], " ")
 		c.execPath = filepath.Dir(os.Args[0])
 		currentPath = c.execPath
 	} else {

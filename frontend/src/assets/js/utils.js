@@ -179,6 +179,8 @@ const checkIfOpenFileDirectly = async (t) => {
         bookInfo.metadata = rawData.metadata;
         E.commands.setContent(rawData.content, false);
 
+        updateCatalog();
+
         initCover();
         loading.close();
         change.value = false;
