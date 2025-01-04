@@ -156,7 +156,7 @@ func (a *App) DirectLoading() Message {
 
 	returnData := a.core.agt.Exec("reader", a.core.Args)
 	if returnData.Err() != nil {
-		logger.Error(returnData.Err().Error(), logging.RunFuncName())
+		logger.Error(fmt.Sprintf("%s: %s", returnData.Err().Error(), a.core.Args), logging.RunFuncName())
 		msg.Code = 1
 		msg.Msg = returnData.Err().Error()
 		return msg

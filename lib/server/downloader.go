@@ -7,6 +7,7 @@ package server
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -64,6 +65,13 @@ func (downloader *ImageDownloader) Download(url string) {
 	if err != nil {
 		logger.Error(err.Error(), logging.RunFuncName())
 		downloader.Err = err
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		err = errors.New("status code error: " + resp.Status)
+		downloader.Err = err
+		logger.Error(err.Error(), logging.RunFuncName())
+		return
 	}
 	downloader.Body = resp.Body
 	downloader.generateName()
