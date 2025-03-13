@@ -150,39 +150,39 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	// Pharse metadata
 	idElem := packageDoc.FindElement("//dc:identifier")
 	if idElem != nil {
-		r.MetaData.Identifier = idElem.Text()
+		r.MetaData.Identifier = strings.TrimSpace(idElem.Text())
 	} else {
 		r.MetaData.Identifier = ""
 	}
 
 	titleElem := packageDoc.FindElement("//dc:title")
 	if titleElem != nil {
-		r.MetaData.Title = titleElem.Text()
+		r.MetaData.Title = strings.TrimSpace(titleElem.Text())
 	} else {
 		r.MetaData.Title = ""
 	}
 
 	langElem := packageDoc.FindElement("//dc:language")
 	if langElem != nil {
-		r.MetaData.Language = langElem.Text()
+		r.MetaData.Language = strings.TrimSpace(langElem.Text())
 	} else {
 		r.MetaData.Language = "en"
 	}
 
 	pubElem := packageDoc.FindElement("//dc:publisher")
 	if pubElem != nil {
-		r.MetaData.Publisher = packageDoc.FindElement("//dc:publisher").Text()
+		r.MetaData.Publisher = strings.TrimSpace(packageDoc.FindElement("//dc:publisher").Text())
 	} else {
 		r.MetaData.Publisher = ""
 	}
 
 	CreaterElements := packageDoc.FindElements("//dc:creator")
 	for _, CreaterElement := range CreaterElements {
-		r.MetaData.Creator = append(r.MetaData.Creator, CreaterElement.Text())
+		r.MetaData.Creator = append(r.MetaData.Creator, strings.TrimSpace(CreaterElement.Text()))
 	}
 	ContributorElements := packageDoc.FindElements("//dc:contributor")
 	for _, ContributorElement := range ContributorElements {
-		r.MetaData.Contributers = append(r.MetaData.Contributers, ContributorElement.Text())
+		r.MetaData.Contributers = append(r.MetaData.Contributers, strings.TrimSpace(ContributorElement.Text()))
 	}
 
 	DescriptionELem := packageDoc.FindElement("//dc:description")
@@ -192,7 +192,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 
 	TagElements := packageDoc.FindElements("//dc:subject")
 	for _, TagElement := range TagElements {
-		r.MetaData.Subject = append(r.MetaData.Subject, TagElement.Text())
+		r.MetaData.Subject = append(r.MetaData.Subject, strings.TrimSpace(TagElement.Text()))
 	}
 
 	// Pharse cover image

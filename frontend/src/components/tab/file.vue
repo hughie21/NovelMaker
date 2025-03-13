@@ -50,10 +50,9 @@ const openFilePicker = () => {
 
         try{
             // Escape some special characters into characters that can be parsed into JSON.
-            res.Data.replaceAll('\n', '\\n');
-            res.Data.replaceAll('\r', '\\r');
-            res.Data.replaceAll('\t', '\\t');
-            res.Data.replaceAll('"', "'");
+            res.Data = res.Data.replaceAll('\n', '\\n');
+            res.Data = res.Data.replaceAll('\r', '\\r');
+            res.Data = res.Data.replaceAll('\t', '\\t');
             var rawData = JSON.parse(res.Data);
         }catch(e){
             loading.close();
