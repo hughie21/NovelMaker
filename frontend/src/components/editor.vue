@@ -6,7 +6,7 @@
 @LastEditTime: 2024-11-1
 @Description: This is the editor component, powered by tiptap
 */
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 // import * as constant from '../assets/js/globals';
 import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts  } from '../assets/js/globals';
 import { updateCatalog } from '../assets/js/utils';
@@ -25,7 +25,9 @@ import { createLowlight, all } from 'lowlight'
 import '../assets/css/editor.css';
 
 const lowlight = createLowlight(all)
-
+const curHeight = ref(1);
+const activeIndex = ref(0);
+const headerHeight = ref([]);
 const tableMenu = document.getElementById("tableMenu").children[0];
  
 function throttle(func, wait) {
@@ -85,7 +87,9 @@ const editor = new Editor({
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         updateCatalog();
+        getHeadersHeight();
         change.value = true;
+        activeScroll();
     }, 100),
     onSelectionUpdate: ({ editor }) => { // Synchronising editor content properties to tab option values
         for(var i = 1; i < 7; i++){
@@ -127,9 +131,70 @@ const editor = new Editor({
         if(fontSize){
             fontSizeVal.value = fontSize;
         }
+        const { state } = editor;
+        // get the current cursor position
+        const cursorPosition = state.selection.$from.pos;
+        // get the editor scroll height
+        const editorScrollContainer = document.getElementById('editor');
+        const scrollTop = editorScrollContainer.scrollTop;
+        if (cursorPosition !== undefined) {
+            const coords = editor.view.coordsAtPos(cursorPosition, -1);
+            curHeight.value = coords.top + scrollTop; // absolute position of the cursor
+        }
+        activeScroll();
         return;
     }
 })
+
+const getHeadersHeight = () => {
+    let arr = [];
+    const editorScrollContainer = document.getElementById('editor');
+    const headers = editorScrollContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const scrollTop = editorScrollContainer.scrollTop;
+    headers.forEach((header) => {
+        const rect = header.getBoundingClientRect();
+        // get each header's top position
+        arr.push(rect.top + scrollTop);
+    })
+    headerHeight.value = arr;
+}
+
+const activeScroll = () => {
+    // get the header's top position each time the catelogue list need to be updated
+    getHeadersHeight();
+    let arr = headerHeight.value;
+    if (arr[0] > curHeight.value) {
+        activateHeader(-1);
+        return (activeIndex.value = 0);
+    }
+    if (arr[arr.length - 1] < curHeight.value) {
+        activateHeader(arr.length - 1);
+        return (activeIndex.value = arr.length - 1);
+    }
+    for(let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] < curHeight.value && arr[i + 1] > curHeight.value) {
+            activateHeader(i);
+            return (activeIndex.value = i);
+        }
+    }
+}
+
+const activateHeader = (index) => {
+    const listContainer = document.getElementById('header-container');
+    const lists = listContainer.querySelectorAll('li');
+    if(lists.length === 0) {
+        return;
+    }
+    if(index === -1) {
+        lists[activeIndex.value].classList.remove('active');
+        return;
+    }
+    if (activeIndex.value !== index) {
+        lists[activeIndex.value].classList.remove('active');
+    };
+    lists[index].classList.add('active');
+    lists[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
 editorRef.value = editor;
 
@@ -148,7 +213,10 @@ onMounted(()=>{
         })
         
     })
+})
 
+onUnmounted(()=>{
+    editor.destroy();
 })
 </script>
 
@@ -223,5 +291,9 @@ padding-left: 60px;
 #header-container li[type="H6"] {
 font-size: 12px;
 padding-left: 75px;
+}
+
+#header-container li.active {
+    color: var(--el-color-primary);
 }
 </style>

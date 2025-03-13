@@ -82,7 +82,7 @@ const openFilePicker = () => {
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
-        E.commands.setContent(rawData.content);
+        E.commands.setContent(rawData.content, true);
         
         // update the catalog
         updateCatalog();
