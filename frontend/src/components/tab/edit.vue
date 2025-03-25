@@ -174,6 +174,11 @@ const handleCleanMarks = () => {
     isItalic.value = false;
     isStrike.value = false;
 }
+
+const handleAlign = (val) => {
+    const E = editorRef.value;
+    E.chain().focus().setTextAlign(val).run();
+}
 </script>
 
 <template>
@@ -255,8 +260,8 @@ const handleCleanMarks = () => {
             </span>
             <div class="division-border"></div>
             <span class="btn-group">
-                <div style="display: flex; flex-direction:row; align-items: center;">
-                    <el-select v-model="fontVal" size="small" style="width: 200px" @change="handleFontSelChange">
+                <div class="col-display">
+                    <el-select v-model="fontVal" size="small" style="width: 140px" @change="handleFontSelChange">
                         <el-option
                             v-for="item in fonts"
                             :key="item.value"
@@ -278,25 +283,43 @@ const handleCleanMarks = () => {
                     </el-select>
                 </div>
                 
-                <div style="display: flex; flex-direction:row; align-items: center; margin-left: 3px; margin-top: 5px">
-                    <el-tooltip :content="t('toolBar.tooltip.color')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="openFontColorPicker">
-                            <el-color-picker v-model="fontColors" size="small" ref="fontColorPopper" @change="changeFontColor" style="opacity: 0;width:0;height:0;padding:0"/>
+                <div class="col-display" style="margin-top: 5px;">
+                    <el-tooltip :content="t('toolBar.tooltip.textAlignLeft')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="handleAlign('left')">
                             <i class="el-icon">
-                                <svg t="1725421210952" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4750" width="200" height="200"><path d="M1013.763272 901.117134H10.236925c-5.630255 0-10.236827 4.606572-10.236827 10.247063v102.398976c0 5.630255 4.606572 10.236827 10.236827 10.236827H1013.763272c5.630255 0 10.236827-4.606572 10.236826-10.236827V911.35396c0-5.630255-4.606572-10.236827-10.236826-10.236826zM181.376192 798.707921h108.796993c5.374334 0 10.247063-3.460047 11.905429-8.701303l68.740291-212.485809h280.570943l68.09537 212.485809c1.658366 5.118413 6.398017 8.701303 11.905429 8.701303h114.038248c1.412682 0 2.815127-0.255921 4.104968-0.634684 6.520859-2.303286 9.980906-9.346223 7.67762-15.877318L590.849255 8.445382c-1.791445-4.995571-6.531095-8.445382-11.77235-8.445382H448.127419c-5.374334 0-10.103748 3.326969-11.772351 8.445382L169.603841 782.195919c-0.511841 1.279603-0.634683 2.692285-0.634683 4.094731-0.133079 6.787016 5.497176 12.417271 12.407034 12.417271z m327.54774-660.602894h5.251492l107.261469 337.661725H400.515938l108.407994-337.661725z m0 0" p-id="4751"></path></svg>
+                                <svg t="1742202517010" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4310" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM0 292.571429a36.571429 36.571429 0 0 1 36.571429-36.571429h731.428571a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 292.571429zM0 512a36.571429 36.571429 0 0 1 36.571429-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 0 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM0 731.428571a36.571429 36.571429 0 0 1 36.571429-36.571428h731.428571a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 731.428571z" p-id="4311"></path></svg>
                             </i>
                         </el-button>
                     </el-tooltip>
-                    
-                    <el-tooltip :content="t('toolBar.tooltip.background')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="openBackColorPicker">
-                            <el-color-picker v-model="backColors" show-alpha size="small" @change="changeBackColor" ref="backColorPopper" style="opacity: 0;width:0;height:0;padding:0"/>
+
+                    <el-tooltip :content="t('toolBar.tooltip.textAlignCenter')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="handleAlign('center')">
                             <i class="el-icon">
-                                <svg t="1725440391145" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4705" width="300" height="300"><path d="M436.056925 570.188815l150.141511 0-75.943075-243.428342L436.056925 570.188815zM895.409902 896.025656 128.590098 896.025656 128.590098 127.974344l766.819804 0L895.409902 896.025656zM787.652836 793.707757l-202.17278-564.544398L444.369613 229.163359 238.297054 793.707757 368.426538 793.707757l41.460814-129.411104 204.738425 0L656.804971 793.707757 787.652836 793.707757z" p-id="4706"></path></svg>
+                                <svg t="1742202712001" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4474" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM109.714286 292.571429a36.571429 36.571429 0 0 1 36.571428-36.571429h731.428572a36.571429 36.571429 0 0 1 0 73.142857H146.285714a36.571429 36.571429 0 0 1-36.571428-36.571428zM219.428571 512a36.571429 36.571429 0 0 1 36.571429-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 219.428571 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM109.714286 731.428571a36.571429 36.571429 0 0 1 36.571428-36.571428h731.428572a36.571429 36.571429 0 0 1 0 73.142857H146.285714a36.571429 36.571429 0 0 1-36.571428-36.571429z" p-id="4475"></path></svg>
                             </i>
                         </el-button>
                     </el-tooltip>
-                    
+
+                    <el-tooltip :content="t('toolBar.tooltip.textAlignRight')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="handleAlign('right')">
+                            <i class="el-icon">
+                                <svg t="1742202730600" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4638" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM219.428571 292.571429a36.571429 36.571429 0 0 1 36.571429-36.571429h731.428571a36.571429 36.571429 0 0 1 0 73.142857h-731.428571A36.571429 36.571429 0 0 1 219.428571 292.571429zM438.857143 512a36.571429 36.571429 0 0 1 36.571428-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 438.857143 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM219.428571 731.428571a36.571429 36.571429 0 0 1 36.571429-36.571428h731.428571a36.571429 36.571429 0 0 1 0 73.142857h-731.428571A36.571429 36.571429 0 0 1 219.428571 731.428571z" p-id="4639"></path></svg>
+                            </i>
+                        </el-button>
+                    </el-tooltip>
+
+                    <el-tooltip :content="t('toolBar.tooltip.textAlignJustify')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="handleAlign('justify')">
+                            <i class="el-icon">
+                                <svg t="1742203018007" class="icon" viewBox="0 0 1433 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12223" width="200" height="200"><path d="M0 153.6h1433.9072V0H0zM0 588.8h1433.9072v-153.6H0zM0 1024h1433.9072V870.4H0z" p-id="12224"></path></svg>
+                            </i>
+                        </el-button>
+                    </el-tooltip>
+                </div>
+            </span>
+            <div class="division-border"></div>
+            <span class="btn-group">
+                <div class="col-display">
                     <el-popover
                         placement="bottom"
                         :width="200"
@@ -305,9 +328,9 @@ const handleCleanMarks = () => {
                     >
                         <template #reference>
                                 <el-button text size="small"  @click="visio.tableInsertVisible = !visio.tableInsertVisible">
-                                    <el-tooltip :content="t('toolBar.tooltip.table')" placement="bottom" effect='dark'>
+                                    <el-tooltip :content="t('toolBar.tooltip.table')" placement="top" effect='dark'>
                                     <i class="el-icon">
-                                        <svg t="1725442515685" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5148" width="200" height="200"><path d="M928 160H96c-17.7 0-32 14.3-32 32v640c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V192c0-17.7-14.3-32-32-32z m-40 208H676V232h212v136z m0 224H676V432h212v160zM412 432h200v160H412V432z m200-64H412V232h200v136z m-476 64h212v160H136V432z m0-200h212v136H136V232z m0 424h212v136H136V656z m276 0h200v136H412V656z m476 136H676V656h212v136z" p-id="5149"></path></svg>
+                                        <svg t="1742449322678" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2651" width="200" height="200"><path d="M0 64l0 896 1024 0 0-896-1024 0zM384 640l0-192 256 0 0 192-256 0zM640 704l0 192-256 0 0-192 256 0zM640 192l0 192-256 0 0-192 256 0zM320 192l0 192-256 0 0-192 256 0zM64 448l256 0 0 192-256 0 0-192zM704 448l256 0 0 192-256 0 0-192zM704 384l0-192 256 0 0 192-256 0zM64 704l256 0 0 192-256 0 0-192zM704 896l0-192 256 0 0 192-256 0z" p-id="2652"></path></svg>
                                     </i>
                                     </el-tooltip>
                                 </el-button>
@@ -330,9 +353,9 @@ const handleCleanMarks = () => {
                     <el-popover placement="bottom" :width="200" trigger="click" :visible="visio.codeInsertVisible">
                         <template #reference>
                             <el-button text size="small" @click="visio.codeInsertVisible = !visio.codeInsertVisible">
-                                <el-tooltip :content="t('toolBar.tooltip.code')" placement="bottom" effect='dark'>
+                                <el-tooltip :content="t('toolBar.tooltip.code')" placement="top" effect='dark'>
                                     <i class="el-icon">
-                                        <svg t="1725442551522" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6148" width="200" height="200"><path d="M153.770667 517.558857l200.387047-197.241905L302.86019 268.190476 48.761905 518.290286l254.439619 243.614476 50.590476-52.833524-200.021333-191.512381zM658.285714 320.316952L709.583238 268.190476l254.098286 250.09981L709.241905 761.904762l-50.590476-52.833524 200.021333-191.512381L658.285714 320.316952z m-112.981333-86.186666L393.99619 785.554286l70.534096 19.358476 151.30819-551.399619-70.534095-19.358476z" p-id="6149"></path></svg>
+                                        <svg t="1742449374319" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3653" width="200" height="200"><path d="M322.133333 296.533333c-12.8-12.8-32-12.8-44.8 0l-192 192c-12.8 12.8-12.8 32 0 44.8l192 192c6.4 6.4 14.933333 8.533333 23.466667 8.533334s17.066667-2.133333 23.466667-8.533334c12.8-12.8 12.8-32 0-44.8L151.466667 512l168.533333-168.533333c12.8-12.8 12.8-34.133333 2.133333-46.933334zM940.8 488.533333l-192-192c-12.8-12.8-32-12.8-44.8 0-12.8 12.8-12.8 32 0 44.8l168.533333 168.533334-168.533333 168.533333c-12.8 12.8-12.8 32 0 44.8 6.4 6.4 14.933333 8.533333 23.466667 8.533333s17.066667-2.133333 23.466666-8.533333l192-192c8.533333-8.533333 8.533333-29.866667-2.133333-42.666667zM622.933333 76.8c-17.066667-4.266667-34.133333 6.4-38.4 23.466667L366.933333 902.4c-4.266667 17.066667 6.4 34.133333 23.466667 38.4 2.133333 0 6.4 2.133333 8.533333 2.133333 14.933333 0 27.733333-8.533333 29.866667-23.466666L644.266667 115.2c4.266667-17.066667-4.266667-34.133333-21.333334-38.4z" p-id="3654"></path></svg>
                                     </i>
                                 </el-tooltip>
                             </el-button>
@@ -349,6 +372,48 @@ const handleCleanMarks = () => {
                         </div>
                         
                     </el-popover>
+
+                    <el-popover placement="bottom" :width="200" trigger="click" :visible="visio.aboveTextVisible">
+                        <template #reference>
+                            <el-button text size="small" @click="visio.aboveTextVisible = !visio.aboveTextVisible">
+                                <el-tooltip :content="t('toolBar.tooltip.aboveText')" placement="top" effect='dark'>
+                                    <i class="el-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 1024 1024" style="font-style: normal;height:2em"><text data-v-19c4b0ab="" y="1200" x="0" font-size="100em">R</text><text data-v-19c4b0ab="" y="100" x="0" font-size="50em">abc</text></svg>
+                                    </i>
+                                </el-tooltip>
+                            </el-button>
+                        </template>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <el-input
+                            style="width: 150px;border:none;"
+                            :placeholder="t('toolBar.edit.abovePlaceHolder')"
+                            clearable
+                            size="small"
+                            v-model="programLang"
+                            ></el-input>
+                            <el-button size="small" text>{{t("message.confirm")}}</el-button>
+                        </div>
+                    </el-popover>
+                    
+                </div>
+                <div class="col-display" style="margin-top: 5px;">
+                    <el-tooltip :content="t('toolBar.tooltip.color')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="openFontColorPicker">
+                            <el-color-picker v-model="fontColors" size="small" ref="fontColorPopper" @change="changeFontColor" style="opacity: 0;width:0;height:0;padding:0"/>
+                            <i class="el-icon">
+                                <svg t="1725421210952" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4750" width="200" height="200"><path d="M1013.763272 901.117134H10.236925c-5.630255 0-10.236827 4.606572-10.236827 10.247063v102.398976c0 5.630255 4.606572 10.236827 10.236827 10.236827H1013.763272c5.630255 0 10.236827-4.606572 10.236826-10.236827V911.35396c0-5.630255-4.606572-10.236827-10.236826-10.236826zM181.376192 798.707921h108.796993c5.374334 0 10.247063-3.460047 11.905429-8.701303l68.740291-212.485809h280.570943l68.09537 212.485809c1.658366 5.118413 6.398017 8.701303 11.905429 8.701303h114.038248c1.412682 0 2.815127-0.255921 4.104968-0.634684 6.520859-2.303286 9.980906-9.346223 7.67762-15.877318L590.849255 8.445382c-1.791445-4.995571-6.531095-8.445382-11.77235-8.445382H448.127419c-5.374334 0-10.103748 3.326969-11.772351 8.445382L169.603841 782.195919c-0.511841 1.279603-0.634683 2.692285-0.634683 4.094731-0.133079 6.787016 5.497176 12.417271 12.407034 12.417271z m327.54774-660.602894h5.251492l107.261469 337.661725H400.515938l108.407994-337.661725z m0 0" p-id="4751"></path></svg>
+                            </i>
+                        </el-button>
+                    </el-tooltip>
+                    
+                    <el-tooltip :content="t('toolBar.tooltip.background')" placement="bottom" effect='dark'>
+                        <el-button text size="small" @click="openBackColorPicker">
+                            <el-color-picker v-model="backColors" show-alpha size="small" @change="changeBackColor" ref="backColorPopper" style="opacity: 0;width:0;height:0;padding:0"/>
+                            <i class="el-icon">
+                                <svg t="1725440391145" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4705" width="300" height="300"><path d="M436.056925 570.188815l150.141511 0-75.943075-243.428342L436.056925 570.188815zM895.409902 896.025656 128.590098 896.025656 128.590098 127.974344l766.819804 0L895.409902 896.025656zM787.652836 793.707757l-202.17278-564.544398L444.369613 229.163359 238.297054 793.707757 368.426538 793.707757l41.460814-129.411104 204.738425 0L656.804971 793.707757 787.652836 793.707757z" p-id="4706"></path></svg>
+                            </i>
+                        </el-button>
+                    </el-tooltip>
                     
                     <el-tooltip :content="t('toolBar.tooltip.orderlist')" placement="bottom" effect='dark'>
                         <el-button text size="small" @click="E.chain().focus().toggleOrderedList().run()">
@@ -365,7 +430,7 @@ const handleCleanMarks = () => {
                             </i>
                         </el-button>
                     </el-tooltip>
-                </div>
+                </div> 
             </span>
             <div class="division-border"></div>
             <span class="btn-group">

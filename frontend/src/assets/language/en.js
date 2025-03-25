@@ -35,6 +35,7 @@ export default{
             saveAs: "Save As",
             fileInfo: "Book info",
             lookUp: "Look up",
+            toggleCate: "Toggle Category"
         },
         edit: {
             setting: "Setting",
@@ -45,6 +46,7 @@ export default{
             insertTable: "Insert Table",
             code: "Enter the programming language",
             link: "Hyperlink",
+            abovePlaceHolder: "Please input the text",
         },
         help: {
             help: "Help",
@@ -56,13 +58,18 @@ export default{
             bold: "Bold",
             italic: "Italic",
             strike: "Strikethrough",
-            clean: "Clear Mark",
+            clean: "Clear Style",
             color: "Font Color",
             background: "Background Color",
             table: "Insert Table",
             code: "Insert Code",
             orderlist: "Order List",
             unorderlist: "Unorder List",
+            textAlignLeft: "Text align left",
+            textAlignCenter: "Text align center",
+            textAlignRight: "Text align right",
+            textAlignJustify: "Text align justify",
+            aboveText: "Above Text"
         }
     },
     table: {
@@ -106,7 +113,7 @@ export default{
             title: "Insert Image",
             content: "You can uplaod or insert an image by clicking the image button"
         },
-        setp8: {
+        step8: {
             title: "Setting",
             content: "You can change the setting by clicking the setting button"
         },

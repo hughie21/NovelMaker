@@ -19,6 +19,8 @@ const fontSizeVal = ref("16px")
 const isBold = ref(false);
 const isItalic = ref(false);
 const isStrike = ref(false);
+const cateWidth = ref(20);
+const editorWidth = ref(80);
 
 // i18n
 const language_list = ref(lang);
@@ -40,6 +42,7 @@ const visio = reactive({
     linkInsertVisible: false,
     tourVsisible: false,
     saveConfigVisible: true,
+    aboveTextVisible: false,
 })
 const cover = reactive({
     isExist: false,
@@ -156,7 +159,9 @@ export {
     isBold,
     isItalic,
     isStrike,
-    epubLayout
+    epubLayout,
+    cateWidth,
+    editorWidth,
 }
 
 export default{}

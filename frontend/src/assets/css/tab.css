@@ -23,6 +23,7 @@
     height: 100%;
     width: 100%;
     fill: var(--icon-color);
+    font-family: inherit;
 }
 
 .func_btn-big{

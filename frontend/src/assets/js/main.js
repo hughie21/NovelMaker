@@ -10,6 +10,8 @@ import {createApp} from 'vue'
 import App from '../../App.vue'
 import Header from "../../Header.vue"
 import '../css/style.css';
+import '../css/chinese.css';
+import "../css/english.css";
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
@@ -23,6 +25,8 @@ if(!localStorage.getItem('lock')){
     localStorage.setItem("clipboard", "");
     location.reload();
 }
+
+document.body.className = localStorage.getItem("lang");
 
 const app = createApp(App);
 const header = createApp(Header)

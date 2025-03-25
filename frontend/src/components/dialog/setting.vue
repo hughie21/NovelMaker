@@ -266,6 +266,7 @@ const handleSaveConfig = async () => {
     var lang = generalSetting.language;
     editTheme.value = theme;
     editLang.value = lang;
+    document.body.className = lang;
     let flag = true;
     flag = await saveConfig("Appearance", "DefaultOpen", generalSetting.windowSize);
     flag = await saveConfig("StaticResource", "Port", generalSetting.resPort.toString());

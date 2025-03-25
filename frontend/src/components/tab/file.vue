@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { FileOpen, FileSave, Base64Decode } from '../../../wailsjs/go/core/App.js'
 import { ElMessage, ElMessageBox, ElLoading, ElNotification } from 'element-plus'
 import { ref, reactive, inject, onMounted } from 'vue';
-import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting, epubLayout } from '../../assets/js/globals.js';
+import { editorRef, change, visio, bookInfo, currentSave, title, generalSetting, epubLayout, editorWidth, cateWidth } from '../../assets/js/globals.js';
 import { TocGenerator, initCover, resetState, getImageFiles, updateCatalog, TimerContext, setImage, normalizeHTML } from '../../assets/js/utils.js';
 import { lookupSession, searchKey, replaceKey, resultCount } from '../../assets/js/lookup.js';
 import "../../assets/css/tab.css"
@@ -81,6 +81,7 @@ const openFilePicker = () => {
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
+        console.log(rawData.content)
         E.commands.setContent(rawData.content, true);
         
         // update the catalog
@@ -324,6 +325,11 @@ const handleOpenLookup = () => {
     visio.searchBarVisible = !visio.searchBarVisible;
 };
 
+const handleToggleCate = () => {
+    cateWidth.value = editorWidth.value % 80;
+    editorWidth.value = 180 - editorWidth.value;
+}
+
 const openFileInfo = ()=> {
     visio.bookInfoVisible = true;
 }
@@ -341,14 +347,6 @@ const openFileInfo = ()=> {
                 <span>{{$t('toolBar.file.new')}}</span>
             </span>
             <div class="division-border"></div>
-            <!-- <span style=" width:50px; " class="btn-group">
-                <button class="el-button btn func_btn-big" @click="importFilePicker" id="btn-open">
-                    <i class="el-icon">
-                        <svg t="1717816393836" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8897" width="200" height="200"><path d="M921.6 450.133333c-6.4-8.533333-14.933333-12.8-25.6-12.8h-10.666667V341.333333c0-40.533333-34.133333-74.666667-74.666666-74.666666H514.133333c-4.266667 0-6.4-2.133333-8.533333-4.266667l-38.4-66.133333c-12.8-21.333333-38.4-36.266667-64-36.266667H170.666667c-40.533333 0-74.666667 34.133333-74.666667 74.666667v597.333333c0 6.4 2.133333 12.8 6.4 19.2 6.4 8.533333 14.933333 12.8 25.6 12.8h640c12.8 0 25.6-8.533333 29.866667-21.333333l128-362.666667c4.266667-10.666667 2.133333-21.333333-4.266667-29.866667zM170.666667 224h232.533333c4.266667 0 6.4 2.133333 8.533333 4.266667l38.4 66.133333c12.8 21.333333 38.4 36.266667 64 36.266667H810.666667c6.4 0 10.666667 4.266667 10.666666 10.666666v96H256c-12.8 0-25.6 8.533333-29.866667 21.333334l-66.133333 185.6V234.666667c0-6.4 4.266667-10.666667 10.666667-10.666667z m573.866666 576H172.8l104.533333-298.666667h571.733334l-104.533334 298.666667z" p-id="8898"></path></svg>
-                    </i>
-                </button>
-                <span>{{$t('toolBar.file.import')}}</span>
-            </span> -->
             <span style=" width:50px; " class="btn-group">
                 <button class="el-button btn func_btn-big" @click="openFilePicker" id="btn-open">
                     <i class="el-icon">
@@ -373,14 +371,6 @@ const openFileInfo = ()=> {
                 </button>
                 <span>{{$t('toolBar.file.saveAs')}}</span>
             </span>
-            <!-- <span class="btn-group" style="width:50px;">
-                <button @click="exportFile" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-export">
-                    <i class="el-icon">
-                        <svg t="1717398848121" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4277" width="200" height="200"><path d="M895.99896 1024H127.99992a63.99992 63.99992 0 0 1-63.99992-63.99992V384.0008a63.99992 63.99992 0 0 1 63.99992-63.99992h223.99972a31.99996 31.99996 0 0 1 0 63.99992H127.99992v575.99928h767.99904V384.0008h-223.99972a31.99996 31.99996 0 0 1 0-63.99992h223.99972a63.99992 63.99992 0 0 1 63.99992 63.99992v575.99928a63.99992 63.99992 0 0 1-63.99992 63.99992zM543.9994 100.481154V704.0004a31.99996 31.99996 0 0 1-63.99992 0V100.481154L340.479654 216.641009 299.519706 167.361071l191.99976-159.9998 0.255999 0.319999a30.463962 30.463962 0 0 1 40.44795 0l0.255999-0.319999 191.99976 159.9998-40.959948 49.279938z" p-id="4278"></path></svg>
-                    </i>
-                </button>
-                <span>{{$t('toolBar.file.export')}}</span>
-            </span> -->
             <div class="division-border"></div>
             <span class="btn-group" style="width:80px;">
                 <button @click="openFileInfo" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file" id="btn-file-info">
@@ -398,6 +388,15 @@ const openFileInfo = ()=> {
                     </i>
                 </button>
                 <span>{{$t('toolBar.file.lookUp')}}</span>
+            </span>
+            <div class="division-border"></div>
+            <span class="btn-group toggle-categories">
+                <button id="btn-lookup" @click="handleToggleCate" :class="disableBtn.file?btnDisabledClass:btnNormalClass" :aria-disabled="disableBtn.file" :disabled="disableBtn.file">
+                    <i class="el-icon">
+                        <svg t="1742200452620" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2599" width="200" height="200"><path d="M831.26 111.52H194.46a72.26 72.26 0 0 0-72.18 72.18v656.88a72.24 72.24 0 0 0 72.18 72.18h636.8a72.24 72.24 0 0 0 72.18-72.18V183.7a72.26 72.26 0 0 0-72.18-72.18zM170.28 840.58V183.7a24.22 24.22 0 0 1 24.18-24.18h184.1v705.24h-184a24.22 24.22 0 0 1-24.28-24.18z m685.16 0a24.22 24.22 0 0 1-24.18 24.18H426.56V159.52h404.7a24.22 24.22 0 0 1 24.18 24.18z" p-id="2600"></path><path d="M226.68 317.16h94.68a24 24 0 0 0 0-48h-94.68a24 24 0 0 0 0 48zM321.36 415.82h-94.68a24 24 0 0 0 0 48h94.68a24 24 0 0 0 0-48zM321.36 562.48h-94.68a24 24 0 0 0 0 48h94.68a24 24 0 0 0 0-48z" p-id="2601"></path></svg>
+                    </i>
+                </button>
+                <span>{{$t('toolBar.file.toggleCate')}}</span>
             </span>
             <div class="division-border"></div>
         </div>

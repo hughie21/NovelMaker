@@ -8,7 +8,7 @@
 */
 
 import { ref, onMounted, provide} from 'vue';
-import { fonts } from '../assets/js/globals';
+import { editorRef, fonts } from '../assets/js/globals';
 import { TimerContext } from '../assets/js/utils';
 import fileTab from '../components/tab/file.vue'
 import editTab from '../components/tab/edit.vue'
@@ -88,8 +88,15 @@ const handleChange = () => {
 }
 
 const test = () => {
-    const timer = TimerContext.getInstance();
-    timer.State()
+    // const timer = TimerContext.getInstance();
+    // timer.State()
+    const E = editorRef.value;
+    // let testData = JSON.parse(`{"type":"doc","content":[{"type":"paragraph","content":[{"type":"inlineMath","attrs":{"latex":"\\\\frac{1}{x}","evaluate":"no","display":"no"}}]},{"type":"paragraph","content":[{"type":"inlineMath","attrs":{"latex":"x+1","evaluate":"no","display":"no"}}]}]}`)
+    // E.commands.setContent(testData);
+    // console.log(testData)
+    // console.log(JSON.stringify(E.getJSON()))
+    // console.log(E.getHTML())
+    E.commands.setRuby("test", "test");
 }
 </script>
 

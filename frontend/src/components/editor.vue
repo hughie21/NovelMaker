@@ -7,12 +7,13 @@
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted, onUnmounted, ref } from 'vue';
-// import * as constant from '../assets/js/globals';
-import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts  } from '../assets/js/globals';
+import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts, editorWidth, cateWidth } from '../assets/js/globals';
 import { updateCatalog } from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { CustomImage, CustomHeading, SearchSelBackground, TextStyleExtends } from '../assets/js/extension';
+import CustomImage from '../assets/extension/image';
+import CustomHeading from '../assets/extension/header';
+import {SearchSelBackground, TextStyleExtends} from '../assets/extension/textStyle';
 import bold from "@tiptap/extension-bold"
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Table from '@tiptap/extension-table'
@@ -20,9 +21,13 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import MathExtension from '@aarkue/tiptap-math-extension'
+import TextAlign from '../assets/extension/textalign';
 import Link from '@tiptap/extension-link'
+import RubyExtension from '../assets/extension/ruby'
 import { createLowlight, all } from 'lowlight'
 import '../assets/css/editor.css';
+import "katex/dist/katex.min.css"
 
 const lowlight = createLowlight(all)
 const curHeight = ref(1);
@@ -50,7 +55,7 @@ const editor = new Editor({
         }),
         bold.configure({
             HTMLAttributes: {
-                class: 'bold'     
+                class: 'bold'
             }
         }),
         StarterKit.configure({
@@ -83,7 +88,12 @@ const editor = new Editor({
         Link.configure({
             openOnClick: false,
             linkOnPaste: true,
-        })
+        }),
+        MathExtension.configure({
+            evaluation: false
+        }),
+        TextAlign,
+        RubyExtension,
     ],
     onUpdate: throttle(({ editor } ) => { // Synchronising editor header to the catelogue
         updateCatalog();
@@ -223,8 +233,8 @@ onUnmounted(()=>{
 <template>
 <div style="border: 1px solid #ccc; height:100%" :class="editTheme" id="editor-container">
     <div class="editor-box">
-        <ul id="header-container"></ul>
-        <editor-content class="editor-content" id="editor" :editor="editorRef" />
+        <ul id="header-container" :style="`width:${cateWidth}%`"></ul>
+        <editor-content class="editor-content" id="editor" :editor="editorRef" :style="`width:${editorWidth}%`"/>
     </div>
 </div>
 
@@ -240,13 +250,13 @@ onUnmounted(()=>{
 
 #header-container {
     list-style-type: none;
-    width: 20%;
     height: 100%;
     background-color: var(--el-fill-color-blank);
     border-right: 1px solid #9b9b9b;
     overflow-y: auto;
     margin: 0;
-    padding: 0 0 0 10px;
+    padding: 0 0 0 0px;
+    transition: all 0.3s;
 }
 
 #header-container li {

@@ -99,6 +99,15 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 			break
 		}
 		node := s.Pop().(*AstElement)
+		latex, ok := node.Attrs["data-latex"]
+		if ok {
+			display, ok := node.Attrs["data-display"]
+			if !ok {
+				display = "no"
+			}
+			handleLatexStyle(latex, display, parent)
+			continue
+		}
 		if node.Type == 3 {
 			textNode := PMNode{
 				Type:    "text",
@@ -115,6 +124,19 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 			s.Push(child)
 		}
 	}
+}
+
+func handleLatexStyle(formula string, display string, parent *PMNode) {
+	fmt.Println("handleLatexStyle: ", formula)
+	latexNode := &PMNode{
+		Type: "inlineMath",
+		Attrs: map[string]interface{}{
+			"latex":    formula,
+			"evaluate": "no",
+			"display":  display,
+		},
+	}
+	parent.Content = append([]*PMNode{latexNode}, parent.Mark...)
 }
 
 // dealing with the tag <a>
@@ -265,8 +287,21 @@ func (p *ImageParser) Parse(node *AstElement) *PMNode {
 
 // Parse the tag <p>
 func (p *TextParser) Parse(node *AstElement) *PMNode {
+	var textAlign string
+	paragraphStyleString, ok := node.Attrs["style"]
+	if !ok {
+		textAlign = "left"
+	}
+	paragraphStyle := splitStyle(html.UnescapeString(paragraphStyleString))
+	textAlign, ok = paragraphStyle["text-align"]
+	if !ok {
+		textAlign = "left"
+	}
 	paragraph := &PMNode{
-		Type:    "paragraph",
+		Type: "paragraph",
+		Attrs: map[string]interface{}{
+			"textAlign": textAlign,
+		},
 		Content: []*PMNode{},
 	}
 

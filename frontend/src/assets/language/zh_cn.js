@@ -36,6 +36,7 @@ export default{
             fileInfo: "书籍信息",
             close: "关闭",
             lookUp: "查找",
+            toggleCate: "切换目录"
         },
         edit: {
             setting: "设置",
@@ -46,6 +47,7 @@ export default{
             insertTable: "插入表格",
             code: "输入要插入的编程语言",
             link: "超链接",
+            abovePlaceHolder: "请输入顶部文字",
         },
         help: {
             help: "帮助",
@@ -57,13 +59,18 @@ export default{
             bold: "粗体",
             italic: "斜体",
             strike: "删除线",
-            clean: "清除标记",
+            clean: "清除格式",
             color: "字体颜色",
             background: "背景颜色",
             table: "表格",
             code: "代码块",
             orderlist: "有序列表",
             unorderlist: "无序列表",
+            textAlignLeft: "左对齐",
+            textAlignCenter: "居中对齐",
+            textAlignRight: "右对齐",
+            textAlignJustify: "两端对齐",
+            aboveText: "顶部文字"
         }
     },
     table: {
