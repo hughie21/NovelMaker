@@ -1,5 +1,14 @@
+/* 
+@Author: Hughie
+@CreateTime: 2025-3-27
+@LastEditors: Hughie
+@LastEditTime: 2025-3-28
+@Description: the img extension of tiptap
+*/
+
 import Image from "@tiptap/extension-image";
 import { nodeInputRule } from "@tiptap/vue-3"
+
 // @reference: https://github.com/bae-sh/tiptap-extension-resize-image/blob/main/lib/imageResize.ts:83-311
 const CustomImage = Image.extend({
     draggable:false,

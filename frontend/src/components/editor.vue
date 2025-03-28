@@ -3,11 +3,11 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-11-1
+@LastEditTime: 2025-3-28
 @Description: This is the editor component, powered by tiptap
 */
 import { onMounted, onUnmounted, ref } from 'vue';
-import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts, editorWidth, cateWidth } from '../assets/js/globals';
+import { change, headerVal, fontSizeVal, fontVal, editTheme, editorRef, isBold, isItalic, isStrike, fonts, editorWidth, cateWidth, isTextAlign } from '../assets/js/globals';
 import { updateCatalog } from '../assets/js/utils';
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
@@ -108,6 +108,23 @@ const editor = new Editor({
                 return;
             }
         }
+
+        if(editor.isActive('paragraph', {textAlign: 'left'})) {
+            isTextAlign.value = 0b00;
+        }
+
+        if(editor.isActive('paragraph', {textAlign: 'center'})) {
+            isTextAlign.value = 0b01;
+        }
+
+        if(editor.isActive('paragraph', {textAlign: 'right'})) {
+            isTextAlign.value = 0b10;
+        }
+
+        if(editor.isActive('paragraph', {textAlign: 'justify'})) {
+            isTextAlign.value = 0b11;
+        }
+
         if(editor.isActive('bold') && editor.isActive('paragraph')) {
             isBold.value = true;
         }else {

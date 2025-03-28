@@ -99,6 +99,8 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 			break
 		}
 		node := s.Pop().(*AstElement)
+
+		// check if the node is math formula
 		latex, ok := node.Attrs["data-latex"]
 		if ok {
 			display, ok := node.Attrs["data-display"]
@@ -108,6 +110,13 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 			handleLatexStyle(latex, display, parent)
 			continue
 		}
+
+		// dealing with the tag <ruby>
+		if node.Tag == "ruby" {
+			handleRubyTag(node, parent)
+			continue
+		}
+
 		if node.Type == 3 {
 			textNode := PMNode{
 				Type:    "text",
@@ -121,11 +130,38 @@ func FindTextTill(node *AstElement, parent *PMNode) {
 			continue
 		}
 		for _, child := range node.Children {
+			if child.Tag == "rt" {
+				continue
+			}
 			s.Push(child)
 		}
 	}
 }
 
+// dealing with the tag <ruby>
+func handleRubyTag(node *AstElement, parent *PMNode) {
+	aboveText, ok := node.Attrs["data-above"]
+	if !ok {
+		aboveText = ""
+	}
+	rubyNode := &PMNode{
+		Type: "ruby",
+		Attrs: map[string]interface{}{
+			"aboveText": aboveText,
+		},
+		Content: []*PMNode{},
+	}
+
+	for _, child := range node.Children {
+		if child.Tag == "rb" {
+			FindTextTill(child, rubyNode)
+			break
+		}
+	}
+	parent.Content = append([]*PMNode{rubyNode}, parent.Content...)
+}
+
+// dealing with the math formula
 func handleLatexStyle(formula string, display string, parent *PMNode) {
 	fmt.Println("handleLatexStyle: ", formula)
 	latexNode := &PMNode{

@@ -3,7 +3,7 @@
 @Author: Hughie
 @CreateTime: 2024-7-5
 @LastEditors: Hughie
-@LastEditTime: 2024-09-23
+@LastEditTime: 2025-3-28
 @Description: This is the tab bar of the application.
 */
 
@@ -94,9 +94,10 @@ const test = () => {
     // let testData = JSON.parse(`{"type":"doc","content":[{"type":"paragraph","content":[{"type":"inlineMath","attrs":{"latex":"\\\\frac{1}{x}","evaluate":"no","display":"no"}}]},{"type":"paragraph","content":[{"type":"inlineMath","attrs":{"latex":"x+1","evaluate":"no","display":"no"}}]}]}`)
     // E.commands.setContent(testData);
     // console.log(testData)
-    // console.log(JSON.stringify(E.getJSON()))
-    // console.log(E.getHTML())
-    E.commands.setRuby("test", "test");
+    
+    // E.commands.setRuby("test", "test");
+    console.log(JSON.stringify(E.getJSON()))
+    console.log(E.getHTML())
 }
 </script>
 

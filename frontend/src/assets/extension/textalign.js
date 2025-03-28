@@ -1,3 +1,11 @@
+/* 
+@Author: Hughie
+@CreateTime: 2025-3-27
+@LastEditors: Hughie
+@LastEditTime: 2025-3-28
+@Description: the text align extension of tiptap
+*/
+
 import Paragraph from '@tiptap/extension-paragraph'
 
 const TextAlign = Paragraph.extend({

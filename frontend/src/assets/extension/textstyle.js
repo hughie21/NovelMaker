@@ -2,8 +2,8 @@
 @Author: Hughie
 @CreateTime: 2024-9-21
 @LastEditors: Hughie
-@LastEditTime: 2024-12-20
-@Description: This is the extension for the tiptap.
+@LastEditTime: 2025-3-28
+@Description: the text style extension of tiptap
 */
 
 import TextStyle from '@tiptap/extension-text-style'

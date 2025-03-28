@@ -1,3 +1,11 @@
+/* 
+@Author: Hughie
+@CreateTime: 2025-3-27
+@LastEditors: Hughie
+@LastEditTime: 2025-3-28
+@Description: the heading extension of tiptap
+*/
+
 import Heading from "@tiptap/extension-heading"
 import { textblockTypeInputRule } from "@tiptap/vue-3"
 

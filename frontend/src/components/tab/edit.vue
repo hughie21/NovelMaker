@@ -3,13 +3,13 @@
 @Author: Hughie
 @CreateTime: 2024-10-18
 @LastEditors: Hughie
-@LastEditTime: 2024-11-1
+@LastEditTime: 2025-3-28
 */
 
 import { useI18n } from 'vue-i18n';
 import "../../assets/css/tab.css"
 import { ref, inject } from 'vue';
-import { editorRef, fontSizeVal, fontVal, headerVal, visio, fonts, isBold, isItalic, isStrike } from '../../assets/js/globals';
+import { editorRef, fontSizeVal, fontVal, headerVal, visio, fonts, isBold, isItalic, isStrike, isTextAlign } from '../../assets/js/globals';
 import { rgbaToHex } from '../../assets/js/utils';
 
 const { t } = useI18n();
@@ -23,6 +23,7 @@ const columnNum = ref(3)
 const sizes = []
 const btnNormalClass = inject("btnNormalClass");
 const programLang = ref('')
+const aboveText = ref('')
 
 for(var i = 12; i < 72; i+=2) {
     sizes.push({
@@ -178,6 +179,30 @@ const handleCleanMarks = () => {
 const handleAlign = (val) => {
     const E = editorRef.value;
     E.chain().focus().setTextAlign(val).run();
+    switch (val) {
+        case "left":
+            isTextAlign.value = 0b00;
+            break;
+        case "center":
+            isTextAlign.value = 0b01;
+            break;
+        case "right":
+            isTextAlign.value = 0b10;
+            break;
+        case "justify":
+            isTextAlign.value = 0b11;
+            break;
+    }
+}
+
+const handleAboveText = () => {
+    const E = editorRef.value;
+    const state = E.state;
+    const { selection } = state;
+    const text = state.doc.textBetween(selection.from, selection.to, '');
+    E.chain().focus().setRuby(aboveText.value, text).run();
+    aboveText.value = '';
+    visio.aboveTextVisible = false;
 }
 </script>
 
@@ -285,7 +310,7 @@ const handleAlign = (val) => {
                 
                 <div class="col-display" style="margin-top: 5px;">
                     <el-tooltip :content="t('toolBar.tooltip.textAlignLeft')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="handleAlign('left')">
+                        <el-button text size="small" @click="handleAlign('left')" :class="{'selected-icon':(isTextAlign ^ 0b11) == 3}">
                             <i class="el-icon">
                                 <svg t="1742202517010" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4310" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM0 292.571429a36.571429 36.571429 0 0 1 36.571429-36.571429h731.428571a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 292.571429zM0 512a36.571429 36.571429 0 0 1 36.571429-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 0 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM0 731.428571a36.571429 36.571429 0 0 1 36.571429-36.571428h731.428571a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 731.428571z" p-id="4311"></path></svg>
                             </i>
@@ -293,7 +318,7 @@ const handleAlign = (val) => {
                     </el-tooltip>
 
                     <el-tooltip :content="t('toolBar.tooltip.textAlignCenter')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="handleAlign('center')">
+                        <el-button text size="small" @click="handleAlign('center')" :class="{'selected-icon':(isTextAlign ^ 0b11) == 2}">
                             <i class="el-icon">
                                 <svg t="1742202712001" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4474" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM109.714286 292.571429a36.571429 36.571429 0 0 1 36.571428-36.571429h731.428572a36.571429 36.571429 0 0 1 0 73.142857H146.285714a36.571429 36.571429 0 0 1-36.571428-36.571428zM219.428571 512a36.571429 36.571429 0 0 1 36.571429-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 219.428571 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM109.714286 731.428571a36.571429 36.571429 0 0 1 36.571428-36.571428h731.428572a36.571429 36.571429 0 0 1 0 73.142857H146.285714a36.571429 36.571429 0 0 1-36.571428-36.571429z" p-id="4475"></path></svg>
                             </i>
@@ -301,7 +326,7 @@ const handleAlign = (val) => {
                     </el-tooltip>
 
                     <el-tooltip :content="t('toolBar.tooltip.textAlignRight')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="handleAlign('right')">
+                        <el-button text size="small" @click="handleAlign('right')" :class="{'selected-icon':(isTextAlign ^ 0b11) == 1}">
                             <i class="el-icon">
                                 <svg t="1742202730600" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4638" width="200" height="200"><path d="M0 73.142857A36.571429 36.571429 0 0 1 36.571429 36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 73.142857zM219.428571 292.571429a36.571429 36.571429 0 0 1 36.571429-36.571429h731.428571a36.571429 36.571429 0 0 1 0 73.142857h-731.428571A36.571429 36.571429 0 0 1 219.428571 292.571429zM438.857143 512a36.571429 36.571429 0 0 1 36.571428-36.571429h512a36.571429 36.571429 0 0 1 0 73.142858h-512A36.571429 36.571429 0 0 1 438.857143 512zM0 950.857143a36.571429 36.571429 0 0 1 36.571429-36.571429h950.857142a36.571429 36.571429 0 0 1 0 73.142857H36.571429A36.571429 36.571429 0 0 1 0 950.857143zM219.428571 731.428571a36.571429 36.571429 0 0 1 36.571429-36.571428h731.428571a36.571429 36.571429 0 0 1 0 73.142857h-731.428571A36.571429 36.571429 0 0 1 219.428571 731.428571z" p-id="4639"></path></svg>
                             </i>
@@ -309,7 +334,7 @@ const handleAlign = (val) => {
                     </el-tooltip>
 
                     <el-tooltip :content="t('toolBar.tooltip.textAlignJustify')" placement="bottom" effect='dark'>
-                        <el-button text size="small" @click="handleAlign('justify')">
+                        <el-button text size="small" @click="handleAlign('justify')" :class="{'selected-icon':(isTextAlign ^ 0b11) == 0}">
                             <i class="el-icon">
                                 <svg t="1742203018007" class="icon" viewBox="0 0 1433 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12223" width="200" height="200"><path d="M0 153.6h1433.9072V0H0zM0 588.8h1433.9072v-153.6H0zM0 1024h1433.9072V870.4H0z" p-id="12224"></path></svg>
                             </i>
@@ -389,9 +414,9 @@ const handleAlign = (val) => {
                             :placeholder="t('toolBar.edit.abovePlaceHolder')"
                             clearable
                             size="small"
-                            v-model="programLang"
+                            v-model="aboveText"
                             ></el-input>
-                            <el-button size="small" text>{{t("message.confirm")}}</el-button>
+                            <el-button size="small" text @click="handleAboveText">{{t("message.confirm")}}</el-button>
                         </div>
                     </el-popover>
                     

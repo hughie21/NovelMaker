@@ -2,7 +2,7 @@
 @Author: Hughie
 @CreateTime: 2024-10-31
 @LastEditors: Hughie
-@LastEditTime: 2024-12-10
+@LastEditTime: 2025-3-28
 @Description: This is the public variables and constant of the program.
 */
 
@@ -19,6 +19,7 @@ const fontSizeVal = ref("16px")
 const isBold = ref(false);
 const isItalic = ref(false);
 const isStrike = ref(false);
+const isTextAlign = ref(0b00) // 00: left, 01: center, 10: right, 11: justify
 const cateWidth = ref(20);
 const editorWidth = ref(80);
 
@@ -162,6 +163,7 @@ export {
     epubLayout,
     cateWidth,
     editorWidth,
+    isTextAlign
 }
 
 export default{}
