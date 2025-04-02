@@ -174,6 +174,14 @@ type Link struct {
 	Type    string   `xml:"type,attr"`
 }
 
+type Script struct {
+	XMLName xml.Name `xml:"script"`
+	Src     string   `xml:"src,attr"`
+	Type    string   `xml:"type,attr"`
+	Onload  string   `xml:"onload,attr,omitempty"`
+	Defer   bool     `xml:"defer,attr,omitempty"`
+}
+
 type HtmlHead struct {
 	Title string `xml:"title"`
 	Link  []Link `xml:"link"`
@@ -230,6 +238,7 @@ type XhtmlHead struct {
 	Title   string     `xml:"title"`
 	Meta    []MetaNode `xml:"meta"`
 	Link    []Link     `xml:"link"`
+	Scripts []Script   `xml:"script"`
 }
 
 type XhtmlHTML struct {

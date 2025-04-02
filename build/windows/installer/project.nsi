@@ -93,12 +93,13 @@ Section
 
     CreateDirectory "$INSTDIR\log"
     CreateDirectory "$INSTDIR\resources"
-    CreateDirectory "$INSTDIR\style"
     CreateDirectory "$INSTDIR\tmp"
 
     File /oname=$INSTDIR\config.yaml "..\..\..\config.yaml"
-    File /oname=$INSTDIR\style\style.css "..\..\..\style\style.css"
     File /oname=$INSTDIR\LICENSE "..\..\..\LICENSE"
+    File /oname=$INSTDIR\README.md "..\..\..\README.md"
+    File /oname=$INSTDIR\CHANGELOG.md "..\..\..\CHANGELOG.md"
+    File /oname=$INSTDIR\res.pak "..\res.pak" # The path to the res.pak file.
     
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"

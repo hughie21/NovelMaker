@@ -36,10 +36,12 @@ This project is based on the [wails](https://wails.io/) and more information abo
 here: https://wails.io/docs/reference/project-config.
 
 ## Feature
-- Rich Text Editor with Modern Interface
-- Support the markdown grammer
-- Can edite epub files
-- Multi-Language Support
+- 🖥 Rich Text Editor with Modern Interface
+- 📖 Support the markdown grammer
+- ✒ Can edite epub files
+- 🌐 Multi-Language Support
+- 🧮 Latex math formula support
+- 🌈 Rich text formatting
 
 ## Requiremnet
 ### Running
@@ -81,3 +83,12 @@ You will find your executable file in the @build/bin.
 If you want to build the installation package, use `wails build -nsis`.
 
 For more detail in building see [here](https://wails.io/docs/next/reference/cli).
+
+## License
+This project is licensed under the [MIT License](https://github.com/hughie21/NovelMaker/blob/master/LICENSE).
+
+## Thanks
+- [wails](https://wails.io/)
+- [tiptap](https://tiptap.dev/)
+- [element-plus](https://element-plus.org/)
+- [vue3](https://vuejs.org/)

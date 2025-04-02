@@ -133,6 +133,111 @@ func (w *Writer) formPackage() error {
 					MediaType: "text/css",
 				},
 				{
+					Id:        "katex.css",
+					Href:      "Styles/katex.css",
+					MediaType: "text/css",
+				},
+				{
+					Id:        "katex.ams.regular",
+					Href:      "Styles/fonts/KaTeX_AMS-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.caligraphic.bold",
+					Href:      "Styles/fonts/KaTeX_Caligraphic-Bold.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.caligraphic.regular",
+					Href:      "Styles/fonts/KaTeX_Caligraphic-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.fraktur.bold",
+					Href:      "Styles/fonts/KaTeX_Fraktur-Bold.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.fraktur.regular",
+					Href:      "Styles/fonts/KaTeX_Fraktur-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.main.bold",
+					Href:      "Styles/fonts/KaTeX_Main-Bold.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.main.bolditalic",
+					Href:      "Styles/fonts/KaTeX_Main-BoldItalic.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.main.italic",
+					Href:      "Styles/fonts/KaTeX_Main-Italic.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.main.regular",
+					Href:      "Styles/fonts/KaTeX_Main-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.math.bolditalic",
+					Href:      "Styles/fonts/KaTeX_Math-BoldItalic.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.math.italic",
+					Href:      "Styles/fonts/KaTeX_Math-Italic.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.sanserif.bold",
+					Href:      "Styles/fonts/KaTeX_SansSerif-Bold.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.sanserif.italic",
+					Href:      "Styles/fonts/KaTeX_SansSerif-Italic.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.sanserif.regular",
+					Href:      "Styles/fonts/KaTeX_SansSerif-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.script.regular",
+					Href:      "Styles/fonts/KaTeX_Script-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.size1.regular",
+					Href:      "Styles/fonts/KaTeX_Size1-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.size2.regular",
+					Href:      "Styles/fonts/KaTeX_Size2-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.size3.regular",
+					Href:      "Styles/fonts/KaTeX_Size3-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.size4.regular",
+					Href:      "Styles/fonts/KaTeX_Size4-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
+					Id:        "katex.typewriter.regular",
+					Href:      "Styles/fonts/KaTeX_Typewriter-Regular.ttf",
+					MediaType: "application/vnd.ms-opentype",
+				},
+				{
 					Id:         "nav.xhtml",
 					Href:       "nav.xhtml",
 					MediaType:  "application/xhtml+xml",
@@ -142,6 +247,16 @@ func (w *Writer) formPackage() error {
 					Id:        "text.xhtml",
 					Href:      "Text/text.xhtml",
 					MediaType: "application/xhtml+xml",
+				},
+				{
+					Id:        "katex.js",
+					Href:      "Scripts/katex.min.js",
+					MediaType: "application/javascript",
+				},
+				{
+					Id:        "auto-render.js",
+					Href:      "Scripts/auto-render.js",
+					MediaType: "application/javascript",
 				},
 			},
 		},
@@ -277,6 +392,24 @@ func (w *Writer) formText() error {
 					Rel:  "stylesheet",
 					Type: "text/css",
 				},
+				{
+					Href: "../Styles/katex.css",
+					Rel:  "stylesheet",
+					Type: "text/css",
+				},
+			},
+			Scripts: []Script{
+				{
+					Src:   "../Scripts/katex.min.js",
+					Type:  "text/javascript",
+					Defer: true,
+				},
+				{
+					Src:    "../Scripts/auto-render.js",
+					Type:   "text/javascript",
+					Defer:  true,
+					Onload: "renderMathInElement(document.body);",
+				},
 			},
 		},
 		Body: XhtmlBody{
@@ -312,6 +445,52 @@ func (w *Writer) loadMedia() error {
 	return nil
 }
 
+func copyFile(file io.ReadCloser, dst string) error {
+	defer file.Close()
+	of, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer of.Close()
+	io.Copy(of, file)
+	return nil
+}
+
+func loadResources(path, dst string) error {
+	r, err := zip.OpenReader(filepath.Join(path, "res.pak"))
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	for _, f := range r.File {
+		if filepath.Ext(f.Name) == ".css" {
+			// Load CSS files
+			rc, err := f.Open()
+			if err != nil {
+				return err
+			}
+			copyFile(rc, filepath.Join(dst, "OEBPS/Styles", f.Name))
+		}
+		if filepath.Ext(f.Name) == ".js" {
+			// Load JS files
+			rc, err := f.Open()
+			if err != nil {
+				return err
+			}
+			copyFile(rc, filepath.Join(dst, "OEBPS/Scripts", f.Name))
+		}
+		if filepath.Ext(f.Name) == ".ttf" {
+			// Load font files
+			rc, err := f.Open()
+			if err != nil {
+				return err
+			}
+			copyFile(rc, filepath.Join(dst, "OEBPS/Styles/fonts", f.Name))
+		}
+	}
+	return nil
+}
+
 // form all the required files to the temp fold
 func (w *Writer) toTemp() error {
 	FoldName := w.tempDir
@@ -331,6 +510,12 @@ func (w *Writer) toTemp() error {
 	if err = os.MkdirAll(FoldName+"/OEBPS/Styles", os.ModePerm); err != nil {
 		return err
 	}
+	if err = os.MkdirAll(FoldName+"/OEBPS/Scripts", os.ModePerm); err != nil {
+		return err
+	}
+	if err = os.MkdirAll(FoldName+"/OEBPS/Styles/fonts", os.ModePerm); err != nil {
+		return err
+	}
 	if err = os.MkdirAll(FoldName+"/OEBPS/Images", os.ModePerm); err != nil {
 		return err
 	}
@@ -340,14 +525,10 @@ func (w *Writer) toTemp() error {
 	WriteToFile(w.XMLData.Package, filepath.Join(FoldName, "OEBPS/content.opf"))
 	WriteToFile(w.XMLData.Nav, filepath.Join(FoldName, "OEBPS/nav.xhtml"))
 	WriteToFile(w.XMLData.Text, filepath.Join(FoldName, "OEBPS/Text/text.xhtml"))
-	fs, err := os.Open(filepath.Join(filepath.Join(w.tempDir, "../../"), "style", "style.css"))
+	err = loadResources(filepath.Join(w.tempDir, "../../"), FoldName)
 	if err != nil {
 		return err
 	}
-	of, _ := os.Create(FoldName + "/OEBPS/Styles/style.css")
-	io.Copy(of, fs)
-	defer fs.Close()
-	defer of.Close()
 	for _, medium := range w.Media {
 		err := os.WriteFile(FoldName+"/OEBPS/Images/"+medium.Name+utils.FileSuffix[medium.Type], medium.Data, 0644)
 		if err != nil {

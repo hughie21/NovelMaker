@@ -34,10 +34,12 @@
 这个项目使用了[wails](https://wails.io/)，更多关于项目配置的详情信息在https://wails.io/docs/reference/project-config。
 
 ## 功能
-- 现代化界面的编辑器
-- 支持Markdown语法
-- 可以编辑EPUB文件
-- 多语言支持
+- 🖥 现代化界面的编辑器
+- 📖 支持Markdown语法
+- ✒ 可以编辑EPUB文件
+- 🌐 多语言支持
+- 🧮 Latex数学公式支持
+- 🌈 丰富的文本格式
 
 ## 配置需求
 ### 运行
@@ -76,6 +78,15 @@ go mod download
 
 您将会在@build/bin中找到该文件。
 
-如果您想要构建安装文件，运行`wails build -nsis`.
+如果您想要构建安装文件，运行`wails build -nsis`。
 
-更多构建命令请查看[这里](https://wails.io/docs/next/reference/cli).
+更多构建命令请查看[这里](https://wails.io/docs/next/reference/cli)。
+
+## 开源协议
+该软件遵循[MIT License](https://github.com/hughie21/NovelMaker/blob/master/LICENSE)开源协议。
+
+## 鸣谢
+- [wails](https://wails.io/)
+- [tiptap](https://tiptap.dev/)
+- [element-plus](https://element-plus.org/)
+- [vue3](https://vuejs.org/)
