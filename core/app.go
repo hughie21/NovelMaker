@@ -65,6 +65,7 @@ func (a *App) startup(ctx context.Context) {
 		err := os.Mkdir(defaultPath, os.ModePerm)
 		if err != nil {
 			logger.Fatal(err.Error(), logging.RunFuncName())
+			logger.LogOutPut(a.core.execPath)
 			utils.ShowMessage("Error when creating resource folder: ", err.Error(), "error")
 			panic(err)
 		}
@@ -75,6 +76,7 @@ func (a *App) shutdown(ctx context.Context) {
 	logger.Info("App shutdown", logging.RunFuncName())
 	err := a.core.cm.SaveConfig()
 	if err != nil {
+		logger.LogOutPut(a.core.execPath)
 		utils.ShowMessage("Error when writing config: ", err.Error(), "error")
 		panic(err)
 	}

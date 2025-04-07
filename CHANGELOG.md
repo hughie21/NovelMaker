@@ -4,7 +4,7 @@ Explanation of version number format: major.minor.patch.date_suffix
 - Major version update when the program structure is changed
 - Minor version update when the program function is changed
 - Patch version update when the program bug is fixed
-- Date: YYYY-MM-DD, the date of the version update
+- Date: YYYYMMDD, the date of the version update
 
 - Suffix:
     - Beta version is a stable test version

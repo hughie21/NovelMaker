@@ -19,16 +19,16 @@ Unicode true
 ####
 ## The following information is taken from the ProjectInfo file, but they can be overwritten here.
 ####
-## !define INFO_PROJECTNAME    "MyProject" # Default "{{.Name}}"
-## !define INFO_COMPANYNAME    "MyCompany" # Default "{{.Info.CompanyName}}"
-## !define INFO_PRODUCTNAME    "MyProduct" # Default "{{.Info.ProductName}}"
-## !define INFO_PRODUCTVERSION "1.0.0"     # Default "{{.Info.ProductVersion}}"
-## !define INFO_COPYRIGHT      "Copyright" # Default "{{.Info.Copyright}}"
+!define INFO_PROJECTNAME    "NovelMaker" # Default "{{.Name}}"
+!define INFO_COMPANYNAME    "Hughie" # Default "{{.Info.CompanyName}}"
+!define INFO_PRODUCTNAME    "NovelMaker" # Default "{{.Info.ProductName}}"
+!define INFO_PRODUCTVERSION "1.0.0.20250314"     # Default "{{.Info.ProductVersion}}"
+!define INFO_COPYRIGHT      "Copyright 2025 Hughie" # Default "{{.Info.Copyright}}"
 ###
-## !define PRODUCT_EXECUTABLE  "Application.exe"      # Default "${INFO_PROJECTNAME}.exe"
-## !define UNINST_KEY_NAME     "UninstKeyInRegistry"  # Default "${INFO_COMPANYNAME}${INFO_PRODUCTNAME}"
+!define PRODUCT_EXECUTABLE  "NovelMaker.exe"      # Default "${INFO_PROJECTNAME}.exe"
+!define UNINST_KEY_NAME     "UninstKeyInRegistry"  # Default "${INFO_COMPANYNAME}${INFO_PRODUCTNAME}"
 ####
-## !define REQUEST_EXECUTION_LEVEL "admin"            # Default "admin"  see also https://nsis.sourceforge.io/Docs/Chapter4.html
+!define REQUEST_EXECUTION_LEVEL "admin"            # Default "admin"  see also https://nsis.sourceforge.io/Docs/Chapter4.html
 ####
 ## Include the wails tools
 ####
@@ -88,7 +88,7 @@ Section
 
     !insertmacro wails.files
 
-    DeleteRegKey HKCR ".no"
+    DeleteRegKey HKCR ".epub"
     DeleteRegKey HKCR "NovelMakerFile"
 
     CreateDirectory "$INSTDIR\log"
@@ -104,8 +104,9 @@ Section
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
-    WriteRegStr HKCR ".no" "" "NovelMakerFile"
-    WriteRegStr HKCR "NovelMakerFile" "" "NovelMaker File"
+    WriteRegStr HKCR ".epub" "" "NovelMakerFile"
+    WriteRegStr HKCR "NovelMakerFile" "" "EPUB File"
+    WriteRegStr HKCR "NovelMakerFile\DefaultIcon" "" "$INSTDIR\${PRODUCT_EXECUTABLE},0"
     WriteRegStr HKCR "NovelMakerFile\shell" "" ""
     WriteRegStr HKCR "NovelMakerFile\shell\open" "" ""
     WriteRegStr HKCR "NovelMakerFile\shell\open\command" "" "$INSTDIR\${PRODUCT_EXECUTABLE} %1"
@@ -131,6 +132,6 @@ Section "uninstall"
 
     !insertmacro wails.deleteUninstaller
 
-    DeleteRegKey HKCR ".no"
+    DeleteRegKey HKCR ".epub"
     DeleteRegKey HKCR "NovelMakerFile"
 SectionEnd

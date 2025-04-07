@@ -8,12 +8,12 @@
   "frontend:dev:serverUrl": "auto",
   "author": {
     "name": "hughie12",
-    "email": "11827824+hughie12@user.noreply.gitee.com"
+    "email": "18028012455@163.com"
   },
   "info": {
     "companyName": "Novel Maker",
     "productName": "Novel Maker",
-    "productVersion": "1.0.0.20241101_alpha",
+    "productVersion": "1.0.0.20250314",
     "copyright": "MIT",
     "comments": "This is a text editor for EPUB files"
   },
