@@ -22,7 +22,7 @@ Unicode true
 !define INFO_PROJECTNAME    "NovelMaker" # Default "{{.Name}}"
 !define INFO_COMPANYNAME    "Hughie" # Default "{{.Info.CompanyName}}"
 !define INFO_PRODUCTNAME    "NovelMaker" # Default "{{.Info.ProductName}}"
-!define INFO_PRODUCTVERSION "1.0.0.20250314"     # Default "{{.Info.ProductVersion}}"
+!define INFO_PRODUCTVERSION "1.1.0.20250407"     # Default "{{.Info.ProductVersion}}"
 !define INFO_COPYRIGHT      "Copyright 2025 Hughie" # Default "{{.Info.Copyright}}"
 ###
 !define PRODUCT_EXECUTABLE  "NovelMaker.exe"      # Default "${INFO_PROJECTNAME}.exe"

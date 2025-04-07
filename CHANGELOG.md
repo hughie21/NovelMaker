@@ -12,6 +12,12 @@ Explanation of version number format: major.minor.patch.date_suffix
 
 <hr/>
 
+## [v1.1.0.20250407] - 2025-04-07
+### Added
+- Add text alignment and allow math formulas to be entered and displayed within the editor [#a30ea21](https://github.com/hughie21/NovelMaker/commit/a30ea21527dd2ef6164fce067fc5ac4541527a77)
+- Add support for note formatting (a small line of text at the top of the text) [#56c3983](https://github.com/hughie21/NovelMaker/commit/56c39835efc5ae69a64ae888d26b2f9ef39b0771)
+- Add support for parsing mathematical formulas on the backend, add katex style and JavaScript files to epub files [#04c69db](https://github.com/hughie21/NovelMaker/commit/04c69dbec2d3f0ee77692e5760a0e8dc26c29382)
+
 ## [v1.0.0.20250314] - 2025-03-14
 ### Added
 - Added catalogue node highlighting with scrolling [#129c135](https://github.com/hughie21/NovelMaker/commit/129c13589606a891771e05b3af3c02160565799b)

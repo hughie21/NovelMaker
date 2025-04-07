@@ -1,6 +1,6 @@
-version: 1.0.0.20250314
-buildTime: 2025/03/14
-commit: 19206092ef7bb17a2eb8b0e6930a1abc96e840d4
+version: 1.1.0.20250407
+buildTime: 2025/04/07
+commit: c3b54d56820b9e1835e9a4ee02227e1d3823b7da
 appearance:
   defaultOpen: maximised
   width: 1024

@@ -14,7 +14,7 @@
     !define INFO_PRODUCTNAME "Novel Maker"
 !endif
 !ifndef INFO_PRODUCTVERSION
-    !define INFO_PRODUCTVERSION "1.0.0.20250314"
+    !define INFO_PRODUCTVERSION "1.1.0.20250407"
 !endif
 !ifndef INFO_COPYRIGHT
     !define INFO_COPYRIGHT "MIT"
