@@ -20,7 +20,7 @@ Unicode true
 ## The following information is taken from the ProjectInfo file, but they can be overwritten here.
 ####
 !define INFO_PROJECTNAME    "NovelMaker" # Default "{{.Name}}"
-!define INFO_COMPANYNAME    "Hughie" # Default "{{.Info.CompanyName}}"
+!define INFO_COMPANYNAME    "NovelMaker" # Default "{{.Info.CompanyName}}"
 !define INFO_PRODUCTNAME    "NovelMaker" # Default "{{.Info.ProductName}}"
 !define INFO_PRODUCTVERSION "1.1.0.20250407"     # Default "{{.Info.ProductVersion}}"
 !define INFO_COPYRIGHT      "Copyright 2025 Hughie" # Default "{{.Info.Copyright}}"
@@ -72,7 +72,7 @@ ManifestDPIAware true
 
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
-InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
+InstallDir "$PROGRAMFILES64\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
 
 Function .onInit
