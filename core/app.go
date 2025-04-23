@@ -33,8 +33,15 @@ type App struct {
 
 // NewApp creates a new App application struct
 func NewApp() *App {
+	hash, err := utils.GenerateHash([]byte(time.Now().String()))
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		logger.LogOutPut(core.execPath)
+		utils.ShowMessage("Error when generating hash: ", err.Error(), "error")
+		panic(err)
+	}
 	return &App{
-		resourceFold: utils.GenerateHash([]byte(time.Now().String())),
+		resourceFold: hash,
 	}
 }
 
@@ -57,7 +64,14 @@ func (a *App) startup(ctx context.Context) {
 	a.core = NewCore()
 	a.ctx = ctx
 	if core.Args != "" {
-		a.resourceFold = utils.GenerateHash([]byte(core.Args))
+		hash, err := utils.GenerateHash([]byte(core.Args))
+		if err != nil {
+			logger.Error(err.Error(), logging.RunFuncName())
+			logger.LogOutPut(core.execPath)
+			utils.ShowMessage("Error when generating hash: ", err.Error(), "error")
+			panic(err)
+		}
+		a.resourceFold = hash
 		return
 	}
 	defaultPath := filepath.Join(core.execPath, "resources", a.resourceFold)
@@ -118,14 +132,36 @@ func (a *App) FileOpen() Message {
 		return Message
 	}
 	os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
-	returnData := a.core.agt.Exec("reader", res)
+	futue, err := a.core.agt.Exec("reader", res)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		Message.Code = 1
+		Message.Msg = err.Error()
+		return Message
+	}
+	ctxGet, cancelGet := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelGet()
+	returnData, err := futue.Get(ctxGet)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		Message.Code = 1
+		Message.Msg = err.Error()
+		return Message
+	}
 	if returnData.Err() != nil {
 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
 		Message.Code = 1
 		Message.Msg = returnData.Err().Error()
 		return Message
 	}
-	a.resourceFold = utils.GenerateHash([]byte(res))
+	hash, err := utils.GenerateHash([]byte(res))
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		Message.Code = 1
+		Message.Msg = err.Error()
+		return Message
+	}
+	a.resourceFold = hash
 	Message.Code = 0
 	Message.Msg = res
 	Message.Data = returnData.Data().(string)
@@ -141,7 +177,14 @@ func (a *App) NewFile() Message {
 		logger.Error(err.Error(), logging.RunFuncName())
 		return msg
 	}
-	a.resourceFold = utils.GenerateHash([]byte(time.Now().String()))
+	hash, err := utils.GenerateHash([]byte(time.Now().String()))
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	a.resourceFold = hash
 	os.Mkdir(filepath.Join(a.core.execPath, "resources", a.resourceFold), os.ModePerm)
 	msg.Code = 0
 	msg.Msg = "success"
@@ -156,7 +199,22 @@ func (a *App) DirectLoading() Message {
 		return msg
 	}
 
-	returnData := a.core.agt.Exec("reader", a.core.Args)
+	future, err := a.core.agt.Exec("reader", a.core.Args)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
+	}
+	ctxGet, cancelGet := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelGet()
+	returnData, err := future.Get(ctxGet)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
+	}
 	if returnData.Err() != nil {
 		logger.Error(fmt.Sprintf("%s: %s", returnData.Err().Error(), a.core.Args), logging.RunFuncName())
 		msg.Code = 1
@@ -202,14 +260,36 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 		msg.Msg = "cancel"
 		return msg
 	}
-	returnData := a.core.agt.Exec("writer", res, rawJson)
+	future, err := a.core.agt.Exec("writer", res, rawJson)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
+	}
+	ctxGet, cancelGet := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelGet()
+	returnData, err := future.Get(ctxGet)
+	if err != nil {
+		logger.Error(err.Error(), logging.RunFuncName())
+		msg.Code = 1
+		msg.Msg = err.Error()
+		return msg
+	}
 	if returnData.Err() != nil {
 		msg.Code = 1
 		msg.Msg = returnData.Err().Error()
 		logger.Error(returnData.Err().Error(), logging.RunFuncName())
 		return msg
 	}
-	a.resourceFold = utils.GenerateHash([]byte(res))
+	hash, err := utils.GenerateHash([]byte(res))
+	if err != nil {
+		msg.Code = 1
+		msg.Msg = err.Error()
+		logger.Error(err.Error(), logging.RunFuncName())
+		return msg
+	}
+	a.resourceFold = hash
 	msg.Code = 0
 	msg.Data = res
 	msg.Msg = "success"

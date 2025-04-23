@@ -9,3 +9,4 @@ log
 bugs.txt
 future.txt
 .vscode/
+*.pak

@@ -28,12 +28,18 @@ type Result struct {
 	err  error
 }
 
+type Future struct {
+	resultChan chan Result
+	once       sync.Once
+}
+
 type Transaction struct {
 	executor Pluginer
-	args     []interface{}
-	result   chan Result
-	wg       *sync.WaitGroup
-	state    int
+	// args     []interface{}
+	result chan Result
+	future *Future
+	wg     *sync.WaitGroup
+	state  int
 }
 
 // Agent is a manager for all plugins, so there is map that store all the registered plugins.
@@ -53,6 +59,28 @@ func (r *Result) Data() interface{} {
 
 func (r *Result) Err() error {
 	return r.err
+}
+
+func NewFuture() *Future {
+	return &Future{
+		resultChan: make(chan Result, 1),
+	}
+}
+
+func (f *Future) Get(ctx context.Context) (Result, error) {
+	select {
+	case res := <-f.resultChan:
+		return res, nil
+	case <-ctx.Done():
+		return Result{err: ctx.Err()}, ctx.Err()
+	}
+}
+
+func (f *Future) setResult(res Result) {
+	f.once.Do(func() {
+		f.resultChan <- res
+		close(f.resultChan)
+	})
 }
 
 // NewAgent create a new agent with the size of the transaction pool and the timeout for the plugin to execute
@@ -90,23 +118,34 @@ func (agt *Agent) RegisterPlugin(name string, plugin Pluginer) error {
 	return nil
 }
 
-func (agt *Agent) Exec(name string, args ...interface{}) Result {
+func (agt *Agent) Exec(name string, args ...interface{}) (*Future, error) {
 	plugin, ok := agt.plugins[name]
 	if !ok {
-		return Result{err: fmt.Errorf("plugin<%s> not found", name)}
+		return nil, fmt.Errorf("plugin<%s> not found", name)
 	}
-
-	ctx, cancel := context.WithTimeout(agt.ctx, agt.timeout*time.Second)
-	defer cancel()
-
 	// Wait for a empty transaction, if there is no empty transaction, the agent will wait for the timeout.
 	for {
-		for i := 0; i < len(agt.pool); i++ {
-			if agt.pool[i].state == TransactionStateWaiting {
-				agt.pool[i].executor = plugin
-				agt.pool[i].state = TransactionStateRunning
-				agt.pool[i].exec(ctx, args...)
-				return agt.pool[i].wait()
+		select {
+		case <-agt.ctx.Done():
+			return nil, agt.ctx.Err()
+		default:
+			for i := 0; i < len(agt.pool); i++ {
+				if agt.pool[i].state == TransactionStateWaiting {
+					t := &agt.pool[i]
+					t.state = TransactionStateRunning
+					t.executor = plugin
+					t.future = NewFuture()
+					ctx, cancel := context.WithTimeout(context.Background(), agt.timeout*time.Second)
+					go func() {
+						defer cancel()
+						t.exec(ctx, args...)
+					}()
+					return t.future, nil
+					// agt.pool[i].executor = plugin
+					// agt.pool[i].state = TransactionStateRunning
+					// agt.pool[i].exec(ctx, args...)
+					// return agt.pool[i].wait()
+				}
 			}
 		}
 	}
@@ -120,23 +159,22 @@ func NewTransaction() *Transaction {
 	return &Transaction{result: make(chan Result, 1), wg: &sync.WaitGroup{}, state: TransactionStateWaiting}
 }
 
-// wait() will wait for the plugin to finish and return the result.
-func (t *Transaction) wait() Result {
-	t.wg.Wait()
-	t.state = TransactionStateWaiting
-	// After return the result, close the result channel to release the resources.
-	defer close(t.result)
-	return <-t.result
-}
+// // wait() will wait for the plugin to finish and return the result.
+// func (t *Transaction) wait() Result {
+// 	t.wg.Wait()
+// 	t.state = TransactionStateWaiting
+// 	// After return the result, close the result channel to release the resources.
+// 	defer close(t.result)
+// 	return <-t.result
+// }
 
 func (t *Transaction) exec(ctx context.Context, args ...interface{}) {
-	t.args = args
-	t.result = make(chan Result, 1)
-	t.wg.Add(1)
-	go func() {
-		defer t.wg.Done()
-		result, err := t.executor.Run(ctx, args...)
-		res := Result{data: result, err: err}
-		t.result <- res
+	defer func() {
+		t.state = TransactionStateWaiting
+		if r := recover(); r != nil {
+			t.future.setResult(Result{err: fmt.Errorf("panic: %v", r)})
+		}
 	}()
+	result, err := t.executor.Run(ctx, args...)
+	t.future.setResult(Result{data: result, err: err})
 }

@@ -26,7 +26,7 @@ const timer = new TimerContext(t);
 onMounted(()=> {
     // start the timer which will be used to save the file automatically
     timer.Start();
-    timer.State()
+    timer.State();
 })
  
 const openFilePicker = () => {
@@ -81,7 +81,7 @@ const openFilePicker = () => {
         const E = editorRef.value;
 
         bookInfo.metadata = rawData.metadata;
-        console.log(rawData.content)
+        console.log(bookInfo)
         E.commands.setContent(rawData.content, true);
         
         // update the catalog

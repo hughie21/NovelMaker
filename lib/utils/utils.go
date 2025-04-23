@@ -33,10 +33,13 @@ func GetFileData(path string) []byte {
 	return rawData
 }
 
-func GenerateHash(data []byte) string {
+func GenerateHash(data []byte) (string, error) {
 	h := sha1.New()
-	h.Write(data)
-	return hex.EncodeToString(h.Sum(nil))[:20]
+	_, err := h.Write(data)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil))[:20], nil
 }
 
 func CombineMap(m1, m2 map[string]html.TagParser) map[string]html.TagParser {

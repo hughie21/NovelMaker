@@ -168,14 +168,16 @@ func (p *HTMLParser) parserHTML(html string) *AstElement {
 				advance(len(endTagMatch[0]))
 				continue
 			}
-		}
-		var text string
-		if textEnd > 0 {
-			text = html[:textEnd]
-		}
-		if text != "" {
+			p.chars(html[:1])
+			advance(1)
+			continue
+		} else if textEnd > 0 {
+			text := html[:textEnd]
 			p.chars(text)
 			advance(len(text))
+		} else {
+			p.chars(html)
+			advance(len(html))
 		}
 	}
 

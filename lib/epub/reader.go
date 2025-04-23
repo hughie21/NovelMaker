@@ -61,10 +61,14 @@ func NewReader(targetPath string, tempDir string) (*Reader, error) {
 	if err != nil {
 		return nil, err
 	}
+	hash, err := utils.GenerateHash([]byte(targetPath))
+	if err != nil {
+		return nil, err
+	}
 	r := &Reader{
 		tempDir:      filepath.Join(tempDir, fmt.Sprintf("~%s", name)),
 		targetPath:   targetPath,
-		resourcePath: filepath.Join(filepath.Join(tempDir, ".."), "resources", utils.GenerateHash([]byte(targetPath))),
+		resourcePath: filepath.Join(filepath.Join(tempDir, ".."), "resources", hash),
 	}
 	return r, nil
 }
@@ -135,7 +139,10 @@ func (r *Reader) moveImage() error {
 			return errors.New("create file error by: " + filepath.Join(r.resourcePath, image.Name))
 		}
 		defer ts.Close()
-		ts.Write(image.Data)
+		_, err = ts.Write(image.Data)
+		if err != nil {
+			return errors.New("write file error by: " + filepath.Join(r.resourcePath, image.Name))
+		}
 	}
 	return nil
 }
@@ -248,7 +255,6 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 			manifestTextId[itemId] = itemHref
 		}
 	}
-
 	// change the content of the epub to proseMirror scheme
 	textNode := html.PMNode{
 		Type:    "doc",
@@ -257,7 +263,10 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 	for _, itemref := range packageDoc.FindElements("//spine/itemref") {
 		ref := itemref.SelectAttrValue("idref", "")
 		if href, ok := manifestTextId[ref]; ok {
-			fs, _ := os.Open(filepath.Join(r.tempDir, href))
+			fs, err := os.Open(filepath.Join(r.tempDir, href))
+			if err != nil {
+				return err
+			}
 			defer fs.Close()
 			rawData, _ := io.ReadAll(fs)
 			ast, err := html.LoadHTML(rawData)
@@ -265,9 +274,13 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 				return err
 			}
 			parsers := make(map[string]html.TagParser)
+			hash, err := utils.GenerateHash([]byte(r.targetPath))
+			if err != nil {
+				return err
+			}
 			parsers = utils.CombineMap(extension, map[string]html.TagParser{
 				"img": &html.ImageParser{
-					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+					FoldName: hash,
 				},
 				"h1": &html.HeaderParser{
 					Level: 1,
@@ -293,7 +306,7 @@ func (r *Reader) Pharse(extension map[string]html.TagParser) error {
 					Parsers: &parsers,
 				},
 				"image": &html.ImageParser{
-					FoldName: utils.GenerateHash([]byte(r.targetPath)),
+					FoldName: hash,
 				},
 				"br": &html.BrParser{},
 				"ol": &html.ListParser{

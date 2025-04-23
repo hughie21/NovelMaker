@@ -72,11 +72,19 @@ ManifestDPIAware true
 
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
-InstallDir "$PROGRAMFILES64\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
+InstallDir "$PROFILE\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
+RequestExecutionLevel admin
 
 Function .onInit
    !insertmacro wails.checkArchitecture
+   UserInfo::GetAccountType
+    pop $0
+    ${If} $0 != "admin" ;Require admin rights on NT4+
+        MessageBox mb_iconstop "Administrator rights required!"
+        SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+        Quit
+    ${EndIf}
 FunctionEnd
 
 Section
