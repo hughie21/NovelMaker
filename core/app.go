@@ -132,6 +132,7 @@ func (a *App) FileOpen() Message {
 		return Message
 	}
 	os.RemoveAll(filepath.Join(a.core.execPath, "resources", a.resourceFold))
+	logger.Info("Reading Epub file", logging.RunFuncName())
 	futue, err := a.core.agt.Exec("reader", res)
 	if err != nil {
 		logger.Error(err.Error(), logging.RunFuncName())
@@ -260,6 +261,7 @@ func (a *App) FileSave(name string, rawJson string, skip bool) Message {
 		msg.Msg = "cancel"
 		return msg
 	}
+	logger.Info("Saving Epub file", logging.RunFuncName())
 	future, err := a.core.agt.Exec("writer", res, rawJson)
 	if err != nil {
 		logger.Error(err.Error(), logging.RunFuncName())
